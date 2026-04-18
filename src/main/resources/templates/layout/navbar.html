@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <th:block th:fragment="navbar">
+    <!-- Spinner Start -->
+    <div id="spinner"
+      class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+      <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <!-- Spinner End -->
+
+    <!-- Navbar Start -->
+    <style>
+      .navbar-nav .nav-link.active {
+          color: var(--primary) !important;
+          font-weight: bold;
+          background-color: rgba(1, 162, 166, 0.1);
+          border-radius: 8px;
+      }
+    </style>
+    <div class="container-fluid sticky-top">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light border-bottom border-2 border-white">
+          <a th:href="@{ / }" class="navbar-brand">
+            <h1 class="m-0 text-primary"><i class="fas fa-plane-departure me-2"></i>SkyTravel</h1>
+          </a>
+          <button type="button" class="navbar-toggler ms-auto me-0" data-bs-toggle="collapse"
+            data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto text-uppercase">
+              <a th:href="@{/}" class="nav-item nav-link" th:classappend="${requestURI == '/' ? 'active' : ''}">Trang Chủ</a>
+              <a th:href="@{/about}" class="nav-item nav-link" th:classappend="${requestURI == '/about' ? 'active' : ''}">Giới Thiệu</a>
+              <a th:href="@{/services}" class="nav-item nav-link" th:classappend="${requestURI == '/services' ? 'active' : ''}">Dịch Vụ</a>
+              <a th:href="@{/projects}" class="nav-item nav-link" th:classappend="${requestURI == '/projects' ? 'active' : ''}">Điểm Đến</a>
+              <div class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
+                  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Quản Lý</a>
+                  <div class="dropdown-menu m-0 bg-light">
+                      <a th:href="@{/admin/users}" class="dropdown-item">Người Dùng</a>
+                      <a th:href="@{/admin/airlines}" class="dropdown-item">Hãng Bay</a>
+                      <a th:href="@{/admin/airports}" class="dropdown-item">Sân Bay</a>
+                      <a th:href="@{/admin/flights}" class="dropdown-item">Chuyến Bay</a>
+                      <a th:href="@{/admin/promotions}" class="dropdown-item">Khuyến Mãi</a>
+                      <a th:href="@{/admin/banners}" class="dropdown-item">Hình Ảnh</a>
+                      <a th:href="@{/admin/services}" class="dropdown-item">Dịch Vụ</a>
+                      <a th:href="@{/admin/team}" class="dropdown-item">Đội Ngũ</a>
+                      <a th:href="@{/admin/contacts}" class="dropdown-item border-bottom pb-2">Hộp Thư Liên Hệ</a>
+                      <div class="dropdown-divider"></div>
+                      <a th:href="@{/admin/report}" class="dropdown-item fw-bold text-primary"><i class="fas fa-chart-line me-2"></i>Thống Kê</a>
+                  </div>
+              </div>
+              <a th:href="@{/contact}" class="nav-item nav-link" th:classappend="${requestURI == '/contact' ? 'active' : ''}">Liên Hệ</a>
+            </div>
+            <div class="d-none d-lg-flex ms-3 align-items-center">
+              <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-primary rounded-pill py-2 px-4 fw-bold me-2">Đăng Nhập</a>
+              <a sec:authorize="!isAuthenticated()" th:href="@{/register}" class="btn btn-outline-primary rounded-pill py-2 px-4 fw-bold">Đăng Ký</a>
+              <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                  <a href="#" class="nav-link dropdown-toggle btn btn-primary rounded-pill py-2 px-4 fw-bold text-white shadow-sm" data-bs-toggle="dropdown" style="line-height: 1.5;">
+                      <i class="fas fa-user-circle me-1"></i> <span sec:authentication="name">Tài Khoản</span>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end m-0 bg-white border-0 shadow rounded-3 mt-2">
+                      <a th:href="@{/profile/info}" class="dropdown-item py-2"><i class="fas fa-id-card text-primary me-2"></i>Thông Tin Cá Nhân</a>
+                      <a sec:authorize="!hasRole('ADMIN')" th:href="@{/profile/bookings}" class="dropdown-item py-2"><i class="fas fa-ticket-alt text-primary me-2"></i>Vé Của Tôi</a>
+                      <div class="dropdown-divider" sec:authorize="hasAnyRole('ADMIN', 'STAFF')"></div>
+                      <a sec:authorize="hasAnyRole('ADMIN', 'STAFF')" th:href="@{/admin/profile}" class="dropdown-item py-2"><i class="fas fa-tachometer-alt text-success me-2"></i>Trang Quản Trị</a>
+                      <div class="dropdown-divider"></div>
+                      <a th:href="@{/logout}" class="dropdown-item py-2 text-danger fw-bold"><i class="fas fa-sign-out-alt me-2"></i>Đăng Xuất</a>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+    <!-- Navbar End -->
+  </th:block>
+</html>

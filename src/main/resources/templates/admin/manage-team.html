@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Đội Ngũ</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Đội Ngũ Nhân Sự (Our Team)</h2>
+            <p class="text-muted">Quản lý đội ngũ nhân viên để hiển thị trên trang Giới Thiệu (About).</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#teamModal" onclick="resetForm()">
+            <i class="fas fa-plus me-2"></i>Thêm Thành Viên
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Hình ảnh</th>
+                        <th>Họ Tên</th>
+                        <th>Chức vụ / Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="m : ${members}">
+                        <td class="ps-4">
+                            <img th:src="@{${m.imageUrl}}" alt="Photo" class="rounded-circle shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
+                        </td>
+                        <td class="fw-bold" th:text="${m.name}"></td>
+                        <td th:text="${m.role}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${m.isActive == true} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${m.isActive == true} ? 'Bật' : 'Tắt'"></span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm border-0 bg-transparent text-secondary ms-2" th:onclick="editTeam([[${m.id}]], [[${m.name}]], [[${m.role}]], [[${m.isActive == null ? false : m.isActive}]], [[${m.imageUrl}]])" title="Sửa">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+                            <form th:action="@{/admin/team/delete/{id}(id=${m.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary ms-1" onclick="return confirm('Xóa thành viên này?')" title="Xóa">
+                                    <i class="fas fa-trash fa-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="teamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm / Sửa Thành Viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/admin/team/save}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="tId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Họ và Tên</label>
+                        <input type="text" name="name" id="tName" class="form-control" required placeholder="VD: Nguyễn Văn A">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chức Vụ / Vai Trò</label>
+                        <input type="text" name="role" id="tRole" class="form-control" required placeholder="VD: Cơ trưởng">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-primary">Dùng Link Ảnh (Khuyên dùng)</label>
+                        <input type="text" name="imageUrlStr" id="imageUrlStr" class="form-control" placeholder="https://example.com/anh.jpg">
+                        <small class="text-muted">Nhập đường link ảnh trực tiếp từ Google Drive, Facebook, Imgur...</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">HOẶC Upload bằng Tệp (Từ Máy Tính)</label>
+                        <input type="file" name="imageFile" id="tFile" class="form-control" accept="image/*">
+                        <small class="text-muted">Hệ thống sẽ ưu tiên NGUỒN LINK ẢNH ở trên nếu bạn nhập cả hai.</small>
+                    </div>
+
+                    <div class="mb-3 form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" name="isActive" id="tIsActive" checked value="true">
+                        <label class="form-check-label" for="tIsActive">Hiển thị ở trang About</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ 
+
+<script>
+    function resetForm() {
+        document.getElementById('tId').value = '';
+        document.getElementById('tName').value = '';
+        document.getElementById('tRole').value = '';
+        document.getElementById('tIsActive').checked = true;
+        document.getElementById('imageUrlStr').value = '';
+    }
+
+    function editTeam(id, name, role, isActive, imageUrl) {
+        document.getElementById('tId').value = id;
+        document.getElementById('tName').value = name;
+        document.getElementById('tRole').value = role;
+        document.getElementById('tIsActive').checked = isActive === true || isActive === 'true';
+        document.getElementById('imageUrlStr').value = imageUrl ? imageUrl : '';
+        new bootstrap.Modal(document.getElementById('teamModal')).show();
+    }
+</script>
+</div>
+</body>
+</html>

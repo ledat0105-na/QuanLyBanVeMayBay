@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div})}">
+<head>
+    <title>Chi Tiết Vé - SkyTravel</title>
+</head>
+<body>
+<div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-ticket-alt text-primary me-2"></i>Chi Tiết Vé <span th:text="${booking.bookingCode}" class="text-info">BKG123</span></h2>
+        <a th:href="@{/admin/bookings}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Flight Info -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-primary text-white rounded-top-4">
+                    <h5 class="mb-0"><i class="fas fa-plane-departure me-2"></i>Thông Tin Chuyến Bay</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-5">
+                            <h3 class="fw-bold mb-0" th:text="${booking.flight.departureAirport.code}">SGN</h3>
+                            <p class="text-muted small mb-1" th:text="${booking.flight.departureAirport.name}">Tan Son Nhat</p>
+                            <h5 class="text-primary mb-0" th:text="${#temporals.format(booking.flight.departureTime, 'HH:mm')}">10:00</h5>
+                            <p class="small text-muted mb-0" th:text="${#temporals.format(booking.flight.departureTime, 'dd/MM/yyyy')}">01/01/2026</p>
+                        </div>
+                        <div class="col-2 d-flex align-items-center justify-content-center flex-column">
+                            <i class="fas fa-plane text-primary fs-3 mb-1"></i>
+                            <span class="badge bg-light text-dark border" th:text="${booking.flight.flightNumber}">VN123</span>
+                        </div>
+                        <div class="col-5">
+                            <h3 class="fw-bold mb-0" th:text="${booking.flight.arrivalAirport.code}">HAN</h3>
+                            <p class="text-muted small mb-1" th:text="${booking.flight.arrivalAirport.name}">Noi Bai</p>
+                            <h5 class="text-primary mb-0" th:text="${#temporals.format(booking.flight.arrivalTime, 'HH:mm')}">12:00</h5>
+                            <p class="small text-muted mb-0" th:text="${#temporals.format(booking.flight.arrivalTime, 'dd/MM/yyyy')}">01/01/2026</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 mb-2"><strong>Ngày Đặt Vé:</strong> <span th:text="${#temporals.format(booking.bookingDate, 'dd/MM/yyyy HH:mm')}"></span></div>
+                        <div class="col-md-6 mb-2"><strong>Trạng Thái:</strong> 
+                            <span th:if="${booking.bookingStatus == 'WAITING_PAYMENT'}" class="badge bg-warning text-dark">Chờ Thanh Toán</span>
+                            <span th:if="${booking.bookingStatus == 'CONFIRMED'}" class="badge bg-success">Đã Xác Nhận</span>
+                            <span th:if="${booking.bookingStatus == 'CANCELLED'}" class="badge bg-danger">Đã Hủy</span>
+                            <span th:if="${booking.bookingStatus == 'REFUNDED'}" class="badge bg-secondary">Đã Hoàn Tiền</span>
+                        </div>
+                        <div class="col-md-6"><strong>Tổng Tiền:</strong> <span class="fw-bold text-danger fs-5" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booked By Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-dark text-white rounded-top-4">
+                    <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Người Đặt</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${booking.user != null}">
+                        <p class="mb-3"><strong>Họ và tên:</strong> <br><span th:text="${booking.user.fullName}">Tên user</span></p>
+                        <p class="mb-3"><strong>Email:</strong> <br><span th:text="${booking.user.email}">Email</span></p>
+                        <p class="mb-0"><strong>Số ĐT:</strong> <br><span th:text="${booking.user.phone}">Sdt</span></p>
+                    </div>
+                    <div th:if="${booking.user == null}">
+                        <p class="text-muted">Khách vãng lai (không đăng nhập)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Passenger Management -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-users text-primary me-2"></i>Danh Sách Hành Khách</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary">
+                                <tr>
+                                    <th class="ps-4">Họ và Tên</th>
+                                    <th>Giới Tính</th>
+                                    <th>Ngày Sinh</th>
+                                    <th>CMND/Passport</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${booking.passengers}">
+                                    <td class="ps-4 fw-bold" th:text="${p.fullName}">Nguyen Thi B</td>
+                                    <td th:text="${p.gender == 'MALE' ? 'Nam' : (p.gender == 'FEMALE' ? 'Nữ' : 'Khác')}">Nữ</td>
+                                    <td th:text="${#temporals.format(p.dateOfBirth, 'dd/MM/yyyy')}">01/01/1990</td>
+                                    <td th:text="${p.passportNumber != null && !p.passportNumber.isEmpty() ? p.passportNumber : '--'}">12345678</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm border-0 bg-transparent text-secondary" data-bs-toggle="modal" th:data-bs-target="'#editPassengerModal' + ${p.id}" title="Sửa">
+                                            <i class="fas fa-edit fa-lg"></i>
+                                        </button>
+                                        <a th:href="@{/admin/bookings/removePassenger/{id}(id=${p.id})}" class="btn btn-sm border-0 bg-transparent text-secondary ms-2" title="Xóa" onclick="return confirm('Bạn có chắc muốn xóa hành khách này?');">
+                                            <i class="fas fa-trash fa-lg"></i>
+                                        </a>
+                                        
+                                        <!-- Edit Passenger Modal -->
+                                        <div class="modal fade" th:id="'editPassengerModal' + ${p.id}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content text-start">
+                                                    <form th:action="@{/admin/bookings/passengers/edit}" method="post">
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title">Sửa Thông Tin Hành Khách</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="bookingId" th:value="${booking.id}">
+                                                            <input type="hidden" name="passengerId" th:value="${p.id}">
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Họ và Tên</label>
+                                                                <input type="text" name="fullName" class="form-control" th:value="${p.fullName}" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Giới tính</label>
+                                                                <select name="gender" class="form-select">
+                                                                    <option value="MALE" th:selected="${p.gender == 'MALE'}">Nam</option>
+                                                                    <option value="FEMALE" th:selected="${p.gender == 'FEMALE'}">Nữ</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Ngày sinh</label>
+                                                                <input type="date" name="dateOfBirth" class="form-control" th:value="${p.dateOfBirth}" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label">CCCD / Hộ Chiếu</label>
+                                                                <input type="text" name="passportNumber" class="form-control" th:value="${p.passportNumber}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 rounded-4 mb-4" th:if="${!booking.baggageOptions.isEmpty()}">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-suitcase text-primary me-2"></i>Hành Lý Mua Thêm</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="bg : ${booking.baggageOptions}">
+                            <span th:text="${bg.weight + 'kg Hành lý ký gửi'}"></span>
+                            <span class="fw-bold" th:text="${#numbers.formatDecimal(bg.price, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-warning text-dark py-3 rounded-top-4">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-tasks me-2"></i>Thao Tác Nghiệp Vụ</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Confirm/Reject Payment Block -->
+                    <div th:if="${booking.bookingStatus == 'WAITING_PAYMENT'}" class="mb-4">
+                        <h6 class="fw-bold text-muted mb-3"># Xử lý Thanh Toán</h6>
+                        <form th:action="@{/admin/bookings/{id}/confirm-payment(id=${booking.id})}" method="post" class="mb-2">
+                            <button type="submit" class="btn btn-success w-100" onclick="return confirm('Bạn có chắc chắn đã nhận được tiền và muốn xác nhận vé này?')">
+                                <i class="fas fa-check-circle me-2"></i>Xác Nhận Đã Thanh Toán
+                            </button>
+                        </form>
+                        <form th:action="@{/admin/bookings/{id}/reject-payment(id=${booking.id})}" method="post">
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Hủy luôn vé này vì khách không thanh toán?')">
+                                <i class="fas fa-times me-2"></i>Hủy Vé Chưa Thanh Toán
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Cancel/Refund Bookings -->
+                    <div th:if="${booking.bookingStatus == 'CONFIRMED'}" class="mb-4">
+                        <h6 class="fw-bold text-muted mb-3"># Hỗ Trợ Khách Hàng</h6>
+                        <form th:action="@{/admin/bookings/{id}/refund(id=${booking.id})}" method="post" class="mb-2">
+                            <button type="submit" class="btn btn-secondary w-100" onclick="return confirm('Bạn xác nhận đã hoàn lại tiền cho khách?')">
+                                <i class="fas fa-undo me-2"></i>Cập Nhật "Đã Hoàn Tiền"
+                            </button>
+                        </form>
+                        <form th:action="@{/admin/bookings/{id}/cancel(id=${booking.id})}" method="post">
+                            <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Bạn có chắc chắn muốn hủy vé đã thanh toán này không?')">
+                                <i class="fas fa-ban me-2"></i>Hủy Vé Này!
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${booking.bookingStatus == 'CANCELLED' || booking.bookingStatus == 'REFUNDED'}">
+                        <div class="alert alert-secondary text-center">
+                            <i class="fas fa-info-circle me-1"></i> Không có thao tác kế tiếp cho trạng thái vé này.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-light py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold text-muted"><i class="fas fa-money-check-alt me-2 text-primary"></i>Lịch Sử Giao Dịch</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush" th:if="${!booking.payments.isEmpty()}">
+                        <li class="list-group-item p-3" th:each="pm : ${booking.payments}">
+                            <div class="d-flex justify-content-between">
+                                <strong>PTTT: <span class="text-primary" th:text="${pm.paymentMethod}">BANK_TRANSFER</span></strong>
+                                <span class="badge" th:classappend="${pm.paymentStatus == 'COMPLETED'} ? 'bg-success' : (${pm.paymentStatus == 'FAILED'} ? 'bg-danger' : 'bg-warning text-dark')" th:text="${pm.paymentStatus}">PENDING</span>
+                            </div>
+                            <small class="text-muted d-block mt-1">Mã GD: <span th:text="${pm.transactionCode}">TXN123</span></small>
+                            <small class="text-muted d-block" th:if="${pm.paymentDate != null}">Ngày: <span th:text="${#temporals.format(pm.paymentDate, 'dd/MM/yyyy HH:mm')}"></span></small>
+                        </li>
+                    </ul>
+                    <div class="p-3 text-center text-muted" th:if="${booking.payments.isEmpty()}">
+                        Chưa có giao dịch.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

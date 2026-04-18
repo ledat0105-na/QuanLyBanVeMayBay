@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Dịch Vụ Đi Kèm</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Quản Lý Dịch Vụ Bay (Services)</h2>
+            <p class="text-muted">Quản lý nội dung trang Dịch Vụ Chuyến Bay.</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#serviceModal" onclick="resetForm()">
+            <i class="fas fa-plus me-2"></i>Thêm Dịch Vụ
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Icon (FontAwesome)</th>
+                        <th>Tên Dịch Vụ</th>
+                        <th style="width: 40%">Mô Tả</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${items}">
+                        <td class="ps-4 text-primary fs-3"><i th:class="${it.iconClass}"></i></td>
+                        <td class="fw-bold" th:text="${it.title}"></td>
+                        <td th:text="${it.description}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${it.isActive == true} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${it.isActive == true} ? 'Bật' : 'Tắt'"></span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm border-0 bg-transparent text-secondary ms-2" th:onclick="editService([[${it.id}]], [[${it.title}]], [[${it.description}]], [[${it.iconClass}]], [[${it.isActive}]])" title="Sửa">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+                            <form th:action="@{/admin/services/delete/{id}(id=${it.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirm('Xóa dịch vụ này?')" title="Xóa">
+                                    <i class="fas fa-trash fa-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="serviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm / Sửa Dịch Vụ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/admin/services/save}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="itemId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tên Dịch Vụ</label>
+                        <input type="text" name="title" id="itemTitle" class="form-control" required placeholder="VD: Phòng chờ thương gia">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả chi tiết</label>
+                        <textarea name="description" id="itemDesc" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Biểu tượng (Icon)</label>
+                        <select name="iconClass" id="itemIcon" class="form-select" required>
+                            <option value="fas fa-star">⭐ Ngôi sao / Nổi bật</option>
+                            <option value="fas fa-plane">✈️ Máy bay / Chuyến bay</option>
+                            <option value="fas fa-utensils">🍴 Suất ăn / Nhà hàng</option>
+                            <option value="fas fa-suitcase-rolling">🧳 Hành lý ký gửi</option>
+                            <option value="fas fa-car">🚕 Xe đưa đón sân bay</option>
+                            <option value="fas fa-headset">🎧 Hỗ trợ 24/7</option>
+                            <option value="fas fa-wifi">📶 Kết nối Wi-Fi</option>
+                            <option value="fas fa-medkit">⚕️ Y tế / Sơ cứu</option>
+                            <option value="fas fa-paw">🐾 Mang theo thú cưng</option>
+                            <option value="fas fa-wheelchair">♿ Hỗ trợ xe lăn</option>
+                            <option value="fas fa-baby-carriage">🍼 Tiện ích trẻ em</option>
+                            <option value="fas fa-film">🎬 Giải trí trên máy bay</option>
+                            <option value="fas fa-glass-cheers">🍷 Dịch vụ VIP / Phòng chờ</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" name="isActive" id="itemIsActive" checked value="true">
+                        <label class="form-check-label" for="itemIsActive">Hiển thị ở trang Dịch Vụ</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ 
+
+<script>
+    function resetForm() {
+        document.getElementById('itemId').value = '';
+        document.getElementById('itemTitle').value = '';
+        document.getElementById('itemDesc').value = '';
+        document.getElementById('itemIcon').value = 'fas fa-star';
+        document.getElementById('itemIsActive').checked = true;
+    }
+
+    function editService(id, title, desc, icon, isActive) {
+        document.getElementById('itemId').value = id;
+        document.getElementById('itemTitle').value = title;
+        document.getElementById('itemDesc').value = desc;
+        document.getElementById('itemIcon').value = icon;
+        document.getElementById('itemIsActive').checked = isActive === true || isActive === 'true';
+        new bootstrap.Modal(document.getElementById('serviceModal')).show();
+    }
+</script>
+</div>
+</body>
+</html>

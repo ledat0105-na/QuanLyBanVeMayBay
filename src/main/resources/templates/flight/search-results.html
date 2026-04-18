@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Header Summary -->
+<div class="container-fluid bg-primary text-white py-4 mb-4 shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="text-white mb-0">
+                <i class="fas fa-plane-departure me-2"></i>Kết quả tìm kiếm chuyến bay
+            </h3>
+            <p class="mb-0 mt-2 fs-5">
+                <span th:each="ap : ${airports}" th:if="${ap.id == depId}" th:text="${ap.name}"></span>
+                <i class="fas fa-arrow-right mx-3"></i>
+                <span th:each="ap : ${airports}" th:if="${ap.id == arrId}" th:text="${ap.name}"></span>
+                <span class="mx-3">|</span> 
+                <i class="far fa-calendar-alt me-2"></i> <span th:text="${#temporals.format(depDate, 'dd/MM/yyyy')}"></span>
+                <span class="mx-3">|</span> 
+                <i class="fas fa-users me-2"></i> <span th:text="${passengers}"></span> Hành khách
+            </p>
+        </div>
+        <div>
+            <a href="/" class="btn btn-outline-light rounded-pill px-4">Tìm kiếm lại</a>
+        </div>
+    </div>
+</div>
+
+<main class="container mb-5">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-filter text-primary me-2"></i>Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <hr>
+                    <h6 class="fw-bold mb-3">Hãng Hàng Không</h6>
+                    <div th:each="al : ${airlines}" class="form-check mb-2">
+                        <input class="form-check-input airline-filter" type="checkbox" th:value="${al.id}" checked>
+                        <label class="form-check-label" th:text="${al.name}"></label>
+                    </div>
+                    <!-- Add more filter headers here in the future -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results List -->
+        <div class="col-lg-9">
+            <div th:if="${#lists.isEmpty(flights)}" class="text-center py-5 bg-white shadow-sm rounded-4 border-0">
+                <i class="fas fa-search-minus fa-4x text-muted mb-4 opacity-50"></i>
+                <h4 class="text-muted fw-bold">Không tìm thấy chuyến bay phù hợp</h4>
+                <p class="text-secondary">Rất tiếc, chúng tôi không tìm thấy chuyến bay nào đáp ứng yêu cầu của bạn. Vui lòng thử đổi ngày bay hoặc lộ trình.</p>
+                <a th:href="@{/}" class="btn btn-primary mt-3 px-4 py-2 rounded-pill fw-bold">Quay Lại Bảng Chọn</a>
+            </div>
+
+            <div th:each="f : ${flights}" class="card shadow-sm border-0 mb-4 rounded-4 flight-card" th:data-airline-id="${f.airline.id}">
+                <div class="card-body p-0">
+                    <div class="row g-0 align-items-center h-100">
+                        <div class="col-md-3 text-center p-4 border-end border-light h-100 d-flex flex-column justify-content-center">
+                            <!-- Could add airline logo here -->
+                            <h5 class="fw-bold text-primary mb-2" th:text="${f.airline.name}"></h5>
+                            <span class="badge bg-light text-dark border p-2" th:text="${f.flightNumber}"></span>
+                        </div>
+                        <div class="col-md-6 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-center">
+                                    <h3 class="fw-bold mb-0 text-dark" th:text="${#temporals.format(f.departureTime, 'HH:mm')}"></h3>
+                                    <span class="text-muted fw-bold" th:text="${f.departureAirport.code}"></span>
+                                </div>
+                                <div class="text-center flex-grow-1 px-3">
+                                    <small class="text-muted d-block mb-1 fw-bold">Bay thẳng</small>
+                                    <div class="border-bottom border-2 border-primary position-relative">
+                                        <i class="fas fa-plane position-absolute top-50 start-50 translate-middle text-primary bg-white px-2"></i>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <h3 class="fw-bold mb-0 text-dark" th:text="${#temporals.format(f.arrivalTime, 'HH:mm')}"></h3>
+                                    <span class="text-muted fw-bold" th:text="${f.arrivalAirport.code}"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center p-4 bg-light rounded-end-4 h-100 d-flex flex-column justify-content-center border-start border-2 border-white">
+                            <small class="text-muted d-block mb-1">Giá một chiều từ</small>
+                            <h4 class="fw-bold text-success mb-2" th:text="${#numbers.formatDecimal(f.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></h4>
+                            
+                            <div th:if="${f.availableSeats != null && f.availableSeats <= 10}" class="mb-2">
+                                <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm text-wrap">
+                                    <i class="fas fa-fire me-1"></i> Chỉ còn đúng <span th:text="${f.availableSeats}"></span> chỗ!
+                                </span>
+                            </div>
+                            <div th:if="${f.availableSeats == null || f.availableSeats > 10}" class="mb-4"></div>
+                            
+                            <a sec:authorize="isAuthenticated() and !hasRole('ADMIN')" th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
+                                Chọn chuyến
+                            </a>
+                            <button sec:authorize="hasRole('ADMIN')" type="button" class="btn btn-secondary rounded-pill w-100 fw-bold shadow-sm py-2 disabled" title="Admin chỉ thực hiện quản lý, không đặt vé">
+                                Khóa chức năng
+                            </button>
+                            <button sec:authorize="!isAuthenticated()" type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" data-bs-toggle="modal" data-bs-target="#loginPromptModal">
+                                Chọn chuyến
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+
+<!-- Login Prompt Modal -->
+<div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+        <h5 class="modal-title" id="loginPromptModalLabel"><i class="fas fa-lock me-2"></i>Yêu cầu Đăng nhập</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-5">
+        <div class="mb-4">
+            <i class="fas fa-user-circle fa-4x text-muted"></i>
+        </div>
+        <h4 class="mb-3">Bạn chưa đăng nhập!</h4>
+        <p class="text-muted mb-4">Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục quá trình xem thông tin và mua vé bay trên SkyTravel.</p>
+        <div class="d-grid gap-3">
+            <a th:href="@{/login}" class="btn btn-primary rounded-pill py-3 fw-bold fs-5">Đăng nhập ngay</a>
+            <a th:href="@{/register}" class="btn btn-outline-primary rounded-pill py-3 fw-bold fs-5">Tạo tài khoản mới</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.airline-filter');
+        const flightCards = document.querySelectorAll('.flight-card');
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const checkedAirlines = Array.from(checkboxes)
+                                             .filter(i => i.checked)
+                                             .map(i => i.value);
+
+                flightCards.forEach(card => {
+                    const cardAirlineId = card.getAttribute('data-airline-id');
+                    if (checkedAirlines.includes(cardAirlineId)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>

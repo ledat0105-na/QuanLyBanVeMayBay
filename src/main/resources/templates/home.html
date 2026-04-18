@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<main>
+    <!-- Hero Start -->
+    <div class="container-fluid pb-5 hero-header bg-light mb-5">
+        <div class="container py-5">
+            <div class="row g-5 align-items-center mb-5">
+                <div class="col-lg-6">
+                    <h1 class="display-1 mb-4 animated slideInRight">Hệ Thống Đặt <span class="text-primary">Vé Máy Bay</span> SkyTravel</h1>
+                    <h5 class="d-inline-block border border-2 border-white py-3 px-5 mb-0 animated slideInRight">Nhanh Chóng - Tiết Kiệm - An Toàn</h5>
+                </div>
+                <div class="col-lg-6">
+                    <div class="owl-carousel header-carousel animated fadeIn">
+                        <th:block th:each="bn : ${banners}">
+                            <img th:if="${bn.position == 'HOME_CAROUSEL'}" class="img-fluid" th:src="@{${bn.imageUrl}}" th:alt="${bn.title}">
+                        </th:block>
+                        <th:block th:if="${#lists.isEmpty(banners.?[position == 'HOME_CAROUSEL'])}">
+                            <img class="img-fluid" th:src="@{/img/carousel-1.jpg}" alt="Default Banner 1">
+                            <img class="img-fluid" th:src="@{/img/carousel-2.jpg}" alt="Default Banner 2">
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flight Search Form -->
+            <div class="row g-5 pb-5" style="position: relative; z-index: 9999;">
+                <div class="col-12">
+                    <div class="card shadow-lg border-0 rounded-4 bg-white bg-opacity-75">
+                        <div class="card-body p-4 p-md-5">
+                            <form th:action="@{/flights/search}" method="get" id="flightSearchForm">
+                                <div class="mb-4 d-flex justify-content-center gap-4 flex-wrap">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tripType" id="oneWay" value="ONE_WAY" checked onchange="toggleReturn()">
+                                        <label class="form-check-label fw-bold fs-5 text-secondary" for="oneWay">Một chiều</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tripType" id="roundTrip" value="ROUND_TRIP" onchange="toggleReturn()">
+                                        <label class="form-check-label fw-bold fs-5 text-secondary" for="roundTrip">Khứ hồi</label>
+                                    </div>
+                                    <div class="border-end mx-2 d-none d-md-block"></div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flightScope" id="domScope" value="DOMESTIC" checked onchange="toggleScope()">
+                                        <label class="form-check-label fw-bold fs-5 text-secondary" for="domScope">Nội địa</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="flightScope" id="intlScope" value="INTERNATIONAL" onchange="toggleScope()">
+                                        <label class="form-check-label fw-bold fs-5 text-secondary" for="intlScope">Quốc tế</label>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-lg-3 col-md-6">
+                                        <label class="form-label fw-bold"><i class="fas fa-plane-departure text-primary me-2"></i>Điểm đi</label>
+                                        <div class="dropdown">
+                                            <div class="form-control border-primary d-flex align-items-center bg-white" data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px; cursor: pointer;">
+                                                <div class="flex-grow-1 overflow-hidden" style="white-space: nowrap;">
+                                                    <div class="fw-bold text-dark fs-6 lh-1" id="depLabel">Chọn điểm đi</div>
+                                                    <small class="text-muted d-block text-truncate mt-1" id="depSubLabel" style="font-size: 0.75rem;">Sân bay khởi hành</small>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="depId" id="depId" required>
+                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                                <li class="bg-light px-3 py-2 border-bottom sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Tìm kiếm gần đây</small></li>
+                                                <li th:each="ap, iterStat : ${domesticAirports}" th:if="${iterStat.index < 2}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('dep', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-history text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li class="bg-light px-3 py-2 border-bottom border-top sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Thành phố hoặc sân bay phổ biến</small></li>
+                                                <li th:each="ap : ${domesticAirports}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('dep', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-plane text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <div id="depIntlGroup" style="display:none;">
+                                                <li class="bg-light px-3 py-2 border-bottom border-top sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Sân bay Quốc tế</small></li>
+                                                <li th:each="ap : ${internationalAirports}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('dep', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-globe-asia text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <label class="form-label fw-bold"><i class="fas fa-plane-arrival text-primary me-2"></i>Điểm đến</label>
+                                        <div class="dropdown">
+                                            <div class="form-control border-primary d-flex align-items-center bg-white" data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px; cursor: pointer;">
+                                                <div class="flex-grow-1 overflow-hidden" style="white-space: nowrap;">
+                                                    <div class="fw-bold text-dark fs-6 lh-1" id="arrLabel">Chọn điểm đến</div>
+                                                    <small class="text-muted d-block text-truncate mt-1" id="arrSubLabel" style="font-size: 0.75rem;">Sân bay hạ cánh</small>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="arrId" id="arrId" required>
+                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                                <li class="bg-light px-3 py-2 border-bottom sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Tìm kiếm gần đây</small></li>
+                                                <li th:each="ap, iterStat : ${domesticAirports}" th:if="${iterStat.index < 2}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('arr', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-history text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li class="bg-light px-3 py-2 border-bottom border-top sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Thành phố hoặc sân bay phổ biến</small></li>
+                                                <li th:each="ap : ${domesticAirports}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('arr', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-plane text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <div id="arrIntlGroup" style="display:none;">
+                                                <li class="bg-light px-3 py-2 border-bottom border-top sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Sân bay Quốc tế</small></li>
+                                                <li th:each="ap : ${internationalAirports}">
+                                                    <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('arr', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
+                                                        <i class="fas fa-globe-asia text-secondary fs-5 me-3"></i>
+                                                        <div>
+                                                            <div class="fw-bold text-dark mb-0"><span th:text="${ap.name}"></span> <span class="text-muted ms-1" th:text="${ap.code}"></span></div>
+                                                            <small class="text-muted"><span th:text="${ap.city}"></span>, <span th:text="${ap.country}"></span></small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4">
+                                        <label class="form-label fw-bold"><i class="far fa-calendar-alt text-primary me-2"></i>Ngày đi</label>
+                                        <input type="date" name="depDate" class="form-control border-primary" style="height: 50px;" required>
+                                    </div>
+                                    <div class="col-lg-2 col-md-4" id="returnDateCol" style="display: none;">
+                                        <label class="form-label fw-bold"><i class="far fa-calendar-check text-primary me-2"></i>Ngày về</label>
+                                        <input type="date" name="retDate" id="retDate" class="form-control border-primary" style="height: 50px;">
+                                    </div>
+                                    <div class="col-lg-2 col-md-4" id="passengersCol">
+                                        <label class="form-label fw-bold"><i class="fas fa-users text-primary me-2"></i>Số hành khách</label>
+                                        <input type="number" name="passengers" class="form-control border-primary" value="1" min="1" max="10" style="height: 50px;" required>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-12 text-center">
+                                        <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill shadow-sm fs-5 fw-bold">
+                                            <i class="fas fa-search me-2"></i> Tìm Chuyến Bay
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <script>
+                                function toggleReturn() {
+                                    const isRoundTrip = document.getElementById('roundTrip').checked;
+                                    const returnDateCol = document.getElementById('returnDateCol');
+                                    const retDateInput = document.getElementById('retDate');
+                                    
+                                    if (isRoundTrip) {
+                                        returnDateCol.style.display = 'block';
+                                        retDateInput.setAttribute('required', 'required');
+                                    } else {
+                                        returnDateCol.style.display = 'none';
+                                        retDateInput.removeAttribute('required');
+                                        retDateInput.value = '';
+                                    }
+                                }
+
+                                function toggleScope() {
+                                    const isIntl = document.getElementById('intlScope').checked;
+                                    const depIntl = document.getElementById('depIntlGroup');
+                                    const arrIntl = document.getElementById('arrIntlGroup');
+                                    
+                                    if (isIntl) {
+                                        depIntl.style.display = 'block';
+                                        arrIntl.style.display = 'block';
+                                    } else {
+                                        depIntl.style.display = 'none';
+                                        arrIntl.style.display = 'none';
+                                    }
+                                    
+                                    document.getElementById('depId').value = '';
+                                    document.getElementById('depLabel').innerText = 'Chọn điểm đi';
+                                    document.getElementById('depSubLabel').innerText = 'Sân bay khởi hành';
+
+                                    document.getElementById('arrId').value = '';
+                                    document.getElementById('arrLabel').innerText = 'Chọn điểm đến';
+                                    document.getElementById('arrSubLabel').innerText = 'Sân bay hạ cánh';
+                                }
+
+                                function selectAirport(type, id, label, subLabel) {
+                                    document.getElementById(type + 'Id').value = id;
+                                    document.getElementById(type + 'Label').innerText = label;
+                                    document.getElementById(type + 'SubLabel').innerText = subLabel;
+                                }
+
+                                document.getElementById('flightSearchForm').addEventListener('submit', function(e) {
+                                    const depId = document.getElementById('depId').value;
+                                    const arrId = document.getElementById('arrId').value;
+                                    if (depId && arrId && depId === arrId) {
+                                        e.preventDefault();
+                                        alert('Điểm đi và điểm đến không được trùng nhau. Vui lòng chọn lại sân bay!');
+                                    }
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-5" style="position: relative; z-index: 1;">
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 btn-square border border-2 border-white me-3">
+                            <i class="fa fa-plane text-primary"></i>
+                        </div>
+                        <h5 class="lh-base mb-0">Chuyến Bay Đa Dạng</h5>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 btn-square border border-2 border-white me-3">
+                            <i class="fa fa-ticket-alt text-primary"></i>
+                        </div>
+                        <h5 class="lh-base mb-0">Giá Rẻ Bất Ngờ</h5>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 btn-square border border-2 border-white me-3">
+                            <i class="fa fa-headset text-primary"></i>
+                        </div>
+                        <h5 class="lh-base mb-0">Hỗ Trợ 24/7</h5>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 btn-square border border-2 border-white me-3">
+                            <i class="fa fa-user-shield text-primary"></i>
+                        </div>
+                        <h5 class="lh-base mb-0">An Toàn Tuyệt Đối</h5>
+                    </div>
+                </div>
+            </div>
+            <!-- Banners Gallery -->
+            <div th:if="${not #lists.isEmpty(banners)}" class="container-fluid py-5 mt-5">
+                <div class="row g-4">
+                    <div class="col-12 text-center mb-4">
+                        <h2 class="display-3 fw-bold text-primary mb-3">Khám Phá Điểm Đến</h2>
+                        <h5 class="text-muted">Các ưu đãi bay nổi bật và điểm đến hấp dẫn đang chờ bạn</h5>
+                    </div>
+                </div>
+                <div class="row g-4 justify-content-center px-lg-5">
+                    <th:block th:each="bn : ${banners}">
+                        <div th:if="${bn.position != 'HOME_CAROUSEL'}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card">
+                            <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 380px;">
+                                <img class="img-fluid w-100 h-100 border-0" style="object-fit: cover; transition: transform 0.5s ease;" 
+                                     th:src="@{${bn.imageUrl}}" alt="Destination" onerror="this.onerror=null; this.src='/img/carousel-1.jpg';">
+                                <div class="position-absolute bottom-0 start-0 w-100 p-4" 
+                                     style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
+                                    <h3 class="text-white fw-bold mb-2 shadow-text" th:text="${bn.title}"></h3>
+                                    <h5 class="text-warning mb-0" th:text="${bn.subtitle}"></h5>
+                                </div>
+                                <!-- Hover overlay effect -->
+                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center btn-overlay">
+                                    <a href="#" onclick="document.querySelector('input[type=date]').focus()" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-lg fs-5 text-primary">Đặt Ngay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+                <style>
+                    .flight-banner-card:hover img { transform: scale(1.1); }
+                    .flight-banner-card .btn-overlay { background-color: rgba(13, 107, 104, 0.6); opacity: 0; transition: opacity 0.3s; }
+                    .flight-banner-card:hover .btn-overlay { opacity: 1; }
+                    .shadow-text { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+                </style>
+            </div>
+            <!-- Gallery End -->
+        </div>
+    </div>
+    <!-- Hero End -->
+
+    <!-- About Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-6">
+                    <div class="row">
+                        <div class="col-6 wow fadeIn" data-wow-delay="0.1s">
+                            <div class="position-relative h-100">
+                                <th:block th:if="${isHomeAbout1Video}">
+                                    <iframe id="img-HOME_ABOUT_1" class="w-100 rounded-3 shadow-sm" style="height: 100%; min-height: 400px;" th:src="${homeAbout1}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    <div th:if="${isEditorMode}" class="editable-img position-absolute top-0 start-0 w-100 h-100 rounded-3" style="cursor: pointer; z-index: 10;" onclick="openEditor('HOME_ABOUT_1')"></div>
+                                </th:block>
+                                <th:block th:unless="${isHomeAbout1Video}">
+                                    <img id="img-HOME_ABOUT_1" class="img-fluid w-100 rounded-3 shadow-sm" th:classappend="${isEditorMode} ? 'editable-img' : ''" style="object-fit: cover; height: 100%; min-height: 400px; cursor: pointer" th:src="${homeAbout1}" alt=""
+                                         th:onclick="${isEditorMode} ? 'openEditor(\'HOME_ABOUT_1\')' : ''">
+                                </th:block>
+                            </div>
+                        </div>
+                        <div class="col-6 wow fadeIn" data-wow-delay="0.3s">
+                            <div class="position-relative" style="height: 75%; min-height: 300px;">
+                                <th:block th:if="${isHomeAbout2Video}">
+                                    <iframe id="img-HOME_ABOUT_2" class="w-100 h-100 rounded-top-3 shadow-sm" th:src="${homeAbout2}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    <div th:if="${isEditorMode}" class="editable-img position-absolute top-0 start-0 w-100 h-100 rounded-top-3" style="cursor: pointer; z-index: 10;" onclick="openEditor('HOME_ABOUT_2')"></div>
+                                </th:block>
+                                <th:block th:unless="${isHomeAbout2Video}">
+                                    <img id="img-HOME_ABOUT_2" class="img-fluid w-100 h-100 rounded-top-3 shadow-sm" th:classappend="${isEditorMode} ? 'editable-img' : ''" style="object-fit: cover; cursor: pointer" th:src="${homeAbout2}" alt=""
+                                         th:onclick="${isEditorMode} ? 'openEditor(\'HOME_ABOUT_2\')' : ''">
+                                </th:block>
+                            </div>
+                            <div class="h-25 d-flex align-items-center text-center bg-primary px-3 rounded-bottom-3 shadow-sm pt-3">
+                                <h4 class="text-white lh-base mb-0 w-100 fs-5 pb-3">Hơn 1 Triệu Khách Hàng Tin Tưởng</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
+                    <h1 class="mb-5"><span class="text-uppercase text-primary bg-light px-2">Lịch Sử</span> Hình Thành</h1>
+                    <p class="mb-4">Chúng tôi bắt đầu với sứ mệnh giúp mọi người dễ dàng tiếp cận với phương tiện di chuyển hiện đại, an toàn. Hiện thực hóa giấc mơ bay cho hàng triệu người.</p>
+                    <p class="mb-5">Cung cấp giải pháp công nghệ tìm kiếm và so sánh giá vé nhanh gọn, minh bạch, mang lại trải nghiệm tối ưu cho người dùng.</p>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Dịch vụ số 1</h6>
+                            <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Đội ngũ chuyên nghiệp</h6>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="mb-3"><i class="fa fa-check text-primary me-2"></i>Hỗ trợ tận tình</h6>
+                            <h6 class="mb-0"><i class="fa fa-check text-primary me-2"></i>Giá hợp lý</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About End -->
+
+    <!-- Service Start -->
+    <div class="container-xxl py-5 mt-5">
+        <div class="container">
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <p class="d-inline-block border rounded-pill py-1 px-4 text-primary fw-bold">Dịch vụ Bay</p>
+                <h2 class="display-5 fw-bold mt-2">Đẳng Cấp Trên Từng Chuyến Bay</h2>
+            </div>
+            <div class="row g-4">
+                <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="service-item bg-white rounded-4 h-100 p-5 shadow-sm border hover-shadow" style="transition: all 0.3s ease;">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-4" style="width: 80px; height: 80px;">
+                            <i class="text-primary fs-2" th:class="${svc.iconClass}"></i>
+                        </div>
+                        <h4 class="mb-3 fw-bold" th:text="${svc.title}"></h4>
+                        <p class="mb-4 text-muted" th:text="${svc.description}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .hover-shadow:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
+    </style>
+    <!-- Service End -->
+
+    <!-- Team Start -->
+    <div class="container-xxl py-5 mt-5 bg-white">
+        <div class="container">
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <h1 class="display-5 fw-bold text-primary mb-3">Đội Ngũ Nhân Sự</h1>
+                <p class="text-muted">Gặp gỡ những phi công và chuyên gia hàng không tận tâm, mang lại sự an toàn tuyệt đối cho chuyến bay của bạn.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s" th:each="m : ${teamMembers}">
+                    <div class="team-item text-center rounded-4 overflow-hidden shadow-sm border h-100 p-4">
+                        <div class="overflow-hidden bg-light rounded-circle shadow-sm mx-auto mb-4" style="width: 150px; height: 150px;">
+                            <img class="img-fluid w-100 h-100" style="object-fit: cover;" th:src="@{${m.imageUrl}}" alt="">
+                        </div>
+                        <div class="team-text">
+                            <h4 class="fw-bold mb-1" th:text="${m.name}"></h4>
+                            <p class="text-primary mb-3" th:text="${m.role}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Team End -->
+</main>
+
+<th:block th:if="${isEditorMode}">
+    <!-- Visual Editor Floating Toolbar -->
+    <div class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-lg d-flex justify-content-between align-items-center" style="z-index: 9999;">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary px-3 py-1 rounded me-3 fw-bold"><i class="fa fa-paint-brush me-2"></i> CHẾ ĐỘ THIẾT KẾ TRỰC QUAN</div>
+            <p class="mb-0 text-light">Bạn có thể bấm trực tiếp vào các bức ảnh (Lịch Sử Hình Thành) để thay thế.</p>
+        </div>
+        <div>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-light me-2"><i class="fa fa-times"></i> Hủy & Thoát</a>
+        </div>
+    </div>
+
+    <!-- Visual Editor Modal Overlay (Hidden by Default) -->
+    <div id="visualEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fa fa-image me-2"></i>Thay Đổi Hình Ảnh</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeEditor()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editingPosition">
+                    
+                    <div class="mb-4 text-center">
+                        <label class="btn btn-outline-primary btn-lg w-100 fw-bold border-2" style="border-style: dashed;">
+                            <i class="fa fa-cloud-upload-alt me-2 fs-4"></i>Tải Ảnh Lên (Upload)
+                            <input type="file" id="uploadInput" accept="image/*" class="d-none" onchange="handleFileUpload(this)">
+                        </label>
+                        <div id="uploadStatus" class="mt-2 text-success" style="display: none;"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>
+                    </div>
+                    
+                    <div class="position-relative text-center mb-4">
+                        <hr><span class="position-absolute top-50 start-50 translate-middle bg-light px-3 text-muted">HOẶC DÁN LINK</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Đường dẫn ảnh (URL)</label>
+                        <input type="text" id="imageUrlInput" class="form-control" placeholder="https://example.com/image.jpg">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeEditor()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="applyAndSave()">Xác Nhận & Lưu Trên Web</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .editable-img {
+            transition: all 0.3s;
+            position: relative;
+        }
+        .editable-img:hover {
+            box-shadow: 0 0 0 5px #0d6efd !important;
+            filter: brightness(0.8);
+        }
+        .editable-img::after {
+            content: "\f304"; /* FontAwesome pencil */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3rem;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        .editable-img:hover::after {
+            opacity: 1;
+        }
+        body { padding-bottom: 80px; } /* Space for toolbar */
+    </style>
+
+    <script>
+        function openEditor(position) {
+            document.getElementById('editingPosition').value = position;
+            document.getElementById('imageUrlInput').value = document.getElementById('img-' + position).src;
+            document.getElementById('visualEditorModal').style.display = 'block';
+        }
+
+        function closeEditor() {
+            document.getElementById('visualEditorModal').style.display = 'none';
+            document.getElementById('uploadStatus').style.display = 'none';
+        }
+
+        function handleFileUpload(input) {
+            if (!input.files || input.files.length === 0) return;
+            let file = input.files[0];
+            let formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('uploadStatus').style.display = 'block';
+            
+            fetch('/admin/visual-editor/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('uploadStatus').style.display = 'none';
+                if(data.success) {
+                    document.getElementById('imageUrlInput').value = data.url;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(err => {
+                document.getElementById('uploadStatus').style.display = 'none';
+                alert('Lỗi tải file lên mạng.');
+            });
+        }
+
+        function applyAndSave() {
+            let position = document.getElementById('editingPosition').value;
+            let newUrl = document.getElementById('imageUrlInput').value;
+            
+            if(!newUrl) return alert("Vui lòng nhập link ảnh!");
+
+            // Update preview instantly
+            document.getElementById('img-' + position).src = newUrl;
+            
+            // Send to server to save immediately for single click experience
+            let formData = new FormData();
+            formData.append('position', position);
+            formData.append('imageUrl', newUrl);
+            
+            fetch('/admin/visual-editor/save', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    closeEditor();
+                    let btn = document.querySelector('button[onclick="applyAndSave()"]');
+                    let oldHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa fa-check"></i> Đã Lưu Trang!';
+                    setTimeout(() => { 
+                        btn.innerHTML = oldHtml; 
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Không lưu được cấu hình: ' + data.message);
+                }
+            });
+        }
+    </script>
+</th:block>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Hãng Bay</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý hãng bay</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAirlineModal">
+            <i class="fas fa-plus"></i> Thêm Hãng Bay
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên hãng</th>
+                        <th>Mã hãng</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${airlines}">
+                        <td th:text="${a.id}"></td>
+                        <td class="fw-bold text-primary" th:text="${a.name}"></td>
+                        <td th:text="${a.code}"></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary" 
+                                    data-bs-toggle="modal" 
+                                    th:data-bs-target="'#editAirlineModal' + ${a.id}" title="Sửa">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+                            <form th:action="@{/admin/airlines/delete/{id}(id=${a.id})}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hãng bay này?');">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" title="Xóa">
+                                    <i class="fas fa-trash fa-lg"></i>
+                                </button>
+                            </form>
+
+                            <!-- Modal Edit Airline -->
+                            <div class="modal fade" th:id="'editAirlineModal' + ${a.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/airlines/save}" method="post">
+                                            <input type="hidden" name="id" th:value="${a.id}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Sửa thông tin hãng bay</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tên hãng</label>
+                                                    <input type="text" name="name" class="form-control" th:value="${a.name}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Mã hãng</label>
+                                                    <input type="text" name="code" class="form-control" th:value="${a.code}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create Airline -->
+<div class="modal fade" id="createAirlineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/airlines/save}" th:object="${airline}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm Hãng Bay</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tên hãng</label>
+                        <input type="text" class="form-control" th:field="*{name}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mã hãng (Viết tắt)</label>
+                        <input type="text" class="form-control" th:field="*{code}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

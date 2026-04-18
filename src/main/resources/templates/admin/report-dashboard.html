@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Thống Kê</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2>Báo cáo Thống kê</h2>
+        <p class="text-muted">Tổng quan doanh thu và hoạt động hệ thống.</p>
+    </div>
+
+    <!-- Stats row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <h5 class="text-muted mb-1">Tổng Doanh Thu</h5>
+                    <h3 class="fw-bold text-primary" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <h5 class="text-muted mb-1">Tổng Lượt Đặt (Booking)</h5>
+                    <h3 class="fw-bold text-success" th:text="${totalBookings}"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <h5 class="text-muted mb-1">Tổng Khách Hàng</h5>
+                    <h3 class="fw-bold text-info" th:text="${totalUsers}"></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table row -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Top 5 Chuyến Bay Phổ Biến</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Chuyến bay</th>
+                                <th>Hãng bay</th>
+                                <th>Hành trình</th>
+                                <th>Số lượt đặt</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${popularFlights}">
+                                <td class="fw-bold text-primary" th:text="${row[0].flightNumber}"></td>
+                                <td th:text="${row[0].airline != null ? row[0].airline.name : ''}"></td>
+                                <td>
+                                    <span th:text="${row[0].departureAirport != null ? row[0].departureAirport.code : ''}"></span>
+                                    <i class="fas fa-arrow-right mx-1 text-muted"></i>
+                                    <span th:text="${row[0].arrivalAirport != null ? row[0].arrivalAirport.code : ''}"></span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success" th:text="${row[1]}"></span> lượt
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(popularFlights)}">
+                                <td colspan="4" class="text-center p-3">Chưa có dữ liệu chuyến bay nào được đặt.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info column could be added here in the future -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Thông tin tóm tắt</h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-pie fa-4x text-muted mb-3 opacity-50"></i>
+                    <p class="text-muted">Biểu đồ đang được cập nhật...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

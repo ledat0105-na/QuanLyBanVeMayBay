@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Hình Ảnh</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Quản Lý Hình Ảnh (Gallery)</h2>
+            <p class="text-muted">Upload ảnh khuyến mãi các chuyến bay để hiển thị ra trang chủ.</p>
+        </div>
+        <div>
+            <a th:href="@{/}" target="_blank" class="btn btn-outline-info me-2">
+                <i class="fas fa-external-link-alt me-2"></i>Xem Trước Giao Diện
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bannerModal" onclick="resetForm()">
+                <i class="fas fa-plus me-2"></i>Thêm Ảnh Mới
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Hình ảnh</th>
+                        <th>Tiêu đề chính</th>
+                        <th>Mô tả phụ (Subtitle)</th>
+                        <th>Vị trí</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="bn : ${banners}">
+                        <td class="ps-4">
+                            <img th:src="@{${bn.imageUrl}}" alt="Banner" class="rounded shadow-sm" style="width: 120px; height: 80px; object-fit: cover;">
+                        </td>
+                        <td class="fw-bold" th:text="${bn.title}"></td>
+                        <td th:text="${bn.subtitle}"></td>
+                        <td>
+                            <strong class="text-primary" th:if="${bn.position == 'HOME_CAROUSEL'}">Trang Chủ (Slider)</strong>
+                            <strong class="text-info" th:if="${bn.position == 'MY_BOOKINGS_HERO'}">Vé Của Tôi (Ảnh bìa)</strong>
+                            <strong class="text-success" th:if="${bn.position == 'PROFILE_HERO'}">Thông Tin Cá Nhân (Ảnh bìa)</strong>
+                            <strong class="text-secondary" th:if="${bn.position == 'DEFAULT_HERO'}">Mặc Định (Ảnh bìa)</strong>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${bn.isActive == true} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${bn.isActive == true} ? 'Đang bật' : 'Đang tắt'"></span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm border-0 bg-transparent text-secondary me-2" th:onclick="editBanner([[${bn.id}]], [[${bn.title}]], [[${bn.subtitle}]], [[${bn.position}]], [[${bn.isActive == null ? false : bn.isActive}]], [[${bn.imageUrl}]])" title="Sửa">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+                            <form th:action="@{/admin/banners/delete/{id}(id=${bn.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh này?')" title="Xóa">
+                                    <i class="fas fa-trash fa-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banner Modal -->
+<div class="modal fade" id="bannerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm / Sửa Hình Ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/admin/banners/save}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="bannerId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề (Ví dụ: Mùa Hè Rực Rỡ)</label>
+                        <input type="text" name="title" id="bannerTitle" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả phụ (Ví dụ: Chỉ từ 990k)</label>
+                        <input type="text" name="subtitle" id="bannerSubtitle" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Vị trí hiển thị</label>
+                        <select name="position" id="bannerPosition" class="form-select" required>
+                            <option value="HOME_CAROUSEL">Trang Chủ (Slider)</option>
+                            <option value="MY_BOOKINGS_HERO">Vé Của Tôi (Ảnh bìa)</option>
+                            <option value="PROFILE_HERO">Thông Tin Cá Nhân (Ảnh bìa)</option>
+                            <option value="DEFAULT_HERO">Mặc Định Khác (Ảnh bìa)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-primary">Dùng Link Ảnh (Khuyên dùng)</label>
+                        <input type="text" name="imageUrlStr" id="imageUrlStr" class="form-control" placeholder="https://example.com/anh.jpg">
+                        <small class="text-muted">Nhập đường link ảnh trực tiếp từ Google Drive, Imgur, Facebook...</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">HOẶC Upload bằng Tệp (Từ Máy Tính)</label>
+                        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/png, image/jpeg, image/jpg">
+                        <small class="text-muted">Hệ thống sẽ ưu tiên NGUỒN LINK ẢNH ở trên nếu bạn nhập cả hai.</small>
+                    </div>
+
+                    <div class="mb-3 form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" name="isActive" id="bannerIsActive" checked value="true">
+                        <label class="form-check-label" for="bannerIsActive">Hiển thị ngoài trang chủ</label>
+                        <input type="hidden" name="isActive" value="false"> <!-- Fallback for unchecked Checkbox -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu hình ảnh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ 
+
+<script>
+    function resetForm() {
+        document.getElementById('bannerId').value = '';
+        document.getElementById('bannerTitle').value = '';
+        document.getElementById('bannerSubtitle').value = '';
+        document.getElementById('bannerPosition').value = 'HOME_CAROUSEL';
+        document.getElementById('bannerIsActive').checked = true;
+        document.getElementById('imageUrlStr').value = '';
+    }
+
+    function editBanner(id, title, subtitle, position, isActive, imageUrl) {
+        document.getElementById('bannerId').value = id;
+        document.getElementById('bannerTitle').value = title;
+        document.getElementById('bannerSubtitle').value = subtitle;
+        document.getElementById('bannerPosition').value = position ? position : 'HOME_CAROUSEL';
+        document.getElementById('bannerIsActive').checked = isActive === true;
+        document.getElementById('imageUrlStr').value = imageUrl ? imageUrl : '';
+        document.getElementById('modalTitle').innerText = 'Cập nhật Hình Ảnh';
+
+        var myModal = new bootstrap.Modal(document.getElementById('bannerModal'));
+        myModal.show();
+    }
+</script>
+</div>
+</body>
+</html>

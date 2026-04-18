@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Người Dùng</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý người dùng</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStaffModal">
+            <i class="fas fa-plus"></i> Tạo tài khoản Staff
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}" th:if="${user.role.roleName != 'ADMIN'}">
+                        <td th:text="${user.id}"></td>
+                        <td th:text="${user.username}"></td>
+                        <td th:text="${user.fullName}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td>
+                            <span class="fw-bold" 
+                                  th:classappend="${user.role.roleName == 'ADMIN' ? 'text-danger' : (user.role.roleName == 'STAFF' ? 'text-primary' : 'text-secondary')}"
+                                  th:text="${user.role.roleName}"></span>
+                        </td>
+                        <td>
+                            <span class="fw-bold" 
+                                  th:classappend="${user.isLocked != null && user.isLocked ? 'text-warning' : 'text-success'}"
+                                  th:text="${user.isLocked != null && user.isLocked ? 'Đã khóa' : 'Hoạt động'}"></span>
+                        </td>
+                        <td class="text-center">
+                            <form th:action="@{/admin/users/{id}/toggle-lock(id=${user.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" th:title="${user.isLocked != null && user.isLocked ? 'Mở khóa' : 'Khóa'}">
+                                    <i class="fas fa-lg" th:classappend="${user.isLocked != null && user.isLocked ? 'fa-unlock' : 'fa-lock'}"></i>
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary ms-2" 
+                                    data-bs-toggle="modal" 
+                                    th:data-bs-target="'#resetPasswordModal' + ${user.id}" title="Đặt lại MK">
+                                <i class="fas fa-key fa-lg"></i>
+                            </button>
+
+                            <!-- Modal Reset Password per user -->
+                            <div class="modal fade" th:id="'resetPasswordModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/users/{id}/reset-password(id=${user.id})}" method="post">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Đặt lại mật khẩu - <span th:text="${user.username}"></span></h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Mật khẩu mới</label>
+                                                    <input type="password" name="newPassword" class="form-control" required minlength="6">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary">Xác nhận</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create Staff -->
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-labelledby="createStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/users/create-staff}" th:object="${createStaffRequest}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createStaffModalLabel">Tạo tài khoản Staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tên đăng nhập</label>
+                        <input type="text" class="form-control" th:field="*{username}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu</label>
+                        <input type="password" class="form-control" th:field="*{password}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên</label>
+                        <input type="text" class="form-control" th:field="*{fullName}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" th:field="*{email}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" th:field="*{phone}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

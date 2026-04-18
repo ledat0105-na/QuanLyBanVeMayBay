@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Stepper Navigation -->
+<style>
+    .stepper-glow {
+        background-color: #127a7b !important;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(18, 122, 123, 0.6);
+        border: none !important;
+    }
+    .stepper-text-glow {
+        color: #127a7b !important;
+    }
+    .stepper-inactive {
+        background-color: #e2e8e8 !important;
+        color: #798787 !important;
+        border: none !important;
+    }
+    .stepper-text-inactive {
+        color: #798787 !important;
+    }
+    .stepper-line-container {
+        position: absolute;
+        top: 20px;
+        left: 16.666%;
+        width: 66.666%;
+        height: 3px;
+        background-color: #e2e8e8;
+        z-index: 0;
+    }
+    .stepper-line-progress {
+        height: 100%;
+        background-color: #127a7b;
+        transition: width 0.3s ease;
+    }
+    .stepper-circle {
+        position: relative;
+        z-index: 1;
+        width: 40px; 
+        height: 40px; 
+        line-height: 40px;
+        display: inline-block;
+        border-radius: 50%;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+</style>
+<div class="container-fluid bg-white py-3 mb-4 shadow-sm border-bottom">
+    <div class="container">
+        <div class="row text-center position-relative">
+            <div class="stepper-line-container">
+                <div class="stepper-line-progress" style="width: 100%;"></div>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-glow"><i class="fas fa-check"></i></span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-glow">Hành khách</p>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-glow"><i class="fas fa-check"></i></span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-glow">Dịch vụ & Chọn vé</p>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-glow">3</span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-glow">Thanh toán</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-5 bg-primary text-white p-5 d-flex flex-column justify-content-center align-items-center text-center">
+                        <i class="fas fa-qrcode fa-5x mb-4"></i>
+                        <h4 class="fw-bold mb-3">Thanh Toán Chuyển Khoản</h4>
+                        <p class="mb-4 text-white-50">Hướng dẫn thanh toán trực tiếp từ ứng dụng ngân hàng của bạn vào tài khoản đại lý.</p>
+                        
+                        <div class="bg-white text-dark p-3 rounded-3 mb-3 w-100 shadow-sm">
+                            <small class="text-muted d-block">Ngân hàng</small>
+                            <h5 class="fw-bold mb-2">Vietcombank</h5>
+                            <small class="text-muted d-block">Số tài khoản</small>
+                            <h5 class="fw-bold mb-2 text-primary">0123456789</h5>
+                            <small class="text-muted d-block">Chủ tài khoản</small>
+                            <h6 class="fw-bold mb-0 uppercase">CONG TY VE MAY BAY</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-7 p-5">
+                        <h4 class="fw-bold mb-4" style="color: #212529 !important;">Chi tiết Booking</h4>
+                        
+                        <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                            <span style="color: #6c757d !important;">Mã Đặt Chỗ (Booking Code)</span>
+                            <span class="fw-bold bg-primary bg-opacity-10 px-2 rounded" style="color: #127a7b !important; font-size: 1.25rem;" th:text="${booking.bookingCode}"></span>
+                        </div>
+                        
+                        <div class="mb-3 d-flex justify-content-between border-bottom pb-2 align-items-center">
+                            <span style="color: #6c757d !important;">Trạng thái</span>
+                            <span class="badge bg-warning px-3 py-2 rounded-pill shadow-sm" style="color: #212529 !important;"><i class="fas fa-clock me-1"></i> Chờ thanh toán</span>
+                        </div>
+                        
+                        <div class="mb-5 d-flex flex-column bg-success bg-opacity-10 p-4 rounded-4 mt-4 text-center">
+                            <span class="fw-bold fs-6 mb-2" style="color: #198754 !important;">Số tiền cần thanh toán</span>
+                            <h2 class="fw-bold mb-0" style="color: #198754 !important;" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></h2>
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-3 mb-4 shadow-sm border-start border-4 border-info">
+                            <span style="color: #055160 !important;"><i class="fas fa-info-circle me-2"></i> <strong>Nội dung chuyển khoản bắt buộc:</strong></span> <br>
+                            <strong class="fs-4 mt-2 d-block text-center" style="color: #127a7b !important;" th:text="'THANHTOAN ' + ${booking.bookingCode}"></strong>
+                        </div>
+
+                        <form th:action="@{/booking/confirmPayment}" method="post">
+                            <input type="hidden" name="bookingId" th:value="${booking.id}">
+                            <input type="hidden" name="paymentMethod" value="BANK_TRANSFER">
+                            
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5 shadow-sm btn-lg">
+                                <i class="fas fa-check-circle me-2"></i> Tôi đã chuyển khoản xong
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>
