@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác nhận đặt vé</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+    <div style="background-color: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; border-top: 5px solid #0d6efd;">
+        <h2 style="color: #0d6efd;">Cảm ơn bạn đã đặt vé cùng SkyTravel!</h2>
+        <p>Xin chào <span th:text="${booking.user != null && booking.user.fullName != null ? booking.user.fullName : 'Quý khách'}"></span>,</p>
+        <p>Chúng tôi đã nhận được thanh toán và tiến hành đặt chỗ cho bạn thành công. Dưới đây là thông tin chi tiết của chuyến bay:</p>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #dee2e6;">
+            <p style="margin-bottom: 8px;"><strong>Mã Đặt Chỗ:</strong> <span style="color: #0d6efd; font-size: 1.2em; font-weight: bold;" th:text="${booking.bookingCode}"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Hành trình:</strong> 
+                <span th:text="${booking.flight.departureAirport.code + ' (' + booking.flight.departureAirport.name + ')'}"></span> 
+                ✈️ 
+                <span th:text="${booking.flight.arrivalAirport.code + ' (' + booking.flight.arrivalAirport.name + ')'}"></span>
+            </p>
+            <p style="margin-bottom: 8px;"><strong>Ngày giờ khởi hành:</strong> <span th:text="${#temporals.format(booking.flight.departureTime, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Chuyến bay:</strong> <span th:text="${booking.flight.airline.name} + ' - ' + ${booking.flight.flightNumber}"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Tổng số hành khách:</strong> <span th:text="${#lists.size(booking.passengers)}"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Tổng tiền:</strong> <span style="font-weight: bold; color: #198754; font-size: 1.1em;" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span></p>
+        </div>
+
+        <p>Bạn có thể theo dõi và quản lý chuyến đi của mình trong mục <strong style="color: #0d6efd;">Vé Của Tôi</strong> trên website.</p>
+        <p>Chúc bạn có chuyến bay vui vẻ, an toàn cùng SkyTravel!</p>
+        <br>
+        <p style="color: #6c757d; font-size: 0.9em;">Trân trọng,<br>Đội ngũ khách hàng SkyTravel</p>
+    </div>
+</body>
+</html>

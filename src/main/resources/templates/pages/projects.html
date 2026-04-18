@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5 mb-5" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1517400508447-f8dd518b86db?q=80&w=2070&auto=format&fit=crop'); background-position: center;">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white fw-bold mb-3 animated slideInDown">Điểm Đến Đặc Trưng</h1>
+        <nav aria-label="breadcrumb animated slideInDown">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a class="text-white" href="/">Trang Chủ</a></li>
+                <li class="breadcrumb-item text-primary active" aria-current="page">Thư Viện Ảnh</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- Page Header End -->
+
+<!-- Banners Gallery (Reuse Home Gallery Style) -->
+<div class="container-fluid py-5">
+    <div class="row g-4 justify-content-center px-lg-5">
+        <div th:each="bn : ${banners}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card">
+            <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 380px;">
+                <img class="img-fluid w-100 h-100" style="object-fit: cover; transition: transform 0.5s ease;" 
+                     th:src="@{${bn.imageUrl}}" alt="Destination">
+                <div class="position-absolute bottom-0 start-0 w-100 p-4" 
+                     style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
+                    <h3 class="text-white fw-bold mb-2 shadow-text" th:text="${bn.title}"></h3>
+                    <h5 class="text-warning mb-0" th:text="${bn.subtitle}"></h5>
+                </div>
+                <!-- Hover overlay -->
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-50 opacity-0 btn-overlay" style="transition: opacity 0.3s;">
+                    <a href="/" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-lg fs-5 text-primary">Tìm chuyến bay ngay</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(banners)}" class="col-12 text-center text-muted">
+            <p>Nội dung đang được cập nhật.</p>
+        </div>
+    </div>
+    <style>
+        .flight-banner-card:hover img { transform: scale(1.1); }
+        .flight-banner-card:hover .btn-overlay { opacity: 1 !important; }
+        .shadow-text { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    </style>
+</div>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>

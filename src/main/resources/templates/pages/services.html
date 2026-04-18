@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5 mb-5" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1540339832862-4745aaadfc34?q=80&w=2070&auto=format&fit=crop'); background-position: center;">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white fw-bold mb-3 animated slideInDown">Dịch Vụ Của Chúng Tôi</h1>
+        <nav aria-label="breadcrumb animated slideInDown">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a class="text-white" href="/">Trang Chủ</a></li>
+                <li class="breadcrumb-item text-primary active" aria-current="page">Dịch Vụ</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- Page Header End -->
+
+<!-- Service Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <p class="d-inline-block border rounded-pill py-1 px-4 text-primary fw-bold">Dịch vụ Bay</p>
+            <h2 class="display-5 fw-bold mt-2">Đẳng Cấp Trên Từng Chuyến Bay</h2>
+        </div>
+        <div class="row g-4">
+            <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="service-item bg-white rounded-4 h-100 p-5 shadow-sm border hover-shadow" style="transition: all 0.3s ease;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-4" style="width: 80px; height: 80px;">
+                        <i class="text-primary fs-2" th:class="${svc.iconClass}"></i>
+                    </div>
+                    <h4 class="mb-3 fw-bold" th:text="${svc.title}"></h4>
+                    <p class="mb-4 text-muted" th:text="${svc.description}"></p>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(services)}" class="col-12 text-center text-muted">
+                <p>Nội dung đang được cập nhật. Vui lòng quay lại sau.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Service End -->
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+</style>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>

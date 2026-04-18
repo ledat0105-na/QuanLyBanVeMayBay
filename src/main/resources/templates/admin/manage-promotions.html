@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Khuyến Mãi</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý mã khuyến mãi</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPromotionModal">
+            <i class="fas fa-plus"></i> Tạo Mã Mới
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Mã Code</th>
+                        <th>Khuyến mãi (%)</th>
+                        <th>Hiệu lực (Từ - Đến)</th>
+                        <th>Giới hạn lượt dùng</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${promotions}">
+                        <td th:text="${p.id}"></td>
+                        <td class="fw-bold text-success" th:text="${p.code}"></td>
+                        <td th:text="${p.discountPercent + '%'}"></td>
+                        <td>
+                            <span th:text="${#temporals.format(p.startDate, 'dd/MM/yyyy')}"></span>
+                            <i class="fas fa-arrow-right mx-1 text-muted"></i>
+                            <span th:text="${#temporals.format(p.endDate, 'dd/MM/yyyy')}"></span>
+                        </td>
+                        <td th:text="${p.usageLimit == 0 ? 'Không giới hạn' : p.usageLimit + ' lượt'}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${p.isActive == true ? 'bg-success' : 'bg-secondary'}"
+                                  th:text="${p.isActive == true ? 'Đang bật' : 'Đã tắt'}"></span>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary mb-1" 
+                                    data-bs-toggle="modal" 
+                                    th:data-bs-target="'#editPromotionModal' + ${p.id}" title="Sửa">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+                            <form th:action="@{/admin/promotions/toggle/{id}(id=${p.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm mb-1 border-0 bg-transparent text-secondary" th:title="${p.isActive == true ? 'Tắt mã' : 'Bật mã'}">
+                                    <i class="fas fa-power-off fa-lg"></i>
+                                </button>
+                            </form>
+
+                            <!-- Modal Edit Promotion -->
+                            <div class="modal fade text-start" th:id="'editPromotionModal' + ${p.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/promotions/save}" method="post">
+                                            <input type="hidden" name="id" th:value="${p.id}">
+                                            <input type="hidden" name="isActive" th:value="${p.isActive}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cập nhật mã khuyến mãi</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Mã Code</label>
+                                                        <input type="text" name="code" class="form-control text-uppercase" th:value="${p.code}" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">% Giảm giá</label>
+                                                        <input type="number" name="discountPercent" min="1" max="100" class="form-control" th:value="${p.discountPercent}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Ngày bắt đầu</label>
+                                                        <input type="date" name="startDate" class="form-control" th:value="${p.startDate}" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Ngày kết thúc</label>
+                                                        <input type="date" name="endDate" class="form-control" th:value="${p.endDate}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Giới hạn số lượt sử dụng (0 = Không giới hạn)</label>
+                                                    <input type="number" name="usageLimit" min="0" class="form-control" th:value="${p.usageLimit}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create Promotion -->
+<div class="modal fade text-start" id="createPromotionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/admin/promotions/save}" th:object="${promotion}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo mã khuyến mãi mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mã Code (VD: SUMMER20)</label>
+                            <input type="text" name="code" class="form-control text-uppercase" th:field="*{code}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">% Giảm giá (1-100)</label>
+                            <input type="number" name="discountPercent" min="1" max="100" class="form-control" th:field="*{discountPercent}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày bắt đầu</label>
+                            <input type="date" name="startDate" class="form-control" th:field="*{startDate}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày kết thúc</label>
+                            <input type="date" name="endDate" class="form-control" th:field="*{endDate}" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giới hạn số lượt (0 = Không giới hạn)</label>
+                        <input type="number" name="usageLimit" min="0" class="form-control" value="0" required>
+                    </div>
+                    <!-- Hidden attribute to default isActive to true correctly -->
+                    <input type="hidden" name="isActive" value="true">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Khởi tạo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

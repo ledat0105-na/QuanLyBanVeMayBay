@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
 </head>
 <body>
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
+<main class="container py-5">
+    <div class="text-center">
+        <h2 class="mb-3">Vé của tôi</h2>
+        <p class="text-muted mb-0">Chỗ hiển thị danh sách vé.</p>
+    </div>
+</main>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
 </body>
 </html>

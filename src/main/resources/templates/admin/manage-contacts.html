@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Hộp Thư Liên Hệ</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Hộp Thư Liên Hệ (Contact Messages)</h2>
+            <p class="text-muted">Các tin nhắn được gửi từ trang Contact.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 data-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Trạng thái</th>
+                        <th>Ngày gửi</th>
+                        <th>Người gửi</th>
+                        <th>Chủ đề</th>
+                        <th>Nội dung</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="msg : ${messages}">
+                        <td class="ps-4">
+                            <span th:if="${!msg.isRead}" class="badge bg-danger rounded-pill"><i class="fas fa-envelope me-1"></i> Chưa đọc</span>
+                            <span th:if="${msg.isRead}" class="badge bg-secondary rounded-pill"><i class="fas fa-envelope-open me-1"></i> Đã đọc</span>
+                        </td>
+                        <td th:text="${#temporals.format(msg.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
+                        <td>
+                            <strong th:text="${msg.senderName}"></strong><br>
+                            <small class="text-muted" th:text="${msg.senderEmail}"></small>
+                        </td>
+                        <td class="fw-bold text-dark" th:text="${msg.subject}"></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-light border" data-bs-toggle="modal" th:data-bs-target="'#msgModal' + ${msg.id}">
+                                Xem chi tiết
+                            </button>
+                            
+                            <!-- Detail Modal -->
+                            <div class="modal fade text-start" th:id="'msgModal' + ${msg.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-light">
+                                            <h5 class="modal-title fw-bold" th:text="${msg.subject}"></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Từ:</small>
+                                                <strong th:text="${msg.senderName}"></strong> (<a th:href="'mailto:' + ${msg.senderEmail}" th:text="${msg.senderEmail}"></a>)
+                                            </div>
+                                            <hr>
+                                            <p style="white-space: pre-wrap;" th:text="${msg.content}"></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            <form th:if="${!msg.isRead}" th:action="@{/admin/contacts/mark-read/{id}(id=${msg.id})}" method="post">
+                                                <button type="submit" class="btn btn-primary">Đánh dấu đã đọc</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <form th:action="@{/admin/contacts/delete/{id}(id=${msg.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirm('Xóa tin nhắn này vĩnh viễn?')" title="Xóa"><i class="fas fa-trash fa-lg"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+    <title>Thông tin cá nhân</title>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<div class="profile-wrapper">
+<div class="container-fluid bg-primary py-5 mb-5 hero-header"
+     th:style="${pageBanners['PROFILE_HERO'] != null ? 'background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(' + pageBanners['PROFILE_HERO'].imageUrl + ') center center/cover no-repeat;' : (pageBanners['DEFAULT_HERO'] != null ? 'background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(' + pageBanners['DEFAULT_HERO'].imageUrl + ') center center/cover no-repeat;' : '')}">
+        <div class="container py-5">
+            <div class="row justify-content-center py-5">
+                <div class="col-lg-10 pt-lg-5 mt-lg-5 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Hồ Sơ Của Tôi</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a href="/">Trang Chủ</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Thông Tin Cá Nhân</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-4 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+                        <div class="mb-4">
+                            <div class="bg-primary text-white d-inline-flex justify-content-center align-items-center rounded-circle" style="width: 100px; height: 100px; font-size: 40px; font-weight: bold;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-1" th:text="${user.fullName}">Tên Người Dùng</h4>
+                        <p class="text-muted mb-3" th:text="${user.email}">email@example.com</p>
+                        <div class="d-grid gap-2 text-start">
+                            <a th:href="@{/profile/info}" class="btn btn-primary rounded-pill text-start px-4"><i class="fas fa-id-card me-2"></i> Thông Tin Cá Nhân</a>
+                            <a th:href="@{/profile/bookings}" class="btn btn-outline-primary rounded-pill text-start px-4"><i class="fas fa-ticket-alt me-2"></i> Chuyến Bay Của Tôi</a>
+                            <a th:href="@{/logout}" class="btn btn-outline-danger rounded-pill text-start px-4 mt-2"><i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <h4 class="mb-4"><i class="fas fa-user-edit text-primary me-2"></i> Cập Nhật Thông Tin</h4>
+                        <div th:if="${successDetails}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i><span th:text="${successDetails}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div th:if="${errorDetails}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${errorDetails}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/profile/update-info}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tài khoản đăng nhập</label>
+                                    <input type="text" class="form-control bg-light" th:value="${user.username}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Địa chỉ Email</label>
+                                    <input type="email" class="form-control bg-light" th:value="${user.email}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Họ và Tên</label>
+                                    <input type="text" class="form-control" name="fullName" th:value="${user.fullName}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input type="text" class="form-control" name="phone" th:value="${user.phone}" required>
+                                </div>
+                                <div class="col-12 text-end mt-4">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">Lưu Thay Đổi</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h4 class="mb-4"><i class="fas fa-shield-alt text-primary me-2"></i> Đổi Mật Khẩu</h4>
+                        <div th:if="${successSecurity}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i><span th:text="${successSecurity}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div th:if="${errorSecurity}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${errorSecurity}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/profile/change-password}" method="post">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Mật khẩu hiện tại</label>
+                                    <input type="password" class="form-control" name="oldPassword" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mật khẩu mới</label>
+                                    <input type="password" class="form-control" name="newPassword" required minlength="6">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Xác nhận mật khẩu mới</label>
+                                    <input type="password" class="form-control" name="confirmPassword" required minlength="6">
+                                </div>
+                                <div class="col-12 text-end mt-4">
+                                    <button type="submit" class="btn btn-warning text-white rounded-pill px-5 py-2"><i class="fas fa-key me-2"></i>Cập Nhật Mật Khẩu</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>

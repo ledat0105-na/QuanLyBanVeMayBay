@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
+<head>
+    <title>Trang Cá Nhân</title>
+</head>
+<body>
+<div class="admin-wrapper">
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Trang Cá Nhân Của Tôi</h2>
+    </div>
+
+    <div class="row g-4">
+        <!-- Update Info -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-user-edit text-primary me-2"></i>Cập Nhật Thông Tin</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div th:if="${successDetails}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i><span th:text="${successDetails}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${errorDetails}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${errorDetails}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <form th:action="@{/admin/profile/update}" method="post" enctype="multipart/form-data">
+                        <div class="text-center mb-4">
+                            <img th:if="${user.avatarUrl != null}" th:src="@{${user.avatarUrl}}" class="rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #dee2e6;">
+                            <div th:if="${user.avatarUrl == null}" class="bg-secondary text-white d-inline-flex justify-content-center align-items-center rounded-circle shadow" style="width: 120px; height: 120px; font-size: 48px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ảnh đại diện mới</label>
+                            <input type="file" name="avatarFile" class="form-control" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ và Tên</label>
+                            <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" name="phone" class="form-control" th:value="${user.phone}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tài khoản</label>
+                            <input type="text" class="form-control bg-light" th:value="${user.username}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Vai trò</label>
+                            <input type="text" class="form-control bg-light text-primary fw-bold" th:value="${user.role.roleName}" readonly>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu Thông Tin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-shield-alt text-warning me-2"></i>Đổi Mật Khẩu</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div th:if="${successSecurity}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i><span th:text="${successSecurity}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${errorSecurity}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${errorSecurity}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
+                    <form th:action="@{/admin/profile/change-password}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu hiện tại</label>
+                            <input type="password" name="oldPassword" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mật khẩu mới</label>
+                            <input type="password" name="newPassword" class="form-control" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Xác nhận mật khẩu mới</label>
+                            <input type="password" name="confirmPassword" class="form-control" required minlength="6">
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-key me-1"></i>Cập Nhật Mật Khẩu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

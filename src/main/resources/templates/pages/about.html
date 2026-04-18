@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5 mb-5" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop'); background-position: center;">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white fw-bold mb-3 animated slideInDown">Về Chúng Tôi</h1>
+        <nav aria-label="breadcrumb animated slideInDown">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a class="text-white" href="/">Trang Chủ</a></li>
+                <li class="breadcrumb-item text-primary active" aria-current="page">Giới Thiệu</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- Page Header End -->
+
+<!-- About Content -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
+                <div class="about-img position-relative overflow-hidden p-5 pe-0">
+                    <img class="img-fluid w-100 rounded-4 shadow-lg" src="https://images.unsplash.com/photo-1542296332-2e4473faf563?q=80&w=2070&auto=format&fit=crop" style="object-fit: cover; height: 400px;">
+                </div>
+            </div>
+            <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s">
+                <h1 class="display-5 mb-4 fw-bold text-primary">Lịch sử Phát Triển Hãng Hàng Không</h1>
+                <p class="mb-4">Chúng tôi tự hào là một trong những hệ thống đặt vé máy bay uy tín và thân thiện nhất. Trải qua nhiều năm phát triển, kim chỉ nam của chúng tôi luôn là mang lại mức giá ưu đãi cùng dịch vụ tiêu chuẩn quốc tế.</p>
+                <p class="mb-4"><i class="fas fa-check text-success me-3"></i>Thành lập từ năm 2010 với đội máy bay hiện đại.</p>
+                <p class="mb-4"><i class="fas fa-check text-success me-3"></i>Đội ngũ phi công đẳng cấp quốc tế.</p>
+                <p class="mb-4"><i class="fas fa-check text-success me-3"></i>Hỗ trợ khách hàng 24/7 chuyên nghiệp.</p>
+                <a class="btn btn-primary rounded-pill py-3 px-5 mt-3 fw-bold shadow-sm" href="/services">Khám Phá Dịch Vụ</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- About Content End -->
+
+<!-- Team Start -->
+<div class="container-xxl py-5 mt-5 bg-white">
+    <div class="container">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+            <h1 class="display-5 fw-bold text-primary mb-3">Đội Ngũ Nhân Sự</h1>
+            <p class="text-muted">Gặp gỡ những phi công và chuyên gia hàng không tận tâm, mang lại sự an toàn tuyệt đối cho chuyến bay của bạn.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s" th:each="m, iterStat : ${teamMembers}">
+                <div class="team-item text-center rounded-4 overflow-hidden shadow-sm border h-100 p-4">
+                    <div class="overflow-hidden bg-light rounded-circle shadow-sm mx-auto mb-4" style="width: 150px; height: 150px;">
+                        <img class="img-fluid w-100 h-100" style="object-fit: cover;" th:src="@{${m.imageUrl}}" alt="">
+                    </div>
+                    <div class="team-text">
+                        <h4 class="fw-bold mb-1" th:text="${m.name}"></h4>
+                        <p class="text-primary mb-3" th:text="${m.role}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Team End -->
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>

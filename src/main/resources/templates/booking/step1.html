@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/header :: head}"></th:block>
+</head>
+<body class="bg-light">
+
+<th:block th:replace="~{layout/navbar :: navbar}"></th:block>
+
+<!-- Stepper Navigation -->
+<style>
+    .stepper-glow {
+        background-color: #127a7b !important;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(18, 122, 123, 0.6);
+        border: none !important;
+    }
+    .stepper-text-glow {
+        color: #127a7b !important;
+    }
+    .stepper-inactive {
+        background-color: #e2e8e8 !important;
+        color: #798787 !important;
+        border: none !important;
+    }
+    .stepper-text-inactive {
+        color: #798787 !important;
+    }
+    .stepper-line-container {
+        position: absolute;
+        top: 20px;
+        left: 16.666%;
+        width: 66.666%;
+        height: 3px;
+        background-color: #e2e8e8;
+        z-index: 0;
+    }
+    .stepper-line-progress {
+        height: 100%;
+        background-color: #127a7b;
+        transition: width 0.3s ease;
+    }
+    .stepper-circle {
+        position: relative;
+        z-index: 1;
+        width: 40px; 
+        height: 40px; 
+        line-height: 40px;
+        display: inline-block;
+        border-radius: 50%;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+</style>
+<div class="container-fluid bg-white py-3 mb-4 shadow-sm border-bottom">
+    <div class="container">
+        <div class="row text-center position-relative">
+            <div class="stepper-line-container">
+                <div class="stepper-line-progress" style="width: 0%;"></div>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-glow">1</span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-glow">Hành khách</p>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-inactive">2</span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-inactive">Dịch vụ & Chọn vé</p>
+            </div>
+            <div class="col-4">
+                <span class="stepper-circle stepper-inactive">3</span>
+                <p class="mt-2 fw-bold mb-0 stepper-text-inactive">Thanh toán</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main class="container mb-5">
+    <div class="row">
+        <!-- Main Form Content -->
+        <div class="col-lg-8 mb-4">
+            <form th:action="@{/booking/step1}" th:object="${req}" method="post">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 rounded-top-4">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Thông tin hành khách</h4>
+                        <p class="text-muted mt-2">Vui lòng điền họ tên tiếng Việt không dấu (VD: NGUYEN VAN A)</p>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="p, stat : *{passengers}" class="mb-4 pb-4 border-bottom position-relative">
+                            <h5 class="fw-bold text-secondary mb-3">
+                                Hành khách <span th:text="${stat.count}"></span>
+                            </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{passengers[__${stat.index}__].fullName}" class="form-control text-uppercase" required placeholder="Họ và tên hành khách">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giới tính <span class="text-danger">*</span></label>
+                                    <select th:field="*{passengers[__${stat.index}__].gender}" class="form-select" required>
+                                        <option value="" disabled selected>Chọn giới tính</option>
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+                                    <input type="date" th:field="*{passengers[__${stat.index}__].dateOfBirth}" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">CCCD / Hộ chiếu (Tùy chọn)</label>
+                                    <input type="text" th:field="*{passengers[__${stat.index}__].passportNumber}" class="form-control" placeholder="Số giấy tờ tùy thân">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm fs-5 fw-bold">Tiếp tục <i class="fas fa-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Flight Flight Details -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white pt-4 pb-3 rounded-top-4">
+                    <h5 class="fw-bold mb-0">Tóm tắt chuyến bay</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold text-dark mb-1" th:text="${req.flight.airline.name}"></h6>
+                    <small class="text-muted d-block mb-3" th:text="'Chuyến ' + ${req.flight.flightNumber}"></small>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h5 class="fw-bold mb-0" th:text="${#temporals.format(req.flight.departureTime, 'HH:mm')}"></h5>
+                            <span class="text-muted" th:text="${#temporals.format(req.flight.departureTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <span class="fw-bold" th:text="${req.flight.departureAirport.code}"></span>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-plane text-primary mx-3 fs-5"></i>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="fw-bold mb-0" th:text="${#temporals.format(req.flight.arrivalTime, 'HH:mm')}"></h5>
+                            <span class="text-muted" th:text="${#temporals.format(req.flight.arrivalTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <span class="fw-bold" th:text="${req.flight.arrivalAirport.code}"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0 rounded-bottom-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-muted">Giá cơ bản:</span>
+                        <h5 class="fw-bold text-success mb-0" th:text="${#numbers.formatDecimal(req.flight.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{layout/footer :: footer}"></th:block>
+</body>
+</html>
