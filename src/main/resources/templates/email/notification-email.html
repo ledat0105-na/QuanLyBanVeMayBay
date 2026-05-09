@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo từ SkyTravel</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        .email-container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .header { background: #ff9f43; padding: 30px; text-align: center; color: #fff; }
+        .header h2 { margin: 0; font-size: 24px; }
+        .content { padding: 40px 30px; color: #444; line-height: 1.6; }
+        .content h3 { color: #222; margin-top: 0; }
+        .message-box { background: #fff4e6; border-left: 4px solid #ff9f43; padding: 20px; border-radius: 4px; margin: 20px 0; font-size: 15px; }
+        .footer { background: #f8f9fa; text-align: center; padding: 20px; font-size: 13px; color: #888; border-top: 1px solid #eee; }
+        .btn { display: inline-block; background: #ff9f43; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h2>Thông Báo Hệ Thống</h2>
+        </div>
+        <div class="content">
+            <h3>Kính gửi Quý khách,</h3>
+            <p>SkyTravel xin gửi đến bạn một thông báo quan trọng liên quan đến tài khoản hoặc dịch vụ của bạn.</p>
+            
+            <div class="message-box">
+                <strong style="display: block; margin-bottom: 10px; color: #ff9f43;" th:text="${title}">Tiêu đề thông báo</strong>
+                <span th:utext="${message}">Nội dung chi tiết thông báo sẽ nằm ở đây...</span>
+            </div>
+            
+            <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.</p>
+            
+            <div style="text-align: center;">
+                <a href="http://localhost:8080/profile" class="btn">Đến trang cá nhân</a>
+            </div>
+        </div>
+        <div class="footer">
+            &copy; 2026 SkyTravel. All rights reserved.<br>
+            Hotline: 1900 1234
+        </div>
+    </div>
+</body>
+</html>

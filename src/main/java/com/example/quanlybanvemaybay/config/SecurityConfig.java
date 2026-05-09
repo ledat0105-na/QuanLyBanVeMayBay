@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return username -> userRepository.findByUsernameWithRole(username)
+        return identifier -> userRepository.findByIdentifier(identifier)
                 .map(u -> {
                     String roleName = u.getRole() != null ? u.getRole().getRoleName() : "USER";
                     List<SimpleGrantedAuthority> authorities = List.of(
@@ -36,10 +36,10 @@ public class SecurityConfig {
                     return User.withUsername(u.getUsername())
                             .password(u.getPassword())
                             .authorities(authorities)
-                            .accountLocked(false)
+                            .accountLocked(u.getIsLocked() != null && u.getIsLocked())
                             .build();
                 })
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + identifier));
     }
 
     @Bean
@@ -56,8 +56,8 @@ public class SecurityConfig {
         http
                 .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/lib/**", "/webjars/**", "/uploads/**", "/error").permitAll()
-                        .requestMatchers("/login", "/register", "/forgot-password", "/reset-password", "/fix-pass").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error").permitAll()
+                        .requestMatchers("/login", "/register", "/forgot-password", "/reset-password", "/api/auth/send-otp", "/api/auth/reset-password", "/fix-pass").permitAll()
                         .requestMatchers("/about", "/services", "/projects", "/contact", "/contact/send").permitAll()
                         .requestMatchers("/admin/report", "/admin/bookings/**", "/admin/passengers/**", "/admin/profile/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -83,6 +83,7 @@ public class SecurityConfig {
                                 } else {
                                     this.setDefaultTargetUrl("/");
                                 }
+                                this.setAlwaysUseDefaultTargetUrl(true);
                                 super.onAuthenticationSuccess(request, response, authentication);
                             }
                         })

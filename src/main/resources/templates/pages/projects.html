@@ -23,23 +23,24 @@
 
 <!-- Banners Gallery (Reuse Home Gallery Style) -->
 <div class="container-fluid py-5">
-    <div class="row g-4 justify-content-center px-lg-5">
-        <div th:each="bn : ${banners}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card">
+    <div class="row g-4 justify-content-center px-lg-5" th:with="destBanners=${banners.?[position == 'DESTINATION']}">
+        <div th:each="bn : ${destBanners}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card">
             <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 380px;">
                 <img class="img-fluid w-100 h-100" style="object-fit: cover; transition: transform 0.5s ease;" 
                      th:src="@{${bn.imageUrl}}" alt="Destination">
                 <div class="position-absolute bottom-0 start-0 w-100 p-4" 
                      style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
-                    <h3 class="text-white fw-bold mb-2 shadow-text" th:text="${bn.title}"></h3>
-                    <h5 class="text-warning mb-0" th:text="${bn.subtitle}"></h5>
+                    <h3 class="text-white fw-bold mb-0 shadow-text" th:text="${bn.title}"></h3>
                 </div>
                 <!-- Hover overlay -->
-                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-50 opacity-0 btn-overlay" style="transition: opacity 0.3s;">
-                    <a href="/" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-lg fs-5 text-primary">Tìm chuyến bay ngay</a>
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center btn-overlay p-4 text-center" 
+                     style="background: rgba(13, 107, 104, 0.85); opacity: 0; transition: opacity 0.3s;">
+                    <h5 class="text-warning mb-3 fw-bold animated fadeInDown" th:text="${bn.subtitle}"></h5>
+                    <a href="/" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-lg text-primary animated fadeInUp">Đặt Chuyến Bay Ngay</a>
                 </div>
             </div>
         </div>
-        <div th:if="${#lists.isEmpty(banners)}" class="col-12 text-center text-muted">
+        <div th:if="${#lists.isEmpty(destBanners)}" class="col-12 text-center text-muted">
             <p>Nội dung đang được cập nhật.</p>
         </div>
     </div>

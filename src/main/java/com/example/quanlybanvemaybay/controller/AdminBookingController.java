@@ -78,7 +78,8 @@ public class AdminBookingController {
                     paymentRepository.save(p);
                 }
             }
-            redirectAttributes.addFlashAttribute("success", "Đã từ chối thanh toán và hủy vé!");
+            emailService.sendBookingStatusUpdateEmail(booking, "CANCELLED");
+            redirectAttributes.addFlashAttribute("success", "Đã từ chối thanh toán, hủy vé và gửi email thông báo!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
@@ -88,8 +89,9 @@ public class AdminBookingController {
     @PostMapping("/{id}/cancel")
     public String cancelBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            bookingService.updateBookingStatus(id, "CANCELLED");
-            redirectAttributes.addFlashAttribute("success", "Đã hủy vé thành công!");
+            Booking booking = bookingService.updateBookingStatus(id, "CANCELLED");
+            emailService.sendBookingStatusUpdateEmail(booking, "CANCELLED");
+            redirectAttributes.addFlashAttribute("success", "Đã hủy vé thành công và gửi email thông báo!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi hủy vé: " + e.getMessage());
         }
@@ -99,8 +101,9 @@ public class AdminBookingController {
     @PostMapping("/{id}/refund")
     public String refundBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            bookingService.updateBookingStatus(id, "REFUNDED");
-            redirectAttributes.addFlashAttribute("success", "Đã đánh dấu hoàn tiền cho vé này!");
+            Booking booking = bookingService.updateBookingStatus(id, "REFUNDED");
+            emailService.sendBookingStatusUpdateEmail(booking, "REFUNDED");
+            redirectAttributes.addFlashAttribute("success", "Đã đánh dấu hoàn tiền cho vé này và gửi email thông báo!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi hoàn tiền: " + e.getMessage());
         }
@@ -118,7 +121,11 @@ public class AdminBookingController {
             RedirectAttributes redirectAttributes) {
         try {
             bookingService.updatePassengerInfo(passengerId, fullName, gender, dateOfBirth, passportNumber);
-            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin hành khách thành công!");
+            Booking booking = bookingService.findById(bookingId);
+            if (booking != null) {
+                emailService.sendPassengerUpdateEmail(booking);
+            }
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin hành khách thành công và đã gửi email thông báo!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi cập nhật hành khách: " + e.getMessage());
         }

@@ -8,7 +8,7 @@
 <body>
     <div>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-book text-primary me-2"></i>Quản Lý Đặt Vé (Booking)</h2>
+            <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-book text-primary me-2"></i>Quản Lý Đặt Vé</h2>
         </div>
 
         <!-- Alert Messages -->
@@ -35,16 +35,19 @@
                                 <th>Chuyến Bay</th>
                                 <th>Số Tiền</th>
                                 <th>Trạng Thái</th>
-                                <th class="text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="b : ${bookings}">
-                                <td class="ps-4 fw-bold text-primary" th:text="${b.bookingCode}">BKG001</td>
+                                <td class="ps-4 fw-bold">
+                                    <a th:href="@{/admin/bookings/{id}(id=${b.id})}" class="text-primary text-decoration-none" th:text="${b.bookingCode}">BKG001</a>
+                                </td>
                                 <td th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
                                 <td>
-                                    <strong th:if="${b.user != null}" th:text="${b.user.fullName}">Nguyen Van A</strong>
-                                    <strong th:if="${b.user == null}">Khách vãng lai</strong>
+                                    <a th:href="@{/admin/bookings/{id}(id=${b.id})}" class="text-dark text-decoration-none">
+                                        <strong th:if="${b.user != null}" th:text="${b.user.fullName}">Nguyen Van A</strong>
+                                        <strong th:if="${b.user == null}">Khách vãng lai</strong>
+                                    </a>
                                 </td>
                                 <td>
                                     <span th:text="${b.flight.flightNumber}">VN123</span><br>
@@ -55,21 +58,13 @@
                                     th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
                                     1.000.000 VND</td>
                                 <td class="booking-status" th:data-status="${b.bookingStatus}">
-                                    <span th:if="${b.bookingStatus == 'WAITING_PAYMENT'}"
-                                        class="fw-bold text-warning"><i class="fas fa-clock me-1"></i>Chờ Thanh
-                                        Toán</span>
-                                    <span th:if="${b.bookingStatus == 'CONFIRMED'}" class="fw-bold text-success"><i
-                                            class="fas fa-check-circle me-1"></i>Đã Xác Nhận</span>
-                                    <span th:if="${b.bookingStatus == 'CANCELLED'}" class="fw-bold text-danger"><i
-                                            class="fas fa-times-circle me-1"></i>Đã Hủy</span>
-                                    <span th:if="${b.bookingStatus == 'REFUNDED'}" class="fw-bold text-secondary"><i
-                                            class="fas fa-undo me-1"></i>Đã Hoàn Tiền</span>
-                                </td>
-                                <td class="text-center">
-                                    <a th:href="@{/admin/bookings/{id}(id=${b.id})}"
-                                        class="btn btn-sm border-0 bg-transparent text-secondary px-3" title="Xem">
-                                        <i class="fas fa-eye fa-lg"></i>
-                                    </a>
+                                    <span th:if="${b.bookingStatus == 'PENDING'}" class="fw-bold text-primary"><i class="fas fa-spinner me-1"></i>Đang Xử Lý</span>
+                                    <span th:if="${b.bookingStatus == 'WAITING_PAYMENT'}" class="fw-bold text-warning"><i class="fas fa-clock me-1"></i>Chờ Thanh Toán</span>
+                                    <span th:if="${b.bookingStatus == 'CONFIRMED'}" class="fw-bold text-success"><i class="fas fa-check-circle me-1"></i>Đã Xác Nhận</span>
+                                    <span th:if="${b.bookingStatus == 'CANCELLED'}" class="fw-bold text-danger"><i class="fas fa-times-circle me-1"></i>Đã Hủy</span>
+                                    <span th:if="${b.bookingStatus == 'REFUND_REQUESTED'}" class="fw-bold text-info"><i class="fas fa-exchange-alt me-1"></i>Yêu Cầu Hoàn Tiền</span>
+                                    <span th:if="${b.bookingStatus == 'REFUNDED'}" class="fw-bold text-secondary"><i class="fas fa-undo me-1"></i>Đã Hoàn Tiền</span>
+                                    <span th:if="${b.bookingStatus != 'PENDING' and b.bookingStatus != 'WAITING_PAYMENT' and b.bookingStatus != 'CONFIRMED' and b.bookingStatus != 'CANCELLED' and b.bookingStatus != 'REFUND_REQUESTED' and b.bookingStatus != 'REFUNDED'}" class="fw-bold text-dark"><i class="fas fa-question-circle me-1"></i><span th:text="${b.bookingStatus != null ? b.bookingStatus : 'Không Rõ'}"></span></span>
                                 </td>
                             </tr>
 

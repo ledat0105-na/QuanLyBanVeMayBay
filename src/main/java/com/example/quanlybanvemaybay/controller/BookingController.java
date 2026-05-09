@@ -23,12 +23,16 @@ public class BookingController {
     private final BaggageOptionRepository baggageOptionRepository;
     private final BookingService bookingService;
     private final EmailService emailService;
+    private final com.example.quanlybanvemaybay.repository.UserRepository userRepo;
+    private final com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo;
 
-    public BookingController(FlightService flightService, BaggageOptionRepository baggageOptionRepository, BookingService bookingService, EmailService emailService) {
+    public BookingController(FlightService flightService, BaggageOptionRepository baggageOptionRepository, BookingService bookingService, EmailService emailService, com.example.quanlybanvemaybay.repository.UserRepository userRepo, com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo) {
         this.flightService = flightService;
         this.baggageOptionRepository = baggageOptionRepository;
         this.bookingService = bookingService;
         this.emailService = emailService;
+        this.userRepo = userRepo;
+        this.notifRepo = notifRepo;
     }
 
     @GetMapping("/step1")
@@ -113,6 +117,25 @@ public class BookingController {
         Booking booking = bookingService.findById(bookingId);
         if (booking != null && booking.getUser() != null && booking.getUser().getEmail() != null) {
             emailService.sendBookingConfirmationEmail(booking, booking.getUser().getEmail());
+        }
+
+        // Notify Admin/Staff about new booking
+        if (booking != null) {
+            java.util.List<com.example.quanlybanvemaybay.entity.User> staffList = userRepo.findAll().stream()
+                .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
+                .toList();
+            
+            String groupId = java.util.UUID.randomUUID().toString();
+            for (com.example.quanlybanvemaybay.entity.User staff : staffList) {
+                com.example.quanlybanvemaybay.entity.Notification notif = new com.example.quanlybanvemaybay.entity.Notification();
+                notif.setUser(staff);
+                notif.setTitle("Yêu cầu xử lý vé mới");
+                notif.setMessage("Khách hàng vừa đặt vé mới (Mã Vé: #" + booking.getId() + "). Vui lòng kiểm tra và xử lý.");
+                notif.setIsRead(false);
+                notif.setCreatedAt(java.time.LocalDateTime.now());
+                notif.setGroupId(groupId);
+                notifRepo.save(notif);
+            }
         }
         
         return "redirect:/booking/success?bookingId=" + bookingId;

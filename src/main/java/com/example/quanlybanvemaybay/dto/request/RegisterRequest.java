@@ -15,11 +15,15 @@ public class RegisterRequest {
     private String username;
 
     @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, max = 100, message = "Mật khẩu từ 6 đến 100 ký tự")
+    @Size(min = 8, max = 100, message = "Mật khẩu phải có ít nhất 8 ký tự")
+    @Pattern(
+        regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':|,.<>\\/?]).{8,}$",
+        message = "Mật khẩu phải có ít nhất 1 chữ in hoa, 1 chữ số và 1 ký tự đặc biệt (!@#$...)"
+    )
     private String password;
 
     @NotBlank(message = "Xác nhận mật khẩu không được để trống")
-    @Size(min = 6, max = 100, message = "Xác nhận mật khẩu từ 6 đến 100 ký tự")
+    @Size(min = 8, max = 100, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String confirmPassword;
 
     @NotBlank(message = "Họ tên không được để trống")

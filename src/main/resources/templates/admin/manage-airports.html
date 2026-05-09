@@ -49,8 +49,11 @@
                                     th:data-bs-target="'#editAirportModal' + ${a.id}" title="Sửa">
                                 <i class="fas fa-edit fa-lg"></i>
                             </button>
-                            <form th:action="@{/admin/airports/delete/{id}(id=${a.id})}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?');">
-                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" title="Xóa">
+                            <form th:action="@{/admin/airports/delete/{id}(id=${a.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" title="Xóa"
+                                        data-sky-confirm="Bạn có chắc chắn muốn xóa sân bay này không?"
+                                        data-sky-title="Xóa sân bay"
+                                        data-sky-ok="Xóa">
                                     <i class="fas fa-trash fa-lg"></i>
                                 </button>
                             </form>

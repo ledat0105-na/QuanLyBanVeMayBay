@@ -46,7 +46,6 @@ public class User {
     private LocalDateTime createdAt;
     
     @Column(name = "is_locked")
-    @Transient // Temporarily ignore this field from DB to fix Unknown column error
     private Boolean isLocked = false;
 
     @OneToMany(mappedBy = "user")

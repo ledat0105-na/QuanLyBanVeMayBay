@@ -144,4 +144,16 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
     }
+
+    @Override
+    public void updateUserAdmin(Long userId, String fullName, String email, String phone) {
+        User user = getUserById(userId);
+        if (!user.getEmail().equals(email) && emailExists(email)) {
+            throw new IllegalArgumentException("Email đã được sử dụng bởi người dùng khác");
+        }
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPhone(phone);
+        userRepository.save(user);
+    }
 }

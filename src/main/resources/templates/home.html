@@ -2,6 +2,9 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/header :: head}"></th:block>
+    <!-- CSRF Meta Tags for Ajax -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
@@ -12,18 +15,72 @@
         <div class="container py-5">
             <div class="row g-5 align-items-center mb-5">
                 <div class="col-lg-6">
-                    <h1 class="display-1 mb-4 animated slideInRight">Hệ Thống Đặt <span class="text-primary">Vé Máy Bay</span> SkyTravel</h1>
-                    <h5 class="d-inline-block border border-2 border-white py-3 px-5 mb-0 animated slideInRight">Nhanh Chóng - Tiết Kiệm - An Toàn</h5>
+                    <h1 class="display-1 mb-4 animated slideInRight" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_hero_title\')' : ''" id="text-home_hero_title" th:utext="${homeHeroTitle}">Hệ Thống Đặt <span class="text-primary">Vé Máy Bay</span> SkyTravel</h1>
+                    <h5 class="d-inline-block border border-2 border-white py-3 px-5 mb-0 animated slideInRight" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_hero_subtitle\')' : ''" id="text-home_hero_subtitle" th:utext="${homeHeroSubtitle}">Nhanh Chóng - Tiết Kiệm - An Toàn</h5>
                 </div>
-                <div class="col-lg-6">
-                    <div class="owl-carousel header-carousel animated fadeIn">
-                        <th:block th:each="bn : ${banners}">
-                            <img th:if="${bn.position == 'HOME_CAROUSEL'}" class="img-fluid" th:src="@{${bn.imageUrl}}" th:alt="${bn.title}">
-                        </th:block>
-                        <th:block th:if="${#lists.isEmpty(banners.?[position == 'HOME_CAROUSEL'])}">
-                            <img class="img-fluid" th:src="@{/img/carousel-1.jpg}" alt="Default Banner 1">
-                            <img class="img-fluid" th:src="@{/img/carousel-2.jpg}" alt="Default Banner 2">
-                        </th:block>
+                <div class="col-lg-6 position-relative">
+                    <!-- Bootstrap Auto-Sliding Carousel -->
+                    <div id="heroCarousel" class="carousel slide rounded-4 overflow-hidden shadow-lg animated fadeIn" data-bs-ride="carousel" data-bs-interval="2000">
+                        <div class="carousel-inner" style="height: 420px;" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
+
+                            <!-- Carousel items from DB -->
+                            <th:block th:if="${not #lists.isEmpty(carouselBanners)}">
+                                <div th:each="bn, iterStat : ${carouselBanners}"
+                                     class="carousel-item"
+                                     th:classappend="${iterStat.first} ? ' active' : ''"
+                                     style="height: 420px;">
+                                     <img th:src="@{${bn.imageUrl}}" th:alt="${bn.title}"
+                                         class="d-block w-100 h-100" style="object-fit: cover;"
+                                         onerror="this.src='/img/carousel-1.jpg'">
+                                 </div>
+                            </th:block>
+
+                            <!-- Default fallback if no carousel banners -->
+                            <th:block th:if="${#lists.isEmpty(carouselBanners)}">
+                                <div class="carousel-item active" style="height: 420px;">
+                                    <img th:src="@{/img/carousel-1.jpg}" alt="Default Banner 1"
+                                         class="d-block w-100 h-100" style="object-fit: cover;">
+                                </div>
+                                <div class="carousel-item" style="height: 420px;">
+                                    <img th:src="@{/img/carousel-2.jpg}" alt="Default Banner 2"
+                                         class="d-block w-100 h-100" style="object-fit: cover;">
+                                </div>
+                            </th:block>
+                        </div>
+
+                        <!-- Controls -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+
+                        <!-- Indicators -->
+                        <div class="carousel-indicators" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
+                            <th:block th:if="${not #lists.isEmpty(carouselBanners)}">
+                                <button th:each="bn, iterStat : ${carouselBanners}"
+                                        type="button" data-bs-target="#heroCarousel"
+                                        th:attr="data-bs-slide-to=${iterStat.index}"
+                                        th:classappend="${iterStat.first} ? ' active' : ''"></button>
+                            </th:block>
+                            <th:block th:if="${#lists.isEmpty(carouselBanners)}">
+                                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                            </th:block>
+                        </div>
+                    </div>
+
+                    <!-- Editor Mode: Manage Buttons -->
+                    <div th:if="${isEditorMode}" class="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style="z-index: 200;">
+                        <button type="button" class="btn btn-warning rounded-pill px-3 py-1 fw-bold shadow"
+                                onclick="openCarouselManager()" style="font-size: 0.85rem;">
+                            <i class="fas fa-images me-1"></i>Quản lý Carousel
+                        </button>
+                        <button type="button" class="btn btn-success rounded-pill px-3 py-1 fw-bold shadow"
+                                onclick="openFooterEditor()" style="font-size: 0.85rem;">
+                            <i class="fas fa-map-marked-alt me-1"></i>Quản lý Bản đồ
+                        </button>
                     </div>
                 </div>
             </div>
@@ -267,24 +324,51 @@
                         <h5 class="text-muted">Các ưu đãi bay nổi bật và điểm đến hấp dẫn đang chờ bạn</h5>
                     </div>
                 </div>
-                <div class="row g-4 justify-content-center px-lg-5">
-                    <th:block th:each="bn : ${banners}">
-                        <div th:if="${bn.position != 'HOME_CAROUSEL'}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card">
+                <div class="row g-4 justify-content-center px-lg-5" th:with="destBanners=${banners.?[position == 'DESTINATION']}">
+                    <th:block th:each="bn : ${destBanners}">
+                        <div class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card position-relative">
+                            <!-- Nút Xóa & Sửa (chỉ hiện trong Editor Mode) -->
+                            <div th:if="${isEditorMode}" class="position-absolute top-0 end-0 m-2 d-flex flex-column gap-1" style="z-index: 100;">
+                                <button class="btn btn-warning rounded-circle shadow" style="width:40px;height:40px;"
+                                    th:data-id="${bn.id}"
+                                    th:data-title="${bn.title}"
+                                    th:data-subtitle="${bn.subtitle != null ? bn.subtitle : ''}"
+                                    th:data-image="${bn.imageUrl != null ? bn.imageUrl : ''}"
+                                    onclick="openEditBannerFromBtn(this)"
+                                    title="Chỉnh sửa">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="btn btn-danger rounded-circle shadow" style="width:40px;height:40px;"
+                                    th:onclick="'deleteEntity(\'banner\', ' + ${bn.id} + ')'"
+                                    title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                             <div class="position-relative overflow-hidden rounded-4 shadow-sm" style="height: 380px;">
                                 <img class="img-fluid w-100 h-100 border-0" style="object-fit: cover; transition: transform 0.5s ease;" 
                                      th:src="@{${bn.imageUrl}}" alt="Destination" onerror="this.onerror=null; this.src='/img/carousel-1.jpg';">
                                 <div class="position-absolute bottom-0 start-0 w-100 p-4" 
                                      style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
-                                    <h3 class="text-white fw-bold mb-2 shadow-text" th:text="${bn.title}"></h3>
-                                    <h5 class="text-warning mb-0" th:text="${bn.subtitle}"></h5>
+                                    <h3 class="text-white fw-bold mb-0 shadow-text" th:text="${bn.title}"></h3>
                                 </div>
                                 <!-- Hover overlay effect -->
-                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center btn-overlay">
-                                    <a href="#" onclick="document.querySelector('input[type=date]').focus()" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow-lg fs-5 text-primary">Đặt Ngay</a>
+                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center btn-overlay p-4 text-center">
+                                    <h5 class="text-warning mb-3 fw-bold animated fadeInDown" th:text="${bn.subtitle}"></h5>
+                                    <a href="#" onclick="document.querySelector('input[type=date]').focus()" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-lg fs-6 text-primary animated fadeInUp">Đặt Ngay</a>
                                 </div>
                             </div>
                         </div>
                     </th:block>
+                    
+                    <!-- Add New Banner Placeholder (Editor Mode Only) -->
+                    <div th:if="${isEditorMode}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card" onclick="openAddModal('banner')" style="cursor: pointer;">
+                        <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-light border border-2 border-primary border-dashed d-flex align-items-center justify-content-center" style="height: 380px; border-style: dashed;">
+                            <div class="text-center text-primary">
+                                <i class="fas fa-plus-circle fa-4x mb-3"></i>
+                                <h4>Thêm Điểm Đến Mới</h4>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <style>
                     .flight-banner-card:hover img { transform: scale(1.1); }
@@ -358,35 +442,106 @@
         <div class="container">
             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
                 <p class="d-inline-block border rounded-pill py-1 px-4 text-primary fw-bold">Dịch vụ Bay</p>
-                <h2 class="display-5 fw-bold mt-2">Đẳng Cấp Trên Từng Chuyến Bay</h2>
+                <h2 class="display-5 fw-bold mt-2" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_services_title\')' : ''" id="text-home_services_title" th:utext="${homeServicesTitle}">Đẳng Cấp Trên Từng Chuyến Bay</h2>
             </div>
             <div class="row g-4">
-                <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="service-item bg-white rounded-4 h-100 p-5 shadow-sm border hover-shadow" style="transition: all 0.3s ease;">
-                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-4" style="width: 80px; height: 80px;">
-                            <i class="text-primary fs-2" th:class="${svc.iconClass}"></i>
+                <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp position-relative" data-wow-delay="0.1s">
+                    <!-- Nút xóa (editor mode) -->
+                    <button th:if="${isEditorMode}" class="btn btn-danger position-absolute top-0 end-0 mt-2 me-3 rounded-circle shadow" style="z-index: 100; width: 40px; height: 40px;"
+                            th:onclick="'deleteEntity(\'service\', ' + ${svc.id} + ')'">
+                        <i class="fas fa-trash"></i>
+                    </button>
+
+                    <!-- Card: chỉ hiển thị ảnh + tiêu đề, click để xem chi tiết -->
+                    <div class="svc-card bg-white rounded-4 shadow-sm border overflow-hidden"
+                         style="cursor: pointer; transition: all 0.3s ease;"
+                         th:data-title="${svc.title}"
+                         th:data-desc="${svc.description != null ? svc.description : ''}"
+                         th:data-img="${svc.imageUrl != null ? svc.imageUrl : ''}"
+                         th:data-icon="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"
+                         onclick="openServiceDetail(this)">
+
+                        <!-- Vùng ảnh -->
+                        <div class="svc-card-img position-relative overflow-hidden" style="height: 200px; background: #f0f4f8;">
+                            <!-- Nếu có ảnh URL -->
+                            <th:block th:if="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
+                                <img th:src="@{${svc.imageUrl}}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;" alt="">
+                            </th:block>
+                            <!-- Nếu chỉ có icon -->
+                            <th:block th:unless="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
+                                    <i class="text-primary" style="font-size: 4rem;" th:class="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"></i>
+                                </div>
+                            </th:block>
+                            <!-- Overlay "Xem chi tiết" -->
+                            <div class="svc-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 text-center"
+                                 style="background: rgba(13,107,104,0.85); opacity: 0; transition: opacity 0.3s;">
+                                <p class="text-white small mb-3 px-2" th:text="${svc.description}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;"></p>
+                                <span class="btn btn-sm btn-light rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-eye me-2"></i>Xem Chi Tiết</span>
+                            </div>
                         </div>
-                        <h4 class="mb-3 fw-bold" th:text="${svc.title}"></h4>
-                        <p class="mb-4 text-muted" th:text="${svc.description}"></p>
+
+                        <!-- Tiêu đề -->
+                        <div class="p-4">
+                            <h5 class="fw-bold mb-0 text-dark" th:text="${svc.title}"></h5>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add New Service Placeholder (Editor Mode Only) -->
+                <div th:if="${isEditorMode}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" onclick="openAddModal('service')" style="cursor: pointer;">
+                    <div class="svc-card bg-light rounded-4 shadow-sm border border-2 border-primary d-flex flex-column align-items-center justify-content-center text-center" style="height: 288px; border-style: dashed;">
+                        <i class="fas fa-plus-circle fa-4x text-primary mb-3"></i>
+                        <h4 class="fw-bold text-primary">Thêm Dịch Vụ Mới</h4>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Service Detail Modal -->
+    <div id="serviceDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:50000; overflow-y:auto;" onclick="if(event.target===this) closeServiceDetail()">
+        <div style="max-width:560px; margin:60px auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <!-- Ảnh lớn -->
+            <div id="svcModalImgWrap" style="height:260px; background:#f0f4f8; overflow:hidden; position:relative;">
+                <img id="svcModalImg" src="" class="w-100 h-100" style="object-fit:cover; display:none;" alt="">
+                <div id="svcModalIcon" class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="display:flex!important;">
+                    <i id="svcModalIconEl" class="text-primary" style="font-size: 5rem;"></i>
+                </div>
+            </div>
+            <!-- Nội dung -->
+            <div style="padding: 32px;">
+                <h3 id="svcModalTitle" class="fw-bold text-dark mb-3"></h3>
+                <p id="svcModalDesc" class="text-muted lh-lg" style="font-size:1.05rem;"></p>
+                <div class="mt-4 d-flex justify-content-end">
+                    <button class="btn btn-primary rounded-pill px-5 fw-bold" onclick="closeServiceDetail()">
+                        <i class="fas fa-times me-2"></i>Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
+        .svc-card:hover { transform: translateY(-6px); box-shadow: 0 1rem 3rem rgba(0,0,0,.15)!important; }
+        .svc-card:hover .svc-overlay { opacity: 1 !important; }
+        .svc-card:hover img { transform: scale(1.08); }
         .hover-shadow:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
     </style>
     <!-- Service End -->
 
+
+
     <!-- Team Start -->
     <div class="container-xxl py-5 mt-5 bg-white">
         <div class="container">
-            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <h1 class="display-5 fw-bold text-primary mb-3">Đội Ngũ Nhân Sự</h1>
-                <p class="text-muted">Gặp gỡ những phi công và chuyên gia hàng không tận tâm, mang lại sự an toàn tuyệt đối cho chuyến bay của bạn.</p>
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 800px;">
+                <h1 class="display-5 fw-bold text-primary mb-3" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_team_title\')' : ''" id="text-home_team_title" th:utext="${homeTeamTitle}">Đội Ngũ Nhân Sự</h1>
+                <p class="text-muted" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_team_subtitle\')' : ''" id="text-home_team_subtitle" th:utext="${homeTeamSubtitle}">Gặp gỡ những phi công và chuyên gia hàng không tận tâm, mang lại sự an toàn tuyệt đối cho chuyến bay của bạn.</p>
             </div>
             <div class="row g-4">
-                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s" th:each="m : ${teamMembers}">
+                <div class="col-lg-3 col-md-6 wow fadeInUp position-relative" data-wow-delay="0.1s" th:each="m : ${teamMembers}">
+                    <button th:if="${isEditorMode}" class="btn btn-danger position-absolute top-0 end-0 mt-2 me-3 rounded-circle shadow" style="z-index: 100; width: 40px; height: 40px;" th:onclick="'deleteEntity(\'team\', ' + ${m.id} + ')'"><i class="fas fa-trash"></i></button>
                     <div class="team-item text-center rounded-4 overflow-hidden shadow-sm border h-100 p-4">
                         <div class="overflow-hidden bg-light rounded-circle shadow-sm mx-auto mb-4" style="width: 150px; height: 150px;">
                             <img class="img-fluid w-100 h-100" style="object-fit: cover;" th:src="@{${m.imageUrl}}" alt="">
@@ -395,6 +550,14 @@
                             <h4 class="fw-bold mb-1" th:text="${m.name}"></h4>
                             <p class="text-primary mb-3" th:text="${m.role}"></p>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Add New Team Placeholder (Editor Mode Only) -->
+                <div th:if="${isEditorMode}" class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s" onclick="openAddModal('team')" style="cursor: pointer;">
+                    <div class="team-item text-center rounded-4 overflow-hidden shadow-sm border border-2 border-primary border-dashed h-100 p-4 bg-light d-flex flex-column align-items-center justify-content-center" style="border-style: dashed;">
+                        <i class="fas fa-plus-circle fa-4x text-primary mb-3"></i>
+                        <h4 class="fw-bold text-primary">Thêm Nhân Sự</h4>
                     </div>
                 </div>
             </div>
@@ -408,10 +571,9 @@
     <div class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-lg d-flex justify-content-between align-items-center" style="z-index: 9999;">
         <div class="d-flex align-items-center">
             <div class="bg-primary px-3 py-1 rounded me-3 fw-bold"><i class="fa fa-paint-brush me-2"></i> CHẾ ĐỘ THIẾT KẾ TRỰC QUAN</div>
-            <p class="mb-0 text-light">Bạn có thể bấm trực tiếp vào các bức ảnh (Lịch Sử Hình Thành) để thay thế.</p>
         </div>
         <div>
-            <a th:href="@{/admin/dashboard}" class="btn btn-outline-light me-2"><i class="fa fa-times"></i> Hủy & Thoát</a>
+            <a th:href="@{/admin/report}" class="btn btn-outline-light me-2"><i class="fa fa-times"></i> Hủy & Thoát</a>
         </div>
     </div>
 
@@ -451,6 +613,165 @@
         </div>
     </div>
 
+    <!-- Text Editor Modal Overlay -->
+    <div id="textEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-success text-white">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fa fa-edit me-2"></i>Chỉnh Sửa Văn Bản</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeTextEditor()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editingTextKey">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nội dung (Hỗ trợ HTML)</label>
+                        <textarea id="textEditorContent" class="form-control" rows="8"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeTextEditor()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="applyAndSaveText()">Xác Nhận & Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Entity Modal Overlay -->
+    <div id="addEntityModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white">
+                    <h5 class="modal-title m-0 fw-bold" id="addEntityModalTitle"><i class="fa fa-plus-circle me-2"></i>Thêm Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeAddModal()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="addEntityType">
+                    <form id="addEntityForm">
+                        <div id="addEntityFields"></div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeAddModal()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="submitAddEntity()">Xác Nhận & Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Banner Modal -->
+    <div id="editBannerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.82); z-index: 11000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-warning text-dark">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fas fa-pencil-alt me-2"></i>Chỉnh Sửa Điểm Đến</h5>
+                    <button type="button" class="btn-close" onclick="closeEditBanner()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editBannerId">
+                    <div class="col-12 text-center mb-4">
+                        <img id="editBannerPreview" src="" class="rounded-4 shadow-sm border" style="max-height: 200px; width: 100%; object-fit: cover; display: none;">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tiêu đề (Tên địa điểm)</label>
+                            <input type="text" id="editBannerTitle" class="form-control form-control-lg" placeholder="VD: Hà Nội, Đà Nẵng...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Phụ đề (Mô tả / Ưu đãi)</label>
+                            <input type="text" id="editBannerSubtitle" class="form-control" placeholder="VD: Giảm đến 20% chuyến bay nội địa">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tải ảnh mới lên (Upload)</label>
+                            <input type="file" id="editBannerFile" class="form-control" accept="image/*" onchange="handleEditBannerFile(this)">
+                            <div id="editBannerUploadStatus" class="mt-1 text-primary small" style="display:none;"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải ảnh...</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Hoặc dán link ảnh mới (URL)</label>
+                            <input type="text" id="editBannerImage" class="form-control" placeholder="https://example.com/image.jpg">
+                            <div class="form-text text-muted">Để trống nếu không muốn thay ảnh.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" onclick="closeEditBanner()">Hủy</button>
+                    <button type="button" class="btn btn-warning px-4 rounded-pill fw-bold" id="saveEditBannerBtn" onclick="submitEditBanner()">
+                        <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carousel Manager Modal -->
+    <div id="carouselManagerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.85); z-index: 20000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-warning text-dark">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fas fa-images me-2"></i>Quản Lý Ảnh Carousel (Tối đa 5 ảnh)</h5>
+                    <button type="button" class="btn-close" onclick="closeCarouselManager()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <p class="text-muted mb-4"><i class="fas fa-info-circle me-2"></i>Carousel sẽ tự động chuyển ảnh sau mỗi 2 giây. Bạn có thể thêm tối đa 5 ảnh bằng cách dán link hoặc tải tệp lên.</p>
+                    
+                    <div class="row g-4" id="carouselSlotsContainer" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
+                        <!-- We will show 5 slots here -->
+                        <th:block th:each="i : ${#numbers.sequence(0, 4)}">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative carousel-slot-card">
+                                    <div class="slot-number position-absolute top-0 start-0 bg-primary text-white px-2 py-1 small fw-bold" style="z-index: 10; border-bottom-right-radius: 10px;" th:text="${i + 1}"></div>
+                                    
+                                    <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 160px; overflow: hidden;">
+                                        <!-- Simplified logic: Render existing banners first, then placeholders -->
+                                        <div th:if="${i < carouselBanners.size()}" class="w-100 h-100">
+                                            <img th:src="${carouselBanners.get(i).imageUrl}" class="w-100 h-100" style="object-fit: cover;">
+                                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" 
+                                                    th:onclick="'deleteCarouselSlide(' + ${carouselBanners.get(i).id} + ')'" title="Xóa">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div th:unless="${i < carouselBanners.size()}" class="text-white-50 text-center p-3">
+                                            <i class="fas fa-image fa-3x mb-2"></i>
+                                            <div class="small">Trống</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body p-3">
+                                        <div th:if="${i < carouselBanners.size()}">
+                                            <div class="small text-truncate text-muted mb-0" th:text="${carouselBanners.get(i).title}"></div>
+                                        </div>
+                                        <div th:unless="${i < carouselBanners.size()}">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" th:onclick="'showAddRow(' + ${i} + ')'">
+                                                    <i class="fas fa-plus me-1"></i>Thêm Ảnh
+                                                </button>
+                                            </div>
+                                            <!-- Hidden add form for this slot -->
+                                            <div th:id="'addRow-' + ${i}" style="display: none;" class="mt-3">
+                                                <div class="mb-2">
+                                                    <input type="text" th:id="'cNewUrl-' + ${i}" class="form-control form-control-sm mb-2" placeholder="Dán link ảnh...">
+                                                    <div class="d-flex gap-2">
+                                                        <input type="file" th:id="'cNewFile-' + ${i}" class="form-control form-control-sm" accept="image/*" th:onchange="'uploadToSlot(' + ${i} + ')'">
+                                                        <button class="btn btn-success btn-sm" th:onclick="'saveToSlot(' + ${i} + ')'"><i class="fas fa-check"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" onclick="closeCarouselManager()">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .editable-img {
             transition: all 0.3s;
@@ -477,10 +798,62 @@
         .editable-img:hover::after {
             opacity: 1;
         }
+        .editable-text {
+            position: relative;
+            cursor: text;
+            transition: all 0.2s;
+            border: 2px dashed transparent;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editable-text:hover {
+            background-color: rgba(255,235,59,0.3);
+            border-color: #ff9800;
+        }
+        .editable-text::before {
+            content: "\f044"; /* FontAwesome pencil-alt */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #ff9800;
+            color: white;
+            font-size: 14px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .editable-text:hover::before {
+            opacity: 1;
+        }
         body { padding-bottom: 80px; } /* Space for toolbar */
     </style>
 
     <script>
+        // Helper: lấy CSRF token và header name từ meta tags
+        function getCsrf() {
+            const token = document.querySelector('meta[name="_csrf"]');
+            const header = document.querySelector('meta[name="_csrf_header"]');
+            return {
+                token: token ? token.content : '',
+                header: header ? header.content : 'X-CSRF-TOKEN'
+            };
+        }
+
+        // Helper: tạo URL fetch với CSRF token dưới dạng query param (đáng tin cậy nhất với Spring Security + multipart)
+        function csrfUrl(url) {
+            const csrf = getCsrf();
+            if (!csrf.token) return url;
+            const sep = url.includes('?') ? '&' : '?';
+            return url + sep + '_csrf=' + encodeURIComponent(csrf.token);
+        }
+
         function openEditor(position) {
             document.getElementById('editingPosition').value = position;
             document.getElementById('imageUrlInput').value = document.getElementById('img-' + position).src;
@@ -500,7 +873,7 @@
             
             document.getElementById('uploadStatus').style.display = 'block';
             
-            fetch('/admin/visual-editor/upload', {
+            fetch(csrfUrl('/admin/visual-editor/upload'), {
                 method: 'POST',
                 body: formData
             })
@@ -528,12 +901,11 @@
             // Update preview instantly
             document.getElementById('img-' + position).src = newUrl;
             
-            // Send to server to save immediately for single click experience
             let formData = new FormData();
             formData.append('position', position);
             formData.append('imageUrl', newUrl);
             
-            fetch('/admin/visual-editor/save', {
+            fetch(csrfUrl('/admin/visual-editor/save'), {
                 method: 'POST',
                 body: formData
             })
@@ -551,8 +923,496 @@
                 } else {
                     alert('Không lưu được cấu hình: ' + data.message);
                 }
+            })
+            .catch(err => {
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
             });
         }
+
+        // TEXT EDITOR LOGIC
+        function openTextEditor(key) {
+            document.getElementById('editingTextKey').value = key;
+            // Get current HTML content from the DOM
+            let currentHtml = document.getElementById('text-' + key).innerHTML.trim();
+            document.getElementById('textEditorContent').value = currentHtml;
+            document.getElementById('textEditorModal').style.display = 'block';
+        }
+
+        function closeTextEditor() {
+            document.getElementById('textEditorModal').style.display = 'none';
+        }
+
+        function applyAndSaveText() {
+            let key = document.getElementById('editingTextKey').value;
+            let newHtml = document.getElementById('textEditorContent').value;
+            
+            if(!newHtml.trim()) return alert("Vui lòng nhập nội dung!");
+
+            // Update preview instantly
+            document.getElementById('text-' + key).innerHTML = newHtml;
+            
+            // Send to server
+            let formData = new FormData();
+            formData.append('sectionKey', key);
+            formData.append('htmlContent', newHtml);
+            
+            let btn = document.querySelector('button[onclick="applyAndSaveText()"]');
+            let oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+            
+            fetch(csrfUrl('/admin/visual-editor/save-text'), {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    closeTextEditor();
+                    btn.innerHTML = '<i class="fa fa-check"></i> Đã Lưu!';
+                    setTimeout(() => { btn.innerHTML = oldHtml; }, 1000);
+                } else {
+                    btn.innerHTML = oldHtml;
+                    alert('Không lưu được văn bản: ' + data.message);
+                }
+            })
+            .catch(e => {
+                btn.innerHTML = oldHtml;
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            });
+        }
+
+        // FULL CRUD LOGIC (Add & Delete)
+        async function deleteEntity(type, id) {
+            const ok = await skyConfirm('Bạn có chắc chắn muốn xóa thẻ này khỏi trang chủ không?', 'Xác nhận xóa', 'Xóa');
+            if (!ok) return;
+
+            let formData = new FormData();
+            formData.append('type', type);
+            formData.append('id', id);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/delete-entity'), {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!res.ok) {
+                    alert('Xóa thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5) và thử lại!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Xóa thất bại: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            } catch(e) {
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            }
+        }
+
+        function openAddModal(type) {
+            document.getElementById('addEntityType').value = type;
+            let title = '';
+            let fieldsHtml = '';
+            
+            if (type === 'banner') {
+                title = 'Thêm Điểm Đến Mới';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tiêu đề (Tên địa điểm)</label><input type="text" id="addBannerTitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Phụ đề (Mô tả ngắn)</label><input type="text" id="addBannerSubtitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Đường dẫn ảnh (URL)</label><input type="text" id="addBannerImage" class="form-control" placeholder="https://example.com/image.jpg" required autocomplete="off"></div>
+                `;
+            } else if (type === 'service') {
+                title = 'Thêm Dịch Vụ Mới';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tên dịch vụ</label><input type="text" id="addServiceTitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><textarea id="addServiceDesc" class="form-control" rows="3" required autocomplete="off"></textarea></div>
+                    <div class="mb-3"><label class="form-label fw-bold"><i class="fas fa-image text-primary me-1"></i>Đường dẫn ảnh (URL)</label><input type="text" id="addServiceImage" class="form-control" placeholder="https://example.com/image.jpg" autocomplete="off"></div>
+                `;
+            } else if (type === 'team') {
+                title = 'Thêm Nhân Sự';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tên nhân sự</label><input type="text" id="addTeamName" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Chức vụ</label><input type="text" id="addTeamRole" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Đường dẫn ảnh chân dung (URL)</label><input type="text" id="addTeamImage" class="form-control" placeholder="https://example.com/portrait.jpg" required autocomplete="off"></div>
+                `;
+            }
+            
+            document.getElementById('addEntityModalTitle').innerHTML = '<i class="fa fa-plus-circle me-2"></i>' + title;
+            document.getElementById('addEntityFields').innerHTML = fieldsHtml;
+            document.getElementById('addEntityModal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addEntityModal').style.display = 'none';
+        }
+
+        // ===================== EDIT BANNER =====================
+        // Wrapper gọi từ data-* attributes (an toàn, tránh NPE khi Thymeleaf render)
+        function openEditBannerFromBtn(btn) {
+            let title = btn.dataset.title;
+            let subtitle = btn.dataset.subtitle;
+            let image = btn.dataset.image;
+            
+            // Fallback: Nếu không lấy được data-* thì đọc trực tiếp từ thẻ HTML trên màn hình
+            if (!title) {
+                const card = btn.closest('.flight-banner-card') || btn.closest('.svc-card');
+                if (card) {
+                    const titleEl = card.querySelector('h3, h5.fw-bold');
+                    const subEl = card.querySelector('p.text-warning, p.text-muted');
+                    if (titleEl) title = titleEl.innerText;
+                    if (subEl) subtitle = subEl.innerText;
+                }
+            }
+
+            openEditBanner(
+                btn.dataset.id,
+                title,
+                subtitle,
+                image
+            );
+        }
+
+        function openEditBanner(id, title, subtitle, imageUrl) {
+            document.getElementById('editBannerId').value = id;
+            document.getElementById('editBannerTitle').value = title || '';
+            document.getElementById('editBannerSubtitle').value = subtitle || '';
+            document.getElementById('editBannerImage').value = imageUrl || '';
+            document.getElementById('editBannerFile').value = '';
+            document.getElementById('editBannerUploadStatus').style.display = 'none';
+
+            // Hiển thị ảnh preview
+            const preview = document.getElementById('editBannerPreview');
+            if (imageUrl) {
+                preview.src = imageUrl;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+
+            const btn = document.getElementById('saveEditBannerBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu Thay Đổi';
+            document.getElementById('editBannerModal').style.display = 'block';
+        }
+
+        function closeEditBanner() {
+            document.getElementById('editBannerModal').style.display = 'none';
+        }
+
+        async function handleEditBannerFile(input) {
+            if (!input.files || !input.files.length) return;
+            const statusEl = document.getElementById('editBannerUploadStatus');
+            statusEl.style.display = 'block';
+            const fd = new FormData();
+            fd.append('file', input.files[0]);
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/upload'), { method: 'POST', body: fd });
+                const data = await res.json();
+                statusEl.style.display = 'none';
+                if (data.success) {
+                    document.getElementById('editBannerImage').value = data.url;
+                    const preview = document.getElementById('editBannerPreview');
+                    preview.src = data.url;
+                    preview.style.display = 'block';
+                } else {
+                    alert('Tải ảnh thất bại: ' + data.message);
+                }
+            } catch(e) {
+                statusEl.style.display = 'none';
+                alert('Lỗi kết nối khi tải ảnh!');
+            }
+        }
+
+        async function submitEditBanner() {
+            const id    = document.getElementById('editBannerId').value;
+            const title = document.getElementById('editBannerTitle').value.trim();
+            const sub   = document.getElementById('editBannerSubtitle').value.trim();
+            const img   = document.getElementById('editBannerImage').value.trim();
+
+            if (!title) return alert('Vui lòng nhập tiêu đề!');
+
+            const btn = document.getElementById('saveEditBannerBtn');
+            const oldHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('title', title);
+            fd.append('subtitle', sub);
+            fd.append('imageUrl', img);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/update-banner'), { method: 'POST', body: fd });
+                if (!res.ok) {
+                    btn.disabled = false; btn.innerHTML = oldHtml;
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    // Cập nhật DOM theo data-id attribute
+                    const editBtn = document.querySelector('[data-id="' + id + '"]');
+                    if (editBtn) {
+                        const card = editBtn.closest('.col-lg-4, .col-md-6');
+                        if (card) {
+                            const h3 = card.querySelector('h3');
+                            const h5 = card.querySelector('h5.text-warning');
+                            const imgEl = card.querySelector('img.img-fluid');
+                            if (h3) h3.textContent = title;
+                            if (h5) h5.textContent = sub;
+                            if (imgEl && img) imgEl.src = img;
+                        }
+                    }
+                    closeEditBanner();
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>Đã Lưu!';
+                    setTimeout(() => { btn.disabled = false; btn.innerHTML = oldHtml; }, 1500);
+                } else {
+                    btn.disabled = false; btn.innerHTML = oldHtml;
+                    alert('Lỗi: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            } catch(e) {
+                btn.disabled = false; btn.innerHTML = oldHtml;
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            }
+        }
+
+        function submitAddEntity() {
+            let type = document.getElementById('addEntityType').value;
+            let formData = new FormData();
+            let url = '';
+            
+            if (type === 'banner') {
+                formData.append('title', document.getElementById('addBannerTitle').value);
+                formData.append('subtitle', document.getElementById('addBannerSubtitle').value);
+                formData.append('imageUrl', document.getElementById('addBannerImage').value);
+                url = '/admin/visual-editor/add-banner';
+            } else if (type === 'service') {
+                formData.append('title', document.getElementById('addServiceTitle').value);
+                formData.append('description', document.getElementById('addServiceDesc').value);
+                // Dùng imageUrl thay vì iconClass
+                const imgEl = document.getElementById('addServiceImage');
+                formData.append('imageUrl', imgEl ? imgEl.value : '');
+                url = '/admin/visual-editor/add-service';
+            } else if (type === 'team') {
+                formData.append('name', document.getElementById('addTeamName').value);
+                formData.append('role', document.getElementById('addTeamRole').value);
+                formData.append('imageUrl', document.getElementById('addTeamImage').value);
+                url = '/admin/visual-editor/add-team';
+            }
+            
+            let btn = document.querySelector('button[onclick="submitAddEntity()"]');
+            let oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+            
+            const csrf = getCsrf();
+
+            fetch(csrfUrl(url), {
+                method: 'POST',
+                body: formData
+            }).then(res => {
+                if (!res.ok) {
+                    btn.innerHTML = oldHtml;
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return Promise.reject();
+                }
+                return res.json();
+            }).then(data => {
+                if(data.success) {
+                    window.location.reload();
+                } else {
+                    btn.innerHTML = oldHtml;
+                    alert('Lỗi: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            }).catch(e => {
+                if (e) {
+                    btn.innerHTML = oldHtml;
+                    alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                    console.error(e);
+                }
+            });
+        }
+
+        // ===================== SERVICE DETAIL MODAL =====================
+        function openServiceDetail(card) {
+            const title = card.dataset.title || '';
+            const desc = card.dataset.desc || '';
+            const imgUrl = card.dataset.img || '';
+            const iconClass = card.dataset.icon || 'fas fa-star';
+
+            document.getElementById('svcModalTitle').textContent = title;
+            document.getElementById('svcModalDesc').textContent = desc;
+
+            const imgEl = document.getElementById('svcModalImg');
+            const iconWrap = document.getElementById('svcModalIcon');
+            const iconEl = document.getElementById('svcModalIconEl');
+
+            if (imgUrl) {
+                imgEl.src = imgUrl;
+                imgEl.style.display = 'block';
+                iconWrap.style.setProperty('display', 'none', 'important');
+            } else {
+                imgEl.style.display = 'none';
+                iconEl.className = 'text-primary ' + iconClass;
+                iconWrap.style.setProperty('display', 'flex', 'important');
+            }
+
+            document.getElementById('serviceDetailModal').style.display = 'block';
+        }
+
+        function closeServiceDetail() {
+            document.getElementById('serviceDetailModal').style.display = 'none';
+        }
+
+        // ===================== CAROUSEL MANAGER =====================
+        const MAX_CAROUSEL = 5;
+
+        // Theo dõi xem có thay đổi nào chưa reload chưa
+        let carouselNeedsReload = false;
+
+        function openCarouselManager() {
+            const modal = document.getElementById('carouselManagerModal');
+            if (modal) modal.style.display = 'block';
+        }
+        function closeCarouselManager() {
+            document.getElementById('carouselManagerModal').style.display = 'none';
+            // Chỉ reload khi đã có thay đổi thực sự
+            if (carouselNeedsReload) {
+                window.location.reload();
+            }
+        }
+
+        function showAddRow(index) {
+            document.getElementById('addRow-' + index).style.display = 'block';
+        }
+
+        async function uploadToSlot(index) {
+            const input = document.getElementById('cNewFile-' + index);
+            if (!input.files.length) return;
+            
+            const fd = new FormData();
+            fd.append('file', input.files[0]);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/upload'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    alert('Upload thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('cNewUrl-' + index).value = data.url;
+                    await saveToSlot(index);
+                } else {
+                    alert('Upload thất bại: ' + data.message);
+                }
+            } catch(e) {
+                alert('Lỗi kết nối khi upload ảnh!');
+                console.error(e);
+            }
+        }
+
+        async function saveToSlot(index) {
+            const url = document.getElementById('cNewUrl-' + index).value.trim();
+            if (!url) return alert('Vui lòng nhập URL ảnh hoặc tải ảnh lên!');
+
+            const fd = new FormData();
+            fd.append('title', 'Carousel Slide ' + (index + 1));
+            fd.append('imageUrl', url);
+
+            const tickBtn = document.querySelector(`[onclick="saveToSlot(${index})"]`);
+            if (tickBtn) { tickBtn.disabled = true; tickBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/add-carousel'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    carouselNeedsReload = true;
+                    updateSlotUI(index, url, data.id);
+                } else {
+                    if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(e) {
+                if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                alert('Lỗi kết nối!');
+                console.error(e);
+            }
+        }
+
+        // Cập nhật giao diện slot sau khi lưu thành công (không reload)
+        function updateSlotUI(index, imgUrl, bannerId) {
+            // Tìm card chứa slot này (col thứ index)
+            const allSlotCols = document.querySelectorAll('#carouselSlotsContainer > .col-md-6, #carouselSlotsContainer > .col-lg-4, #carouselSlotsContainer [class*="col-"]');
+            // Tìm addRow element của slot này
+            const addRow = document.getElementById('addRow-' + index);
+            if (!addRow) return;
+
+            // Tìm card-img-top gần nhất (parent chain: addRow -> card-body -> card -> card-img-top)
+            const cardBody = addRow.closest('.card-body');
+            const card = cardBody ? cardBody.closest('.card') : null;
+            const imgContainer = card ? card.querySelector('.card-img-top') : null;
+
+            if (imgContainer) {
+                // Thay thế vùng trống bằng ảnh vừa lưu
+                imgContainer.innerHTML = `
+                    <div class="w-100 h-100" style="position:relative;">
+                        <img src="${imgUrl}" class="w-100 h-100" style="object-fit: cover;">
+                        ${bannerId ? `<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" onclick="deleteCarouselSlide(${bannerId})" title="Xóa"><i class="fas fa-times"></i></button>` : ''}
+                    </div>`;
+            }
+
+            // Thay thế phần card-body của slot: ẩn nút Thêm Ảnh, hiện tên slide
+            if (cardBody) {
+                cardBody.innerHTML = `<div class="small text-truncate text-muted mb-0">Carousel Slide ${index + 1}</div>`;
+            }
+        }
+
+        async function deleteCarouselSlide(id) {
+            const ok = await skyConfirm('Bạn có chắc muốn xóa ảnh này khỏi carousel?', 'Xác nhận xóa', 'Xóa');
+            if (!ok) return;
+            const fd = new FormData();
+            fd.append('type', 'banner');
+            fd.append('id', id);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/delete-entity'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    alert('Xóa thất bại! Lỗi ' + res.status + '.');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    carouselNeedsReload = true;
+                    window.location.reload();
+                } else {
+                    alert('Xóa thất bại: ' + data.message);
+                }
+            } catch(e) {
+                alert('Lỗi kết nối!');
+                console.error(e);
+            }
+        }
+
+
     </script>
 </th:block>
 

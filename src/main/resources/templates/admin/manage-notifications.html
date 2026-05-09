@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div})}">
+<head>
+    <title>Quản Lý Thông Báo - SkyTravel</title>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h2 class="text-primary fw-bold m-0"><i class="fas fa-bullhorn me-2"></i>Quản Lý & Gửi Thông Báo</h2>
+                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                    <i class="fas fa-paper-plane me-2"></i>Tạo Thông Báo Mới
+                </button>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm rounded-3" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card shadow border-0 rounded-4">
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle data-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Người Gửi</th>
+                                <th>Tiêu Đề</th>
+                                <th>Nội Dung</th>
+                                <th>Đối Tượng</th>
+                                <th>Trạng Thái</th>
+                                <th>Thời Gian Gửi</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="notif : ${notifications}">
+                                <td th:text="${notif.id}">1</td>
+                                <td>
+                                    <span class="badge bg-dark">Hệ thống</span>
+                                </td>
+                                <td class="fw-bold" th:text="${notif.title}">Title</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" th:text="${notif.message}">Message...</div>
+                                </td>
+                                <td>
+                                    <span th:if="${notif.isGroup}" class="badge bg-primary"><i class="fas fa-users me-1"></i><span th:text="${notif.recipientSummary}"></span></span>
+                                    <span th:unless="${notif.isGroup}" class="badge bg-info"><i class="fas fa-user me-1"></i><span th:text="${notif.recipientSummary}"></span></span>
+                                </td>
+                                <td>
+                                    <span th:if="${notif.isRead}" class="badge bg-success"><i class="fas fa-check me-1"></i>Đã Đọc (Toàn bộ)</span>
+                                    <span th:unless="${notif.isRead}" class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chưa Đọc</span>
+                                </td>
+                                <td th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">Date</td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-info text-white view-notif-btn" 
+                                                th:data-id="${notif.id}"
+                                                th:data-title="${notif.title}"
+                                                th:data-message="${notif.message}"
+                                                th:data-recipient="${notif.allRecipients}"
+                                                th:data-status="${notif.isRead ? 'Đã đọc' : 'Chưa đọc'}"
+                                                th:data-is-group="${notif.isGroup}"
+                                                title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning text-white edit-notif-btn" 
+                                                th:data-id="${notif.id}"
+                                                th:data-title="${notif.title}"
+                                                th:data-message="${notif.message}"
+                                                title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form th:action="@{/admin/notifications/delete/{id}(id=${notif.id})}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này? (Nếu là thông báo chung, toàn bộ khách hàng sẽ mất thông báo này)')">
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Notification Modal -->
+        <div class="modal fade" id="viewNotificationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header bg-info text-white border-0 rounded-top-4">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2"></i>Chi Tiết Thông Báo</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-light">
+                        <div class="mb-3">
+                            <label class="small text-muted text-uppercase fw-bold">Tiêu đề</label>
+                            <div id="viewTitle" class="fw-bold fs-5 text-primary"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted text-uppercase fw-bold">Nội dung</label>
+                            <div id="viewMessage" style="white-space: pre-wrap;" class="bg-white p-3 rounded border"></div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="small text-muted text-uppercase fw-bold">Người nhận</label>
+                                <div id="viewRecipient" class="fw-bold"></div>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted text-uppercase fw-bold">Trạng thái</label>
+                                <div id="viewStatus"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Notification Modal -->
+        <div class="modal fade" id="editNotificationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header bg-warning text-dark border-0 rounded-top-4">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Cập Nhật Thông Báo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/admin/notifications/update}" method="post">
+                        <input type="hidden" name="id" id="editId">
+                        <div class="modal-body p-4 bg-light">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Tiêu Đề</label>
+                                    <input type="text" class="form-control" name="title" id="editTitle" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Nội Dung</label>
+                                    <textarea class="form-control" name="message" id="editMessage" rows="5" required></textarea>
+                                    <div class="form-text text-info">
+                                        <i class="fas fa-info-circle me-1"></i> Hệ thống sẽ tự động thêm tiền tố <strong>[Cập nhật]:</strong> khi gửi lại.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 bg-light pb-4 pe-4">
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold">Lưu Thay Đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Notification Modal -->
+        <div class="modal fade" id="sendNotificationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Mới</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/admin/notifications/send}" method="post">
+                        <div class="modal-body p-4 bg-light">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Tiêu Đề Thông Báo <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="title" required placeholder="VD: Khuyến mãi tết, Chuyến bay thay đổi giờ...">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Nội Dung <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="message" rows="4" required placeholder="Nhập chi tiết nội dung cần thông báo cho khách hàng..."></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Đối Tượng Nhận <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target" id="targetAll" value="ALL" checked onchange="toggleSpecificUser()">
+                                            <label class="form-check-label" for="targetAll">Tất cả khách hàng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target" id="targetSpecific" value="SPECIFIC" onchange="toggleSpecificUser()">
+                                            <label class="form-check-label" for="targetSpecific">Một khách hàng cụ thể</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" id="specificUserDiv" style="display: none;">
+                                    <label class="form-label fw-bold text-primary">Tên Đăng Nhập (Username) Người Nhận</label>
+                                    <input type="text" class="form-control border-primary" name="targetUsername" id="targetUsername" placeholder="Nhập chính xác username của khách">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 bg-light pb-4 pe-4">
+                            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success px-4 rounded-pill fw-bold"><i class="fas fa-paper-plane me-2"></i>Gửi Ngay</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // View button click
+                document.querySelectorAll('.view-notif-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const title = this.getAttribute('data-title');
+                        const message = this.getAttribute('data-message');
+                        const recipient = this.getAttribute('data-recipient');
+                        const status = this.getAttribute('data-status');
+                        
+                        document.getElementById('viewTitle').innerText = title;
+                        document.getElementById('viewMessage').innerText = message;
+                        document.getElementById('viewRecipient').innerText = recipient;
+                        document.getElementById('viewStatus').innerHTML = `<span class="badge ${status === 'Đã đọc' ? 'bg-success' : 'bg-warning text-dark'}">${status}</span>`;
+                        
+                        new bootstrap.Modal(document.getElementById('viewNotificationModal')).show();
+                    });
+                });
+
+                // Edit button click
+                document.querySelectorAll('.edit-notif-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const title = this.getAttribute('data-title');
+                        const message = this.getAttribute('data-message');
+                        
+                        document.getElementById('editId').value = id;
+                        document.getElementById('editTitle').value = title;
+                        document.getElementById('editMessage').value = message.replace(/^\[Cập nhật\]: /, '');
+                        
+                        new bootstrap.Modal(document.getElementById('editNotificationModal')).show();
+                    });
+                });
+            });
+
+            function toggleSpecificUser() {
+                const isSpecific = document.getElementById('targetSpecific').checked;
+                const specificUserDiv = document.getElementById('specificUserDiv');
+                const targetUsername = document.getElementById('targetUsername');
+                
+                if (isSpecific) {
+                    specificUserDiv.style.display = 'block';
+                    targetUsername.setAttribute('required', 'required');
+                } else {
+                    specificUserDiv.style.display = 'none';
+                    targetUsername.removeAttribute('required');
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>
