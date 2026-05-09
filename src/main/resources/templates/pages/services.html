@@ -29,13 +29,40 @@
             <h2 class="display-5 fw-bold mt-2">Đẳng Cấp Trên Từng Chuyến Bay</h2>
         </div>
         <div class="row g-4">
-            <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="service-item bg-white rounded-4 h-100 p-5 shadow-sm border hover-shadow" style="transition: all 0.3s ease;">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-4" style="width: 80px; height: 80px;">
-                        <i class="text-primary fs-2" th:class="${svc.iconClass}"></i>
+            <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp position-relative" data-wow-delay="0.1s">
+                <!-- Card: hiển thị ảnh + tiêu đề, di chuột hiện mô tả -->
+                <div class="svc-card bg-white rounded-4 shadow-sm border overflow-hidden"
+                     style="cursor: pointer; transition: all 0.3s ease;"
+                     th:data-title="${svc.title}"
+                     th:data-desc="${svc.description != null ? svc.description : ''}"
+                     th:data-img="${svc.imageUrl != null ? svc.imageUrl : ''}"
+                     th:data-icon="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"
+                     onclick="openServiceDetail(this)">
+
+                    <!-- Vùng ảnh -->
+                    <div class="svc-card-img position-relative overflow-hidden" style="height: 200px; background: #f0f4f8;">
+                        <!-- Nếu có ảnh URL -->
+                        <th:block th:if="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
+                            <img th:src="@{${svc.imageUrl}}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;" alt="">
+                        </th:block>
+                        <!-- Nếu chỉ có icon -->
+                        <th:block th:unless="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
+                                <i class="text-primary" style="font-size: 4rem;" th:class="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"></i>
+                            </div>
+                        </th:block>
+                        <!-- Overlay "Xem chi tiết" + Mô tả -->
+                        <div class="svc-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 text-center"
+                             style="background: rgba(13,107,104,0.85); opacity: 0; transition: opacity 0.3s;">
+                            <p class="text-white small mb-3 px-2" th:text="${svc.description}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;"></p>
+                            <span class="btn btn-sm btn-light rounded-pill px-4 fw-bold shadow-sm"><i class="fas fa-eye me-2"></i>Xem Chi Tiết</span>
+                        </div>
                     </div>
-                    <h4 class="mb-3 fw-bold" th:text="${svc.title}"></h4>
-                    <p class="mb-4 text-muted" th:text="${svc.description}"></p>
+
+                    <!-- Tiêu đề -->
+                    <div class="p-4">
+                        <h5 class="fw-bold mb-0 text-dark text-center" th:text="${svc.title}"></h5>
+                    </div>
                 </div>
             </div>
             <div th:if="${#lists.isEmpty(services)}" class="col-12 text-center text-muted">
@@ -44,14 +71,68 @@
         </div>
     </div>
 </div>
-<!-- Service End -->
+
+<!-- Service Detail Modal -->
+<div id="serviceDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:50000; overflow-y:auto;" onclick="if(event.target===this) closeServiceDetail()">
+    <div style="max-width:560px; margin:60px auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div id="svcModalImgWrap" style="height:260px; background:#f0f4f8; overflow:hidden; position:relative;">
+            <img id="svcModalImg" src="" class="w-100 h-100" style="object-fit:cover; display:none;" alt="">
+            <div id="svcModalIcon" class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="display:flex!important;">
+                <i id="svcModalIconEl" class="text-primary" style="font-size: 5rem;"></i>
+            </div>
+        </div>
+        <div style="padding: 32px;">
+            <h3 id="svcModalTitle" class="fw-bold text-dark mb-3"></h3>
+            <p id="svcModalDesc" class="text-muted lh-lg" style="font-size:1.05rem;"></p>
+            <div class="mt-4 d-flex justify-content-end">
+                <button class="btn btn-primary rounded-pill px-5 fw-bold" onclick="closeServiceDetail()">
+                    <i class="fas fa-times me-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openServiceDetail(el) {
+        const title = el.getAttribute('data-title');
+        const desc = el.getAttribute('data-desc');
+        const img = el.getAttribute('data-img');
+        const icon = el.getAttribute('data-icon');
+
+        document.getElementById('svcModalTitle').innerText = title;
+        document.getElementById('svcModalDesc').innerText = desc;
+
+        const modalImg = document.getElementById('svcModalImg');
+        const modalIconWrap = document.getElementById('svcModalIcon');
+        const modalIconEl = document.getElementById('svcModalIconEl');
+
+        if (img && img.trim() !== '') {
+            modalImg.src = img;
+            modalImg.style.display = 'block';
+            modalIconWrap.style.setProperty('display', 'none', 'important');
+        } else {
+            modalImg.style.display = 'none';
+            modalIconWrap.style.setProperty('display', 'flex', 'important');
+            modalIconEl.className = 'text-primary ' + icon;
+        }
+
+        document.getElementById('serviceDetailModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeServiceDetail() {
+        document.getElementById('serviceDetailModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+</script>
 
 <style>
-    .hover-shadow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-    }
+    .svc-card:hover { transform: translateY(-6px); box-shadow: 0 1rem 3rem rgba(0,0,0,.15)!important; }
+    .svc-card:hover .svc-overlay { opacity: 1 !important; }
+    .svc-card:hover img { transform: scale(1.08); }
 </style>
+<!-- Service End -->
 
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 </body>

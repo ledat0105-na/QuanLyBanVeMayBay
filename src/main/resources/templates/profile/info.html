@@ -100,11 +100,21 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Mật khẩu mới</label>
-                                    <input type="password" class="form-control" name="newPassword" required minlength="6">
+                                    <input type="password" class="form-control" name="newPassword"
+                                           pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':|,.<>\/?]).{8,}$"
+                                           title="Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, số và ký tự đặc biệt"
+                                           required minlength="8">
+                                    <div class="form-text text-muted mt-1">
+                                        <i class="fas fa-info-circle me-1 text-primary"></i>
+                                        Ít nhất <strong>8 ký tự</strong>, gồm:
+                                        <span class="badge bg-secondary ms-1">A-Z chữ hoa</span>
+                                        <span class="badge bg-secondary ms-1">0-9 số</span>
+                                        <span class="badge bg-secondary ms-1">!@#$... đặc biệt</span>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Xác nhận mật khẩu mới</label>
-                                    <input type="password" class="form-control" name="confirmPassword" required minlength="6">
+                                    <input type="password" class="form-control" name="confirmPassword" required minlength="8">
                                 </div>
                                 <div class="col-12 text-end mt-4">
                                     <button type="submit" class="btn btn-warning text-white rounded-pill px-5 py-2"><i class="fas fa-key me-2"></i>Cập Nhật Mật Khẩu</button>

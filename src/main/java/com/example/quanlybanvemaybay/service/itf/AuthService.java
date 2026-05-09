@@ -5,7 +5,9 @@ import com.example.quanlybanvemaybay.dto.request.RegisterRequest;
 public interface AuthService {
     void register(RegisterRequest request);
 
-    void sendPasswordResetOtp(String email);
+    void sendPasswordResetOtp(String identifier);
 
-    void resetPassword(String email, String otpCode, String newPassword);
+    void resetPassword(String identifier, String otpCode, String newPassword);
+
+    void checkUserExists(String identifier);
 }

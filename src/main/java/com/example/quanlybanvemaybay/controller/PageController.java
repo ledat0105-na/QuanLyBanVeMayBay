@@ -17,13 +17,19 @@ public class PageController {
     private final FlightServiceItemRepository serviceRepo;
     private final BannerRepository bannerRepo;
     private final ContactMessageRepository contactRepo;
+    private final com.example.quanlybanvemaybay.repository.UserRepository userRepo;
+    private final com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo;
 
     public PageController(TeamMemberRepository teamRepo, FlightServiceItemRepository serviceRepo,
-                          BannerRepository bannerRepo, ContactMessageRepository contactRepo) {
+                          BannerRepository bannerRepo, ContactMessageRepository contactRepo,
+                          com.example.quanlybanvemaybay.repository.UserRepository userRepo,
+                          com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo) {
         this.teamRepo = teamRepo;
         this.serviceRepo = serviceRepo;
         this.bannerRepo = bannerRepo;
         this.contactRepo = contactRepo;
+        this.userRepo = userRepo;
+        this.notifRepo = notifRepo;
     }
 
     @GetMapping("/about")
@@ -52,6 +58,24 @@ public class PageController {
     @PostMapping("/contact/send")
     public String sendMessage(@ModelAttribute ContactMessage message, RedirectAttributes ra) {
         contactRepo.save(message);
+
+        // Notify Admin/Staff
+        java.util.List<com.example.quanlybanvemaybay.entity.User> staffList = userRepo.findAll().stream()
+            .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
+            .toList();
+        
+        String groupId = java.util.UUID.randomUUID().toString();
+        for (com.example.quanlybanvemaybay.entity.User staff : staffList) {
+            com.example.quanlybanvemaybay.entity.Notification notif = new com.example.quanlybanvemaybay.entity.Notification();
+            notif.setUser(staff);
+            notif.setTitle("Tin nhắn mới từ khách hàng");
+            notif.setMessage("Khách hàng " + message.getSenderName() + " vừa gửi tin nhắn liên hệ.");
+            notif.setIsRead(false);
+            notif.setCreatedAt(java.time.LocalDateTime.now());
+            notif.setGroupId(groupId);
+            notifRepo.save(notif);
+        }
+
         ra.addFlashAttribute("successMessage", "Cảm ơn bạn đã liên hệ! Hộp thư đã nhận được phản hồi và sẽ liên lạc lại sớm nhất.");
         return "redirect:/contact";
     }

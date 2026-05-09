@@ -80,17 +80,17 @@
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                 <div class="row g-0">
                     <div class="col-md-5 bg-primary text-white p-5 d-flex flex-column justify-content-center align-items-center text-center">
-                        <i class="fas fa-qrcode fa-5x mb-4"></i>
-                        <h4 class="fw-bold mb-3">Thanh Toán Chuyển Khoản</h4>
-                        <p class="mb-4 text-white-50">Hướng dẫn thanh toán trực tiếp từ ứng dụng ngân hàng của bạn vào tài khoản đại lý.</p>
+                        <h4 class="fw-bold mb-3">Quét Mã VietQR</h4>
+                        <p class="mb-3 text-white-50">Mở ứng dụng ngân hàng và quét mã để thanh toán tự động với số tiền & nội dung chính xác.</p>
                         
-                        <div class="bg-white text-dark p-3 rounded-3 mb-3 w-100 shadow-sm">
-                            <small class="text-muted d-block">Ngân hàng</small>
-                            <h5 class="fw-bold mb-2">Vietcombank</h5>
-                            <small class="text-muted d-block">Số tài khoản</small>
-                            <h5 class="fw-bold mb-2 text-primary">0123456789</h5>
-                            <small class="text-muted d-block">Chủ tài khoản</small>
-                            <h6 class="fw-bold mb-0 uppercase">CONG TY VE MAY BAY</h6>
+                        <div class="bg-white p-2 rounded-4 mb-3 shadow-lg d-inline-block">
+                            <img th:src="@{'https://img.vietqr.io/image/vietinbank-0833562999-compact2.png?amount=' + ${#numbers.formatDecimal(booking.totalAmount, 0, 'NONE', 0, 'NONE')} + '&addInfo=' + ${booking.bookingCode} + '&accountName=LE NGUYEN TIEN DAT'}" alt="VietQR" class="img-fluid rounded-3" style="max-width: 220px;">
+                        </div>
+                        
+                        <div class="bg-white bg-opacity-10 text-white p-3 rounded-3 mb-2 w-100 shadow-sm border border-light border-opacity-25">
+                            <h6 class="fw-bold mb-1">VietinBank</h6>
+                            <h5 class="fw-bold mb-1 text-warning">0833562999</h5>
+                            <small class="mb-0 text-uppercase fw-bold">LE NGUYEN TIEN DAT</small>
                         </div>
                     </div>
                     <div class="col-md-7 p-5">
@@ -112,8 +112,8 @@
                         </div>
 
                         <div class="alert alert-info border-0 rounded-3 mb-4 shadow-sm border-start border-4 border-info">
-                            <span style="color: #055160 !important;"><i class="fas fa-info-circle me-2"></i> <strong>Nội dung chuyển khoản bắt buộc:</strong></span> <br>
-                            <strong class="fs-4 mt-2 d-block text-center" style="color: #127a7b !important;" th:text="'THANHTOAN ' + ${booking.bookingCode}"></strong>
+                            <span style="color: #055160 !important;"><i class="fas fa-info-circle me-2"></i> <strong>Nội dung chuyển khoản:</strong> (Quét QR sẽ tự động điền nội dung này)</span> <br>
+                            <strong class="fs-4 mt-2 d-block text-center" style="color: #127a7b !important;" th:text="${booking.bookingCode}"></strong>
                         </div>
 
                         <form th:action="@{/booking/confirmPayment}" method="post">

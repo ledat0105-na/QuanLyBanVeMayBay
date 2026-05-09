@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -24,15 +25,17 @@ public class HomeController {
     private final FlightServiceItemRepository serviceRepository;
     private final TeamMemberRepository teamRepository;
     private final UserRepository userRepository;
+    private final com.example.quanlybanvemaybay.repository.HomepageContentRepository homepageContentRepository;
 
     public HomeController(AirportService airportService, BannerRepository bannerRepository,
                           FlightServiceItemRepository serviceRepository, TeamMemberRepository teamRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository, com.example.quanlybanvemaybay.repository.HomepageContentRepository homepageContentRepository) {
         this.airportService = airportService;
         this.bannerRepository = bannerRepository;
         this.serviceRepository = serviceRepository;
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
+        this.homepageContentRepository = homepageContentRepository;
     }
 
     @GetMapping("/")
@@ -64,6 +67,16 @@ public class HomeController {
         
         model.addAttribute("services", serviceRepository.findByIsActiveTrue());
         model.addAttribute("teamMembers", teamRepository.findByIsActiveTrue());
+
+        List<com.example.quanlybanvemaybay.entity.HomepageContent> contents = homepageContentRepository.findAll();
+        Map<String, String> contentMap = contents.stream().collect(Collectors.toMap(com.example.quanlybanvemaybay.entity.HomepageContent::getSectionKey, com.example.quanlybanvemaybay.entity.HomepageContent::getHtmlContent));
+
+        model.addAttribute("homeHeroTitle", contentMap.getOrDefault("home_hero_title", "Hệ Thống Đặt <span class=\"text-primary\">Vé Máy Bay</span> SkyTravel"));
+        model.addAttribute("homeHeroSubtitle", contentMap.getOrDefault("home_hero_subtitle", "Nhanh Chóng - Tiết Kiệm - An Toàn"));
+        model.addAttribute("homeServicesTitle", contentMap.getOrDefault("home_services_title", "Đẳng Cấp Trên Từng Chuyến Bay"));
+        model.addAttribute("homeTeamTitle", contentMap.getOrDefault("home_team_title", "Đội Ngũ Nhân Sự"));
+        model.addAttribute("homeTeamSubtitle", contentMap.getOrDefault("home_team_subtitle", "Gặp gỡ những phi công và chuyên gia hàng không tận tâm, mang lại sự an toàn tuyệt đối cho chuyến bay của bạn."));
+
         return "home";
     }
 

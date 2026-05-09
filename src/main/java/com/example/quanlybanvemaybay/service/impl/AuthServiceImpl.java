@@ -63,12 +63,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sendPasswordResetOtp(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại"));
+    public void sendPasswordResetOtp(String identifier) {
+        User user = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với thông tin này"));
+
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Tài khoản này chưa cập nhật email để nhận mã OTP");
+        }
 
         String otpCode = generateOtpCode();
-        LocalDateTime expireTime = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime expireTime = LocalDateTime.now().plusMinutes(1);
 
         EmailOtp otp = EmailOtp.builder()
                 .email(user.getEmail())
@@ -82,23 +86,33 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resetPassword(String email, String otpCode, String newPassword) {
+    public void resetPassword(String identifier, String otpCode, String newPassword) {
+        User user = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản"));
+
         EmailOtp otp = emailOtpRepository
-                .findFirstByEmailAndOtpCodeAndIsUsedFalseOrderByExpireTimeDesc(email, otpCode)
+                .findFirstByEmailAndOtpCodeAndIsUsedFalseOrderByExpireTimeDesc(user.getEmail(), otpCode)
                 .orElseThrow(() -> new IllegalArgumentException("OTP không hợp lệ hoặc đã hết hạn"));
 
         if (otp.getExpireTime() == null || otp.getExpireTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("OTP đã hết hạn");
         }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy email trong hệ thống"));
-
         otp.setIsUsed(true);
         emailOtpRepository.save(otp);
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Override
+    public void checkUserExists(String identifier) {
+        User user = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với thông tin này"));
+
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Tài khoản này chưa cập nhật email để nhận mã OTP");
+        }
     }
 
     private String generateOtpCode() {

@@ -25,6 +25,9 @@ public class FlightServiceItem {
     @Column(name = "icon_class", length = 50)
     private String iconClass; // e.g., "fas fa-utensils"
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl; // URL ảnh cho service card
+
     @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;

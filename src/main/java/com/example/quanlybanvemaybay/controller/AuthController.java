@@ -68,7 +68,7 @@ public class AuthController {
             RedirectAttributes redirectAttributes
     ) {
         try {
-            authService.sendPasswordResetOtp(email);
+            authService.checkUserExists(email);
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
             return "redirect:/forgot-password";
@@ -106,5 +106,36 @@ public class AuthController {
 
         redirectAttributes.addAttribute("reset", "true");
         return "redirect:/login";
+    }
+
+    @PostMapping("/api/auth/send-otp")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<?> sendOtp(@RequestParam String email) {
+        try {
+            authService.sendPasswordResetOtp(email);
+            return org.springframework.http.ResponseEntity.ok().body(java.util.Map.of("message", "Mã OTP đã được gửi!"));
+        } catch (IllegalArgumentException ex) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("error", ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/auth/reset-password")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<?> resetPasswordApi(
+            @RequestParam("email") String email,
+            @RequestParam("otpCode") String otpCode,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword
+    ) {
+        if (newPassword == null || newPassword.isBlank() || !newPassword.equals(confirmPassword)) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("error", "Mật khẩu mới không hợp lệ hoặc xác nhận mật khẩu không khớp"));
+        }
+
+        try {
+            authService.resetPassword(email, otpCode, newPassword);
+            return org.springframework.http.ResponseEntity.ok().body(java.util.Map.of("message", "Đặt lại mật khẩu thành công!"));
+        } catch (IllegalArgumentException ex) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("error", ex.getMessage()));
+        }
     }
 }

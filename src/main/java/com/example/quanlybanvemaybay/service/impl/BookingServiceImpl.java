@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -22,16 +23,30 @@ public class BookingServiceImpl implements BookingService {
     private final PromotionRepository promotionRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final NotificationRepository notificationRepository;
 
     public BookingServiceImpl(BookingRepository bookingRepository, PassengerRepository passengerRepository, 
                               BaggageOptionRepository baggageOptionRepository, PromotionRepository promotionRepository, 
-                              UserRepository userRepository, PaymentRepository paymentRepository) {
+                              UserRepository userRepository, PaymentRepository paymentRepository,
+                              NotificationRepository notificationRepository) {
         this.bookingRepository = bookingRepository;
         this.passengerRepository = passengerRepository;
         this.baggageOptionRepository = baggageOptionRepository;
         this.promotionRepository = promotionRepository;
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
+        this.notificationRepository = notificationRepository;
+    }
+
+    private void sendNotif(User user, String title, String message) {
+        if (user == null) return;
+        Notification notif = new Notification();
+        notif.setUser(user);
+        notif.setTitle(title);
+        notif.setMessage(message);
+        notif.setIsRead(false);
+        notif.setCreatedAt(LocalDateTime.now());
+        notificationRepository.save(notif);
     }
 
     @Override
@@ -95,6 +110,20 @@ public class BookingServiceImpl implements BookingService {
                 passengerRepository.save(p);
             }
         }
+
+        // Send notifications
+        if (user != null) {
+            // Notif to Customer
+            sendNotif(user, "Đặt vé thành công", "Mã đặt vé của bạn là: " + savedBooking.getBookingCode() + ". Vui lòng thanh toán để hoàn tất.");
+            
+            // Notif to Admin/Staff
+            List<User> adminsAndStaff = userRepository.findAll().stream()
+                .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
+                .toList();
+            for (User admin : adminsAndStaff) {
+                sendNotif(admin, "Có đơn đặt vé mới", "Khách hàng " + user.getFullName() + " vừa đặt vé: " + savedBooking.getBookingCode());
+            }
+        }
         
         return savedBooking;
     }
@@ -117,6 +146,16 @@ public class BookingServiceImpl implements BookingService {
             // Auto generate transaction code placeholder for manual entry later if desired
             payment.setTransactionCode("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             paymentRepository.save(payment);
+
+            // Notify Admin about payment request
+            if (booking.getUser() != null) {
+                List<User> adminsAndStaff = userRepository.findAll().stream()
+                    .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
+                    .toList();
+                for (User admin : adminsAndStaff) {
+                    sendNotif(admin, "Yêu cầu thanh toán", "Khách hàng " + booking.getUser().getFullName() + " vừa thực hiện thanh toán cho đơn: " + booking.getBookingCode());
+                }
+            }
         }
     }
 
@@ -135,8 +174,15 @@ public class BookingServiceImpl implements BookingService {
     public Booking updateBookingStatus(Long id, String status) {
         Booking booking = findById(id);
         if (booking != null) {
+            String oldStatus = booking.getBookingStatus();
             booking.setBookingStatus(status);
             bookingRepository.save(booking);
+
+            // Notify Customer about status update
+            if (booking.getUser() != null && !status.equals(oldStatus)) {
+                String msg = "Trạng thái đơn đặt vé " + booking.getBookingCode() + " đã thay đổi thành: " + status;
+                sendNotif(booking.getUser(), "Cập nhật trạng thái vé", msg);
+            }
         }
         return booking;
     }

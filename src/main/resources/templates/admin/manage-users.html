@@ -74,15 +74,63 @@
                                                 <h5 class="modal-title">Đặt lại mật khẩu - <span th:text="${user.username}"></span></h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                            <div class="modal-body">
+                                            <div class="modal-body text-start">
                                                 <div class="mb-3">
                                                     <label class="form-label">Mật khẩu mới</label>
-                                                    <input type="password" name="newPassword" class="form-control" required minlength="6">
+                                                    <input type="password" name="newPassword" class="form-control"
+                                                           pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&amp;*()_+\-=\[\]{};':|,.<>\/?]).{8,}$"
+                                                           title="Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, số và ký tự đặc biệt"
+                                                           required minlength="8">
+                                                    <div class="form-text text-muted mt-1">
+                                                        <i class="fas fa-info-circle me-1 text-primary"></i>
+                                                        Ít nhất <strong>8 ký tự</strong>:
+                                                        <span class="badge bg-secondary">A-Z chữ hoa</span>
+                                                        <span class="badge bg-secondary ms-1">0-9 số</span>
+                                                        <span class="badge bg-secondary ms-1">!@#$... đặc biệt</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                                                 <button type="submit" class="btn btn-primary">Xác nhận</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-sm border-0 bg-transparent text-primary ms-2" 
+                                    data-bs-toggle="modal" 
+                                    th:data-bs-target="'#editUserModal' + ${user.id}" title="Cập nhật thông tin">
+                                <i class="fas fa-edit fa-lg"></i>
+                            </button>
+
+                            <!-- Modal Edit User -->
+                            <div class="modal fade" th:id="'editUserModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="@{/admin/users/{id}/update(id=${user.id})}" method="post">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cập nhật thông tin - <span th:text="${user.username}"></span></h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Họ tên</label>
+                                                    <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Email</label>
+                                                    <input type="email" name="email" class="form-control" th:value="${user.email}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Số điện thoại</label>
+                                                    <input type="text" name="phone" class="form-control" th:value="${user.phone}" required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                                             </div>
                                         </form>
                                     </div>
@@ -114,7 +162,17 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Mật khẩu</label>
-                        <input type="password" class="form-control" th:field="*{password}" required>
+                        <input type="password" class="form-control" th:field="*{password}"
+                               pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&amp;*()_+\-=\[\]{};':|,.<>\/?]).{8,}$"
+                               title="Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, số và ký tự đặc biệt"
+                               required minlength="8">
+                        <div class="form-text text-muted mt-1">
+                            <i class="fas fa-info-circle me-1 text-primary"></i>
+                            Ít nhất <strong>8 ký tự</strong>, gồm:
+                            <span class="badge bg-secondary ms-1">A-Z chữ hoa</span>
+                            <span class="badge bg-secondary ms-1">0-9 số</span>
+                            <span class="badge bg-secondary ms-1">!@#$... đặc biệt</span>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Họ tên</label>

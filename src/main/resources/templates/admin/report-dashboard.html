@@ -6,9 +6,24 @@
 <body>
 <div class="admin-wrapper">
 <div class="container-fluid">
-    <div class="mb-4">
-        <h2>Báo cáo Thống kê</h2>
-        <p class="text-muted">Tổng quan doanh thu và hoạt động hệ thống.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Báo cáo Thống kê</h2>
+            <p class="text-muted mb-0">Tổng quan doanh thu và hoạt động hệ thống.</p>
+        </div>
+        <form th:action="@{/admin/report}" method="get" class="d-flex gap-2 align-items-center">
+            <label class="fw-bold text-muted text-nowrap mb-0">Lọc theo:</label>
+            <select name="filterType" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="DAY" th:selected="${filterType == 'DAY'}">Theo Ngày</option>
+                <option value="MONTH" th:selected="${filterType == 'MONTH'}">Theo Tháng</option>
+                <option value="QUARTER" th:selected="${filterType == 'QUARTER'}">Theo Quý</option>
+                <option value="YEAR" th:selected="${filterType == 'YEAR'}">Theo Năm</option>
+            </select>
+            <input type="date" th:if="${filterType == 'DAY'}" name="filterDate" class="form-control form-control-sm" th:value="${filterDate}" onchange="this.form.submit()">
+            <input type="month" th:if="${filterType == 'MONTH'}" name="filterDate" class="form-control form-control-sm" th:value="${filterDate}" onchange="this.form.submit()">
+            <input type="text" th:if="${filterType == 'QUARTER'}" name="filterDate" class="form-control form-control-sm" placeholder="YYYY-Qx" th:value="${filterDate}" onchange="this.form.submit()" style="max-width: 120px;">
+            <input type="number" th:if="${filterType == 'YEAR'}" name="filterDate" class="form-control form-control-sm" placeholder="YYYY" th:value="${filterDate}" onchange="this.form.submit()" style="max-width: 100px;">
+        </form>
     </div>
 
     <!-- Stats row -->
@@ -80,20 +95,67 @@
             </div>
         </div>
         
-        <!-- Info column could be added here in the future -->
+        <!-- Chart column -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Thông tin tóm tắt</h5>
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Biểu Đồ Tăng Trưởng</h5>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>Doanh Thu</option>
+                    </select>
                 </div>
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-chart-pie fa-4x text-muted mb-3 opacity-50"></i>
-                    <p class="text-muted">Biểu đồ đang được cập nhật...</p>
+                <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                    <canvas id="growthChart" style="width: 100%; height: 300px;"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        var ctx = document.getElementById('growthChart').getContext('2d');
+        var chartLabels = /*[[${chartLabels}]]*/ ['Th 10', 'Th 11', 'Th 12', 'Th 1', 'Th 2', 'Th 3'];
+        var chartData = /*[[${chartData}]]*/ [3000000, 4800000, 7500000, 5500000, 6800000, 9200000];
+
+
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Doanh Thu (VNĐ)',
+                    data: chartData,
+                    backgroundColor: 'rgba(135, 206, 250, 0.7)',
+                    borderColor: 'rgba(135, 206, 250, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN').format(value);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 </div>
 </body>

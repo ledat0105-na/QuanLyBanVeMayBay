@@ -11,6 +11,7 @@ public interface UserService {
     void toggleLockUser(Long userId);
     void resetUserPassword(Long userId, String newPassword);
     void updateUserInfo(String username, String fullName, String phone);
+    void updateUserAdmin(Long userId, String fullName, String email, String phone);
     void changePassword(String username, String oldPassword, String newPassword);
     com.example.quanlybanvemaybay.entity.User getUserById(Long userId);
 }

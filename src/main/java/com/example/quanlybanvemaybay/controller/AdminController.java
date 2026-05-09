@@ -100,6 +100,22 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
+    @PostMapping("/users/{id}/update")
+    public String updateUser(
+            @PathVariable("id") Long id,
+            @RequestParam("fullName") String fullName,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            RedirectAttributes redirectAttributes) {
+        try {
+            userService.updateUserAdmin(id, fullName, email, phone);
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin người dùng thành công!");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + ex.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
     @GetMapping("/airlines")
     public String manageAirlines(Model model) {
         model.addAttribute("airlines", airlineService.findAll());
