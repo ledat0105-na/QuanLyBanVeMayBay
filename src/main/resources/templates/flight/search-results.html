@@ -7,7 +7,7 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<!-- Header Summary -->
+
 <div class="container-fluid bg-primary text-white py-4 mb-4 shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
         <div>
@@ -25,14 +25,14 @@
             </p>
         </div>
         <div>
-            <a href="/" class="btn btn-outline-light rounded-pill px-4">Tìm kiếm lại</a>
+            <a href="/#flight-search-section" class="btn btn-outline-light rounded-pill px-4">Tìm kiếm lại</a>
         </div>
     </div>
 </div>
 
 <main class="container mb-5">
     <div class="row">
-        <!-- Sidebar Filters -->
+        
         <div class="col-lg-3 mb-4">
             <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-2 rounded-top-4">
@@ -45,12 +45,12 @@
                         <input class="form-check-input airline-filter" type="checkbox" th:value="${al.id}" checked>
                         <label class="form-check-label" th:text="${al.name}"></label>
                     </div>
-                    <!-- Add more filter headers here in the future -->
+                    
                 </div>
             </div>
         </div>
 
-        <!-- Search Results List -->
+        
         <div class="col-lg-9">
             <div th:if="${#lists.isEmpty(flights)}" class="text-center py-5 bg-white shadow-sm rounded-4 border-0">
                 <i class="fas fa-search-minus fa-4x text-muted mb-4 opacity-50"></i>
@@ -63,7 +63,7 @@
                 <div class="card-body p-0">
                     <div class="row g-0 align-items-center h-100">
                         <div class="col-md-3 text-center p-4 border-end border-light h-100 d-flex flex-column justify-content-center">
-                            <!-- Could add airline logo here -->
+                            
                             <h5 class="fw-bold text-primary mb-2" th:text="${f.airline.name}"></h5>
                             <span class="badge bg-light text-dark border p-2" th:text="${f.flightNumber}"></span>
                         </div>
@@ -102,7 +102,9 @@
                             <button sec:authorize="hasRole('ADMIN')" type="button" class="btn btn-secondary rounded-pill w-100 fw-bold shadow-sm py-2 disabled" title="Admin chỉ thực hiện quản lý, không đặt vé">
                                 Khóa chức năng
                             </button>
-                            <button sec:authorize="!isAuthenticated()" type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" data-bs-toggle="modal" data-bs-target="#loginPromptModal">
+                            <button sec:authorize="!isAuthenticated()" type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
+                                    data-bs-toggle="modal" data-bs-target="#loginPromptModal"
+                                    th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&passengers=${passengers}')|">
                                 Chọn chuyến
                             </button>
                         </div>
@@ -115,7 +117,7 @@
 
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 
-<!-- Login Prompt Modal -->
+
 <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -130,8 +132,8 @@
         <h4 class="mb-3">Bạn chưa đăng nhập!</h4>
         <p class="text-muted mb-4">Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục quá trình xem thông tin và mua vé bay trên SkyTravel.</p>
         <div class="d-grid gap-3">
-            <a th:href="@{/login}" class="btn btn-primary rounded-pill py-3 fw-bold fs-5">Đăng nhập ngay</a>
-            <a th:href="@{/register}" class="btn btn-outline-primary rounded-pill py-3 fw-bold fs-5">Tạo tài khoản mới</a>
+            <a id="modalLoginBtn" th:href="@{/login}" class="btn btn-primary rounded-pill py-3 fw-bold fs-5">Đăng nhập ngay</a>
+            <a id="modalRegisterBtn" th:href="@{/register}" class="btn btn-outline-primary rounded-pill py-3 fw-bold fs-5">Tạo tài khoản mới</a>
         </div>
       </div>
     </div>
@@ -160,6 +162,11 @@
             });
         });
     });
+
+    function setReturnUrl(url) {
+        document.getElementById('modalLoginBtn').href = '/login?returnUrl=' + encodeURIComponent(url);
+        document.getElementById('modalRegisterBtn').href = '/register?returnUrl=' + encodeURIComponent(url);
+    }
 </script>
 </body>
 </html>

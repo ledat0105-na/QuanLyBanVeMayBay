@@ -174,9 +174,34 @@ public class AdminController {
         return "redirect:/admin/airports";
     }
 
+    private boolean isVietnam(String country) {
+        if (country == null) return false;
+        String lower = country.trim().toLowerCase();
+        return lower.equals("vietnam") || lower.equals("việt nam") || lower.equals("vn") || lower.equals("viet nam");
+    }
+
     @GetMapping("/flights")
     public String manageFlights(Model model) {
-        model.addAttribute("flights", flightService.findAll());
+        java.util.List<Flight> all = flightService.findAll();
+        
+        all.sort((f1, f2) -> f2.getId().compareTo(f1.getId()));
+
+        java.util.List<Flight> domestic = all.stream()
+            .filter(f -> f.getDepartureAirport() != null && f.getArrivalAirport() != null
+                && isVietnam(f.getDepartureAirport().getCountry())
+                && isVietnam(f.getArrivalAirport().getCountry()))
+            .toList();
+
+        java.util.List<Flight> international = all.stream()
+            .filter(f -> f.getDepartureAirport() == null || f.getArrivalAirport() == null
+                || !isVietnam(f.getDepartureAirport().getCountry())
+                || !isVietnam(f.getArrivalAirport().getCountry()))
+            .toList();
+
+
+        model.addAttribute("flights", all); 
+        model.addAttribute("domesticFlights", domestic);
+        model.addAttribute("internationalFlights", international);
         model.addAttribute("airlines", airlineService.findAll());
         model.addAttribute("airports", airportService.findAll());
         model.addAttribute("flight", new Flight());
@@ -189,6 +214,11 @@ public class AdminController {
             flightService.save(flight);
             redirectAttributes.addFlashAttribute("success", "Lưu chuyến bay thành công!");
         } catch (Exception ex) {
+            ex.printStackTrace(); 
+            try {
+                java.nio.file.Files.writeString(java.nio.file.Paths.get("error_debug.log"), 
+                    ex.getMessage() + "\n" + java.util.Arrays.toString(ex.getStackTrace()));
+            } catch (Exception ignored) {}
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + ex.getMessage());
         }
         return "redirect:/admin/flights";

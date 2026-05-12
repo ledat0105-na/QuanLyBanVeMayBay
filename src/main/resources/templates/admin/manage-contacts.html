@@ -44,7 +44,7 @@
                                 Xem chi tiết
                             </button>
                             
-                            <!-- Detail Modal -->
+                            
                             <div class="modal fade text-start" th:id="'msgModal' + ${msg.id}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -72,7 +72,7 @@
                         </td>
                         <td class="text-center">
                             <form th:action="@{/admin/contacts/delete/{id}(id=${msg.id})}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirm('Xóa tin nhắn này vĩnh viễn?')" title="Xóa"><i class="fas fa-trash fa-lg"></i></button>
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirmAction(event, 'Xóa tin nhắn này vĩnh viễn?', this)" title="Xóa"><i class="fas fa-trash fa-lg"></i></button>
                             </form>
                         </td>
                     </tr>

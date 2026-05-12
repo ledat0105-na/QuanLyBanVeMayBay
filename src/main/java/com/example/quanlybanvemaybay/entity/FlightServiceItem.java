@@ -23,10 +23,10 @@ public class FlightServiceItem {
     private String description;
 
     @Column(name = "icon_class", length = 50)
-    private String iconClass; // e.g., "fas fa-utensils"
+    private String iconClass; 
 
     @Column(name = "image_url", length = 500)
-    private String imageUrl; // URL ảnh cho service card
+    private String imageUrl; 
 
     @Builder.Default
     @Column(name = "is_active")

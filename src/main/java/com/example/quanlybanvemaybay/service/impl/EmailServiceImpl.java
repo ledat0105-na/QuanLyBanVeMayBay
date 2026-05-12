@@ -86,20 +86,29 @@ public class EmailServiceImpl implements EmailService {
     public void sendBookingStatusUpdateEmail(Booking booking, String status) {
         if (booking.getUser() == null || booking.getUser().getEmail() == null) return;
         try {
-            org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
-            message.setFrom("tle723772@gmail.com");
-            message.setTo(booking.getUser().getEmail());
-            message.setSubject("Cập nhật trạng thái vé - SkyTravel");
-            
+            Context context = new Context();
+            context.setVariable("booking", booking);
+            context.setVariable("rawStatus", status);
+
             String statusText = status;
             if ("CANCELLED".equals(status)) statusText = "ĐÃ HỦY";
             if ("REFUNDED".equals(status)) statusText = "ĐÃ HOÀN TIỀN";
             if ("CONFIRMED".equals(status)) statusText = "ĐÃ XÁC NHẬN";
+            if ("PENDING".equals(status)) statusText = "CHỜ THANH TOÁN";
+            
+            context.setVariable("statusText", statusText);
 
-            message.setText("Xin chào " + booking.getUser().getUsername() + ",\n\n"
-                    + "Vé của bạn (Mã Vé: #" + booking.getId() + ") đã được cập nhật trạng thái thành: " + statusText + ".\n\n"
-                    + "Nếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ.\n\nTrân trọng,\nĐội ngũ SkyTravel");
-            javaMailSender.send(message);
+            String process = templateEngine.process("email/booking-status-update", context);
+
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+            
+            helper.setText(process, true);
+            helper.setTo(booking.getUser().getEmail());
+            helper.setSubject("Cập nhật trạng thái vé - SkyTravel");
+            helper.setFrom("tle723772@gmail.com");
+
+            javaMailSender.send(mimeMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }

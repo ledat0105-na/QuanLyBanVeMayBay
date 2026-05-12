@@ -45,13 +45,13 @@
                                     th:data-bs-target="'#editAirlineModal' + ${a.id}" title="Sửa">
                                 <i class="fas fa-edit fa-lg"></i>
                             </button>
-                            <form th:action="@{/admin/airlines/delete/{id}(id=${a.id})}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hãng bay này?');">
+                            <form th:action="@{/admin/airlines/delete/{id}(id=${a.id})}" method="post" class="d-inline" onsubmit="return confirmAction(event, 'Bạn có chắc chắn muốn xóa hãng bay này?', this);">
                                 <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" title="Xóa">
                                     <i class="fas fa-trash fa-lg"></i>
                                 </button>
                             </form>
 
-                            <!-- Modal Edit Airline -->
+                            
                             <div class="modal fade" th:id="'editAirlineModal' + ${a.id}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -89,7 +89,7 @@
     </div>
 </div>
 
-<!-- Modal Create Airline -->
+
 <div class="modal fade" id="createAirlineModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

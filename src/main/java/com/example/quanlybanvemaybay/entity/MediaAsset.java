@@ -25,7 +25,7 @@ public class MediaAsset {
     private String fileUrl;
 
     @Column(name = "image_type", length = 50)
-    private String imageType; // BANNER, TEAM, SERVICE, etc.
+    private String imageType; 
 
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;

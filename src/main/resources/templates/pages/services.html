@@ -7,7 +7,7 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<!-- Page Header Start -->
+
 <div class="container-fluid page-header py-5 mb-5" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1540339832862-4745aaadfc34?q=80&w=2070&auto=format&fit=crop'); background-position: center;">
     <div class="container py-5 text-center">
         <h1 class="display-3 text-white fw-bold mb-3 animated slideInDown">Dịch Vụ Của Chúng Tôi</h1>
@@ -19,9 +19,9 @@
         </nav>
     </div>
 </div>
-<!-- Page Header End -->
 
-<!-- Service Start -->
+
+
 <div class="container-xxl py-5">
     <div class="container">
         <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
@@ -30,7 +30,7 @@
         </div>
         <div class="row g-4">
             <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp position-relative" data-wow-delay="0.1s">
-                <!-- Card: hiển thị ảnh + tiêu đề, di chuột hiện mô tả -->
+                
                 <div class="svc-card bg-white rounded-4 shadow-sm border overflow-hidden"
                      style="cursor: pointer; transition: all 0.3s ease;"
                      th:data-title="${svc.title}"
@@ -39,19 +39,19 @@
                      th:data-icon="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"
                      onclick="openServiceDetail(this)">
 
-                    <!-- Vùng ảnh -->
+                    
                     <div class="svc-card-img position-relative overflow-hidden" style="height: 200px; background: #f0f4f8;">
-                        <!-- Nếu có ảnh URL -->
+                        
                         <th:block th:if="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
                             <img th:src="@{${svc.imageUrl}}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;" alt="">
                         </th:block>
-                        <!-- Nếu chỉ có icon -->
+                        
                         <th:block th:unless="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
                             <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
                                 <i class="text-primary" style="font-size: 4rem;" th:class="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"></i>
                             </div>
                         </th:block>
-                        <!-- Overlay "Xem chi tiết" + Mô tả -->
+                        
                         <div class="svc-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 text-center"
                              style="background: rgba(13,107,104,0.85); opacity: 0; transition: opacity 0.3s;">
                             <p class="text-white small mb-3 px-2" th:text="${svc.description}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;"></p>
@@ -59,7 +59,7 @@
                         </div>
                     </div>
 
-                    <!-- Tiêu đề -->
+                    
                     <div class="p-4">
                         <h5 class="fw-bold mb-0 text-dark text-center" th:text="${svc.title}"></h5>
                     </div>
@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<!-- Service Detail Modal -->
+
 <div id="serviceDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:50000; overflow-y:auto;" onclick="if(event.target===this) closeServiceDetail()">
     <div style="max-width:560px; margin:60px auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
         <div id="svcModalImgWrap" style="height:260px; background:#f0f4f8; overflow:hidden; position:relative;">
@@ -132,7 +132,7 @@
     .svc-card:hover .svc-overlay { opacity: 1 !important; }
     .svc-card:hover img { transform: scale(1.08); }
 </style>
-<!-- Service End -->
+
 
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 </body>

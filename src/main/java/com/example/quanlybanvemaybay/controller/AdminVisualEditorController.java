@@ -61,7 +61,7 @@ public class AdminVisualEditorController {
 
             String fileUrl = "/uploads/banners/" + fileName;
 
-            // Save to MediaAsset table
+            
             com.example.quanlybanvemaybay.entity.MediaAsset asset = new com.example.quanlybanvemaybay.entity.MediaAsset();
             asset.setFileName(fileName);
             asset.setFileUrl(fileUrl);
@@ -81,7 +81,7 @@ public class AdminVisualEditorController {
     @PostMapping("/save")
     public ResponseEntity<?> saveConfiguration(@RequestParam("position") String position,
                                                @RequestParam("imageUrl") String imageUrl) {
-        // Find existing configuration banner or create a new one
+        
         Optional<Banner> existing = bannerRepository.findAll().stream()
                 .filter(b -> position.equals(b.getPosition()))
                 .findFirst();
@@ -139,7 +139,7 @@ public class AdminVisualEditorController {
         banner.setTitle(title);
         banner.setSubtitle(subtitle);
         banner.setImageUrl(imageUrl);
-        banner.setPosition("DESTINATION"); // Default for custom added banners
+        banner.setPosition("DESTINATION"); 
         banner.setIsActive(true);
         bannerRepository.save(banner);
         return ResponseEntity.ok(Map.of("success", true));
@@ -180,7 +180,7 @@ public class AdminVisualEditorController {
         banner.setPosition("HOME_CAROUSEL");
         banner.setIsActive(true);
         Banner saved = bannerRepository.save(banner);
-        // Trả về id để frontend gắn nút xóa ngay mà không cần reload
+        
         return ResponseEntity.ok(Map.of("success", true, "id", saved.getId()));
     }
 

@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
                 BigDecimal discount = totalAmount.multiply(BigDecimal.valueOf(promo.getDiscountPercent())).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
                 totalAmount = totalAmount.subtract(discount);
                 
-                // Track usage
+                
                 if (promo.getUsageLimit() != null && promo.getUsageLimit() > 0) {
                     promo.setUsageLimit(promo.getUsageLimit() - 1);
                     promotionRepository.save(promo);
@@ -95,13 +95,13 @@ public class BookingServiceImpl implements BookingService {
         
         Booking savedBooking = bookingRepository.save(booking);
         
-        // Decrement available seats
+        
         Flight flight = req.getFlight();
         if (flight.getAvailableSeats() != null) {
             int newAvailable = flight.getAvailableSeats() - req.getNumberOfPassengers();
             flight.setAvailableSeats(Math.max(0, newAvailable));
-            // Let JPA handle dirty checking since flight is likely in persistence context
-            // or we might need flightRepository if not attached
+            
+            
         }
         
         if (req.getPassengers() != null) {
@@ -111,12 +111,12 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // Send notifications
+        
         if (user != null) {
-            // Notif to Customer
+            
             sendNotif(user, "Đặt vé thành công", "Mã đặt vé của bạn là: " + savedBooking.getBookingCode() + ". Vui lòng thanh toán để hoàn tất.");
             
-            // Notif to Admin/Staff
+            
             List<User> adminsAndStaff = userRepository.findAll().stream()
                 .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
                 .toList();
@@ -129,8 +129,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public Booking findById(Long id) {
-        return bookingRepository.findById(id).orElse(null);
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null) {
+            org.hibernate.Hibernate.initialize(booking.getPassengers());
+            org.hibernate.Hibernate.initialize(booking.getPayments());
+            org.hibernate.Hibernate.initialize(booking.getBaggageOptions());
+            if (booking.getFlight() != null) {
+                org.hibernate.Hibernate.initialize(booking.getFlight().getDepartureAirport());
+                org.hibernate.Hibernate.initialize(booking.getFlight().getArrivalAirport());
+            }
+        }
+        return booking;
     }
 
     @Override
@@ -143,11 +154,11 @@ public class BookingServiceImpl implements BookingService {
             payment.setAmount(booking.getTotalAmount());
             payment.setPaymentMethod(paymentMethod);
             payment.setPaymentStatus("PENDING");
-            // Auto generate transaction code placeholder for manual entry later if desired
+            
             payment.setTransactionCode("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
             paymentRepository.save(payment);
 
-            // Notify Admin about payment request
+            
             if (booking.getUser() != null) {
                 List<User> adminsAndStaff = userRepository.findAll().stream()
                     .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
@@ -178,7 +189,7 @@ public class BookingServiceImpl implements BookingService {
             booking.setBookingStatus(status);
             bookingRepository.save(booking);
 
-            // Notify Customer about status update
+            
             if (booking.getUser() != null && !status.equals(oldStatus)) {
                 String msg = "Trạng thái đơn đặt vé " + booking.getBookingCode() + " đã thay đổi thành: " + status;
                 sendNotif(booking.getUser(), "Cập nhật trạng thái vé", msg);

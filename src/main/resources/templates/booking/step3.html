@@ -7,7 +7,7 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<!-- Stepper Navigation -->
+
 <style>
     .stepper-glow {
         background-color: #127a7b !important;
@@ -79,26 +79,92 @@
         <div class="col-lg-8">
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                 <div class="row g-0">
-                    <div class="col-md-5 bg-primary text-white p-5 d-flex flex-column justify-content-center align-items-center text-center">
-                        <h4 class="fw-bold mb-3">Quét Mã VietQR</h4>
-                        <p class="mb-3 text-white-50">Mở ứng dụng ngân hàng và quét mã để thanh toán tự động với số tiền & nội dung chính xác.</p>
+                    <div class="col-md-5 bg-light border-end p-4 d-flex flex-column">
+                        <h5 class="fw-bold mb-3 text-center" style="color: #127a7b;">Chọn Phương Thức</h5>
                         
-                        <div class="bg-white p-2 rounded-4 mb-3 shadow-lg d-inline-block">
-                            <img th:src="@{'https://img.vietqr.io/image/vietinbank-0833562999-compact2.png?amount=' + ${#numbers.formatDecimal(booking.totalAmount, 0, 'NONE', 0, 'NONE')} + '&addInfo=' + ${booking.bookingCode} + '&accountName=LE NGUYEN TIEN DAT'}" alt="VietQR" class="img-fluid rounded-3" style="max-width: 220px;">
-                        </div>
+                        <ul class="nav nav-pills flex-column mb-4" id="paymentTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active w-100 text-start fw-bold mb-2 shadow-sm border" id="vietqr-tab" data-bs-toggle="pill" data-bs-target="#vietqr" type="button" role="tab" onclick="document.getElementById('paymentMethodInput').value = 'BANK_TRANSFER'">
+                                    <i class="fas fa-university me-2 text-primary"></i>Chuyển Khoản Ngân Hàng
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100 text-start fw-bold mb-2 shadow-sm border" id="momo-tab" data-bs-toggle="pill" data-bs-target="#momo" type="button" role="tab" style="color: #a50064;" onclick="document.getElementById('paymentMethodInput').value = 'MOMO'">
+                                    <i class="fas fa-wallet me-2"></i>Ví MoMo
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100 text-start fw-bold mb-2 shadow-sm border" id="zalopay-tab" data-bs-toggle="pill" data-bs-target="#zalopay" type="button" role="tab" style="color: #0068ff;" onclick="document.getElementById('paymentMethodInput').value = 'ZALOPAY'">
+                                    <i class="fas fa-wallet me-2"></i>ZaloPay
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100 text-start fw-bold mb-2 shadow-sm border" id="vnpay-tab" data-bs-toggle="pill" data-bs-target="#vnpay" type="button" role="tab" style="color: #005A9E;" onclick="document.getElementById('paymentMethodInput').value = 'VNPAY'">
+                                    <i class="fas fa-qrcode me-2"></i>VNPay
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100 text-start fw-bold shadow-sm border" id="shopeepay-tab" data-bs-toggle="pill" data-bs-target="#shopeepay" type="button" role="tab" style="color: #ee4d2d;" onclick="document.getElementById('paymentMethodInput').value = 'SHOPEEPAY'">
+                                    <i class="fas fa-shopping-bag me-2"></i>ShopeePay
+                                </button>
+                            </li>
+                        </ul>
                         
-                        <div class="bg-white bg-opacity-10 text-white p-3 rounded-3 mb-2 w-100 shadow-sm border border-light border-opacity-25">
-                            <h6 class="fw-bold mb-1">VietinBank</h6>
-                            <h5 class="fw-bold mb-1 text-warning">0833562999</h5>
-                            <small class="mb-0 text-uppercase fw-bold">LE NGUYEN TIEN DAT</small>
+                        <div class="tab-content text-center flex-grow-1" id="paymentTabContent">
+                            
+                            <div class="tab-pane fade show active" id="vietqr" role="tabpanel">
+                                <p class="mb-3 text-muted small">Quét mã bằng ứng dụng ngân hàng</p>
+                                <div class="bg-white p-2 rounded-4 shadow-sm d-inline-block border mb-2">
+                                    <img th:src="@{'https://img.vietqr.io/image/vietinbank-0833562999-compact2.png?amount=' + ${#numbers.formatDecimal(booking.totalAmount, 0, 'NONE', 0, 'NONE')} + '&addInfo=' + ${booking.bookingCode} + '&accountName=LE NGUYEN TIEN DAT'}" alt="VietQR" class="img-fluid rounded-3" style="max-width: 200px;">
+                                </div>
+                                <h6 class="fw-bold mb-1 text-primary">VietinBank</h6>
+                                <h5 class="fw-bold mb-1 text-dark">0833562999</h5>
+                                <small class="text-uppercase fw-bold text-muted">LE NGUYEN TIEN DAT</small>
+                            </div>
+                            
+                            
+                            <div class="tab-pane fade" id="momo" role="tabpanel">
+                                <p class="mb-3 text-muted small">Quét mã bằng ứng dụng MoMo</p>
+                                <div class="bg-white p-2 rounded-4 shadow-sm d-inline-block border mb-2" style="border-color: #a50064 !important;">
+                                    <img th:src="@{/img/qr-momo.png}" alt="MoMo QR" class="img-fluid rounded-3" style="max-width: 200px;">
+                                </div>
+                                <h6 class="fw-bold mb-0 mt-2" style="color: #a50064;">LE NGUYEN TIEN DAT</h6>
+                            </div>
+
+                            
+                            <div class="tab-pane fade" id="zalopay" role="tabpanel">
+                                <p class="mb-3 text-muted small">Quét mã bằng ứng dụng ZaloPay</p>
+                                <div class="bg-white p-2 rounded-4 shadow-sm d-inline-block border mb-2" style="border-color: #0068ff !important;">
+                                    <img th:src="@{/img/qr-zalopay.png}" alt="ZaloPay QR" class="img-fluid rounded-3" style="max-width: 200px;">
+                                </div>
+                                <h6 class="fw-bold mb-0 mt-2" style="color: #0068ff;">LE NGUYEN TIEN DAT</h6>
+                            </div>
+                            
+                            
+                            <div class="tab-pane fade" id="vnpay" role="tabpanel">
+                                <p class="mb-3 text-muted small">Quét mã bằng App VNPay</p>
+                                <div class="bg-white p-2 rounded-4 shadow-sm d-inline-block border mb-2" style="border-color: #005A9E !important;">
+                                    <img th:src="@{/img/qr-vnpay.png}" alt="VNPay QR" class="img-fluid rounded-3" style="max-width: 200px;">
+                                </div>
+                                <h6 class="fw-bold mb-0 mt-2" style="color: #005A9E;">LE NGUYEN TIEN DAT</h6>
+                            </div>
+                            
+                            
+                            <div class="tab-pane fade" id="shopeepay" role="tabpanel">
+                                <p class="mb-3 text-muted small">Quét mã bằng ShopeePay</p>
+                                <div class="bg-white p-2 rounded-4 shadow-sm d-inline-block border mb-2" style="border-color: #ee4d2d !important;">
+                                    <img th:src="@{/img/qr-shopeepay.png}" alt="ShopeePay QR" class="img-fluid rounded-3" style="max-width: 200px;">
+                                </div>
+                                <h6 class="fw-bold mb-0 mt-2" style="color: #ee4d2d;">LE NGUYEN TIEN DAT</h6>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-7 p-5">
+                    <div class="col-md-7 p-5 bg-white">
                         <h4 class="fw-bold mb-4" style="color: #212529 !important;">Chi tiết Booking</h4>
                         
                         <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
                             <span style="color: #6c757d !important;">Mã Đặt Chỗ (Booking Code)</span>
-                            <span class="fw-bold bg-primary bg-opacity-10 px-2 rounded" style="color: #127a7b !important; font-size: 1.25rem;" th:text="${booking.bookingCode}"></span>
+                            <span class="fw-bold px-2 rounded" style="background-color: rgba(18, 122, 123, 0.1); color: #127a7b !important; font-size: 1.25rem;" th:text="${booking.bookingCode}"></span>
                         </div>
                         
                         <div class="mb-3 d-flex justify-content-between border-bottom pb-2 align-items-center">
@@ -106,22 +172,23 @@
                             <span class="badge bg-warning px-3 py-2 rounded-pill shadow-sm" style="color: #212529 !important;"><i class="fas fa-clock me-1"></i> Chờ thanh toán</span>
                         </div>
                         
-                        <div class="mb-5 d-flex flex-column bg-success bg-opacity-10 p-4 rounded-4 mt-4 text-center">
+                        <div class="mb-5 d-flex flex-column p-4 rounded-4 mt-4 text-center border border-success border-opacity-25" style="background-color: rgba(25, 135, 84, 0.1);">
                             <span class="fw-bold fs-6 mb-2" style="color: #198754 !important;">Số tiền cần thanh toán</span>
                             <h2 class="fw-bold mb-0" style="color: #198754 !important;" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></h2>
                         </div>
 
                         <div class="alert alert-info border-0 rounded-3 mb-4 shadow-sm border-start border-4 border-info">
-                            <span style="color: #055160 !important;"><i class="fas fa-info-circle me-2"></i> <strong>Nội dung chuyển khoản:</strong> (Quét QR sẽ tự động điền nội dung này)</span> <br>
-                            <strong class="fs-4 mt-2 d-block text-center" style="color: #127a7b !important;" th:text="${booking.bookingCode}"></strong>
+                            <span style="color: #055160 !important;"><i class="fas fa-info-circle me-2"></i> <strong>Nội dung chuyển khoản bắt buộc:</strong></span> <br>
+                            <span class="small text-muted">Vui lòng ghi đúng nội dung dưới đây để hệ thống tự động xác nhận.</span>
+                            <strong class="fs-3 mt-2 d-block text-center" style="color: #127a7b !important; letter-spacing: 2px;" th:text="${booking.bookingCode}"></strong>
                         </div>
 
-                        <form th:action="@{/booking/confirmPayment}" method="post">
+                        <form th:action="@{/booking/confirmPayment}" method="post" id="paymentConfirmForm">
                             <input type="hidden" name="bookingId" th:value="${booking.id}">
-                            <input type="hidden" name="paymentMethod" value="BANK_TRANSFER">
+                            <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="BANK_TRANSFER">
                             
-                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5 shadow-sm btn-lg">
-                                <i class="fas fa-check-circle me-2"></i> Tôi đã chuyển khoản xong
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5 shadow-sm btn-lg mt-3">
+                                <i class="fas fa-check-circle me-2"></i> Tôi đã thanh toán xong
                             </button>
                         </form>
                     </div>

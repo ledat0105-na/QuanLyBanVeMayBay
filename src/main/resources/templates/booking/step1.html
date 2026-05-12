@@ -7,7 +7,7 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<!-- Stepper Navigation -->
+
 <style>
     .stepper-glow {
         background-color: #127a7b !important;
@@ -76,7 +76,7 @@
 
 <main class="container mb-5">
     <div class="row">
-        <!-- Main Form Content -->
+        
         <div class="col-lg-8 mb-4">
             <form th:action="@{/booking/step1}" th:object="${req}" method="post">
                 <div class="card shadow-sm border-0 rounded-4">
@@ -105,11 +105,11 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
-                                    <input type="date" th:field="*{passengers[__${stat.index}__].dateOfBirth}" class="form-control" required>
+                                    <input type="text" th:field="*{passengers[__${stat.index}__].dateOfBirth}" class="form-control flatpickr-dob" placeholder="dd/mm/yyyy" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">CCCD / Hộ chiếu (Tùy chọn)</label>
-                                    <input type="text" th:field="*{passengers[__${stat.index}__].passportNumber}" class="form-control" placeholder="Số giấy tờ tùy thân">
+                                    <label class="form-label">CCCD / Hộ chiếu <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{passengers[__${stat.index}__].passportNumber}" class="form-control" placeholder="Số giấy tờ tùy thân" required>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
             </form>
         </div>
 
-        <!-- Sidebar Flight Flight Details -->
+        
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
                 <div class="card-header bg-primary text-white pt-4 pb-3 rounded-top-4">
@@ -162,5 +162,50 @@
 </main>
 
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Premium Flatpickr Styling */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        border-radius: 16px !important;
+        padding: 10px;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+        background: linear-gradient(135deg, #127a7b 0%, #0d5859 100%) !important;
+        border-color: transparent !important;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(18, 122, 123, 0.3);
+    }
+    .flatpickr-months .flatpickr-month {
+        background: transparent !important;
+        color: #333 !important;
+        fill: #333 !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year {
+        color: #127a7b !important;
+        font-weight: 800 !important;
+    }
+    .flatpickr-day:hover {
+        background: #e0ecec !important;
+        border-color: #e0ecec !important;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr(".flatpickr-dob", {
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            locale: "vn",
+            maxDate: "today",
+            allowInput: true
+        });
+    });
+</script>
 </body>
 </html>

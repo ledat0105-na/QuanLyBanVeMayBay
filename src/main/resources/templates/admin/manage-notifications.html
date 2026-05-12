@@ -8,9 +8,6 @@
         <div class="row mb-4">
             <div class="col-12 d-flex justify-content-between align-items-center">
                 <h2 class="text-primary fw-bold m-0"><i class="fas fa-bullhorn me-2"></i>Quản Lý & Gửi Thông Báo</h2>
-                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
-                    <i class="fas fa-paper-plane me-2"></i>Tạo Thông Báo Mới
-                </button>
             </div>
         </div>
 
@@ -23,8 +20,24 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <div class="card shadow border-0 rounded-4">
-            <div class="card-body p-4">
+        <ul class="nav nav-tabs nav-fill border-0 mb-4" id="notificationTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill fw-bold" id="manage-tab" data-bs-toggle="tab" data-bs-target="#manage" type="button" role="tab" aria-selected="true">
+                    <i class="fas fa-list me-2"></i>Quản Lý Thông Báo
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill fw-bold" id="send-tab" data-bs-toggle="tab" data-bs-target="#send" type="button" role="tab" aria-selected="false">
+                    <i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Mới
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="notificationTabsContent">
+            
+            <div class="tab-pane fade show active" id="manage" role="tabpanel">
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-body p-4">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle data-table">
                         <thead class="table-light">
@@ -78,7 +91,7 @@
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <form th:action="@{/admin/notifications/delete/{id}(id=${notif.id})}" method="post" class="d-inline"
-                                              onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này? (Nếu là thông báo chung, toàn bộ khách hàng sẽ mất thông báo này)')">
+                                              onsubmit="return confirmAction(event, 'Bạn có chắc muốn xóa thông báo này? (Nếu là thông báo chung, toàn bộ khách hàng sẽ mất thông báo này)', this)">
                                             <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
@@ -90,9 +103,56 @@
                     </table>
                 </div>
             </div>
+                </div>
+            </div>
+
+            
+            <div class="tab-pane fade" id="send" role="tabpanel">
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-header bg-primary text-white border-0 rounded-top-4 py-3">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-paper-plane me-2"></i>Soạn Thông Báo Mới</h5>
+                    </div>
+                    <div class="card-body p-4 bg-light">
+                        <form th:action="@{/admin/notifications/send}" method="post">
+                            <div class="row g-4">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Tiêu Đề Thông Báo <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control bg-white" name="title" required placeholder="VD: Khuyến mãi tết, Chuyến bay thay đổi giờ...">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Nội Dung <span class="text-danger">*</span></label>
+                                    <textarea class="form-control bg-white" name="message" rows="5" required placeholder="Nhập chi tiết nội dung cần thông báo cho khách hàng..."></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Đối Tượng Nhận <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-4 p-3 bg-white border rounded">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target" id="targetAll" value="ALL" checked onchange="toggleSpecificUser()">
+                                            <label class="form-check-label fw-bold text-primary" for="targetAll">Tất cả khách hàng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target" id="targetSpecific" value="SPECIFIC" onchange="toggleSpecificUser()">
+                                            <label class="form-check-label fw-bold text-secondary" for="targetSpecific">Một khách hàng cụ thể</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" id="specificUserDiv" style="display: none;">
+                                    <label class="form-label fw-bold text-primary">Tên Đăng Nhập (Username) Người Nhận</label>
+                                    <input type="text" class="form-control border-primary bg-white" name="targetUsername" id="targetUsername" placeholder="Nhập chính xác username của khách">
+                                </div>
+                                <div class="col-md-12 text-end mt-4">
+                                    <button type="submit" class="btn btn-success px-5 py-2 rounded-pill fw-bold fs-5 shadow-sm">
+                                        <i class="fas fa-paper-plane me-2"></i>Gửi Ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- View Notification Modal -->
+        
         <div class="modal fade" id="viewNotificationModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -128,7 +188,7 @@
             </div>
         </div>
 
-        <!-- Edit Notification Modal -->
+        
         <div class="modal fade" id="editNotificationModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -156,53 +216,6 @@
                         <div class="modal-footer border-0 bg-light pb-4 pe-4">
                             <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
                             <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold">Lưu Thay Đổi</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Send Notification Modal -->
-        <div class="modal fade" id="sendNotificationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content rounded-4 border-0 shadow-lg">
-                    <div class="modal-header bg-primary text-white border-0 rounded-top-4">
-                        <h5 class="modal-title fw-bold"><i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Mới</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form th:action="@{/admin/notifications/send}" method="post">
-                        <div class="modal-body p-4 bg-light">
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label class="form-label fw-bold">Tiêu Đề Thông Báo <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="title" required placeholder="VD: Khuyến mãi tết, Chuyến bay thay đổi giờ...">
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label fw-bold">Nội Dung <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" name="message" rows="4" required placeholder="Nhập chi tiết nội dung cần thông báo cho khách hàng..."></textarea>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label fw-bold">Đối Tượng Nhận <span class="text-danger">*</span></label>
-                                    <div class="d-flex gap-4">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="target" id="targetAll" value="ALL" checked onchange="toggleSpecificUser()">
-                                            <label class="form-check-label" for="targetAll">Tất cả khách hàng</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="target" id="targetSpecific" value="SPECIFIC" onchange="toggleSpecificUser()">
-                                            <label class="form-check-label" for="targetSpecific">Một khách hàng cụ thể</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-12" id="specificUserDiv" style="display: none;">
-                                    <label class="form-label fw-bold text-primary">Tên Đăng Nhập (Username) Người Nhận</label>
-                                    <input type="text" class="form-control border-primary" name="targetUsername" id="targetUsername" placeholder="Nhập chính xác username của khách">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-0 bg-light pb-4 pe-4">
-                            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-success px-4 rounded-pill fw-bold"><i class="fas fa-paper-plane me-2"></i>Gửi Ngay</button>
                         </div>
                     </form>
                 </div>

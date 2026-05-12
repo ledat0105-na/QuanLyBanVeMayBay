@@ -10,9 +10,11 @@ import com.example.quanlybanvemaybay.service.itf.FlightService;
 import com.example.quanlybanvemaybay.service.itf.EmailService;
 import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/booking")
@@ -25,50 +27,74 @@ public class BookingController {
     private final EmailService emailService;
     private final com.example.quanlybanvemaybay.repository.UserRepository userRepo;
     private final com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo;
+    private final com.example.quanlybanvemaybay.repository.PromotionRepository promotionRepo;
 
-    public BookingController(FlightService flightService, BaggageOptionRepository baggageOptionRepository, BookingService bookingService, EmailService emailService, com.example.quanlybanvemaybay.repository.UserRepository userRepo, com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo) {
+    public BookingController(FlightService flightService, BaggageOptionRepository baggageOptionRepository, BookingService bookingService, EmailService emailService, com.example.quanlybanvemaybay.repository.UserRepository userRepo, com.example.quanlybanvemaybay.repository.NotificationRepository notifRepo, com.example.quanlybanvemaybay.repository.PromotionRepository promotionRepo) {
         this.flightService = flightService;
         this.baggageOptionRepository = baggageOptionRepository;
         this.bookingService = bookingService;
         this.emailService = emailService;
         this.userRepo = userRepo;
         this.notifRepo = notifRepo;
+        this.promotionRepo = promotionRepo;
     }
 
     @GetMapping("/step1")
-    public String step1(@RequestParam("flightId") Long flightId, 
-                        @RequestParam(value = "passengers", defaultValue = "1") int numPassengers, 
-                        Model model, HttpSession session) {
-        
+    public String step1(@RequestParam("flightId") Long flightId,
+                        @RequestParam(value = "passengers", defaultValue = "1") int numPassengers,
+                        Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+
         Flight flight = flightService.findById(flightId);
         if (flight == null) {
             return "redirect:/";
         }
 
+        
+        if (flight.getDepartureTime() != null) {
+            LocalDateTime cutoff = flight.getDepartureTime().minusHours(3);
+            if (LocalDateTime.now().isAfter(cutoff)) {
+                redirectAttributes.addFlashAttribute("flightExpiredMsg",
+                    "Chuyến bay " + flight.getFlightNumber() + " đã hết hạn đặt vé! Chỉ mở bán đến trước giờ khởi hành 3 tiếng.");
+                return "redirect:/";
+            }
+        }
+
         BookingRequestDTO req = new BookingRequestDTO();
         req.setFlight(flight);
         req.setNumberOfPassengers(numPassengers);
-        
+
         for (int i = 0; i < numPassengers; i++) {
             req.getPassengers().add(new Passenger());
         }
 
         session.setAttribute("bookingReq", req);
         model.addAttribute("req", req);
-        
+
         return "booking/step1";
     }
 
     @PostMapping("/step1")
-    public String processStep1(@ModelAttribute("req") BookingRequestDTO reqForm, HttpSession session) {
+    public String processStep1(@ModelAttribute("req") BookingRequestDTO reqForm, HttpSession session, RedirectAttributes redirectAttributes) {
         BookingRequestDTO sessionReq = (BookingRequestDTO) session.getAttribute("bookingReq");
         if (sessionReq == null) {
             return "redirect:/";
         }
+
         
-        // Update passengers
+        Flight flight = sessionReq.getFlight();
+        if (flight != null && flight.getDepartureTime() != null) {
+            LocalDateTime cutoff = flight.getDepartureTime().minusHours(3);
+            if (LocalDateTime.now().isAfter(cutoff)) {
+                session.removeAttribute("bookingReq");
+                redirectAttributes.addFlashAttribute("flightExpiredMsg",
+                    "Phiên đặt vé đã hết hiệu lực. Chuyến bay " + flight.getFlightNumber() + " không còn nhận đặt chỗ vì gần giờ khởi hành.");
+                return "redirect:/";
+            }
+        }
+
+        
         sessionReq.setPassengers(reqForm.getPassengers());
-        
+
         return "redirect:/booking/step2";
     }
 
@@ -81,6 +107,7 @@ public class BookingController {
         
         model.addAttribute("req", sessionReq);
         model.addAttribute("baggageOptions", baggageOptionRepository.findAll());
+        model.addAttribute("promotions", promotionRepo.findAll());
         return "booking/step2";
     }
 
@@ -119,7 +146,7 @@ public class BookingController {
             emailService.sendBookingConfirmationEmail(booking, booking.getUser().getEmail());
         }
 
-        // Notify Admin/Staff about new booking
+        
         if (booking != null) {
             java.util.List<com.example.quanlybanvemaybay.entity.User> staffList = userRepo.findAll().stream()
                 .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))

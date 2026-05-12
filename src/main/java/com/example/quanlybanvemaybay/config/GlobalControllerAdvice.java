@@ -115,4 +115,17 @@ public class GlobalControllerAdvice {
         }
         return 0;
     }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.validation.BindException.class)
+    public String handleBindException(org.springframework.validation.BindException ex, HttpServletRequest request) {
+        try {
+            StringBuilder sb = new StringBuilder("Bind Errors:\n");
+            ex.getFieldErrors().forEach(e -> sb.append(e.getField()).append(" : ").append(e.getDefaultMessage()).append("\n"));
+            java.nio.file.Files.writeString(java.nio.file.Paths.get("bind_error_debug.log"), sb.toString());
+        } catch (Exception ignored) {}
+        
+        
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/");
+    }
 }

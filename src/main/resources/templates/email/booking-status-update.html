@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập nhật trạng thái vé - SkyTravel</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .email-wrapper {
+            width: 100%;
+            background-color: #f4f7f6;
+            padding: 40px 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .header {
+            background: linear-gradient(135deg, #127a7b 0%, #0d5859 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .status-card {
+            background-color: #f8fcfc;
+            border: 1px solid #e0ecec;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 15px 0;
+            color: white;
+        }
+        .status-CONFIRMED { background-color: #198754; }
+        .status-CANCELLED { background-color: #dc3545; }
+        .status-REFUNDED { background-color: #6c757d; }
+        .status-PENDING { background-color: #0dcaf0; color: #000; }
+        
+        .booking-code p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .booking-code h2 {
+            margin: 5px 0 0 0;
+            font-size: 32px;
+            color: #127a7b;
+            letter-spacing: 2px;
+        }
+        .flight-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #d1e3e3;
+        }
+        .airport {
+            text-align: center;
+            width: 40%;
+        }
+        .airport h3 {
+            margin: 0;
+            font-size: 28px;
+            color: #222;
+        }
+        .airport p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .flight-path {
+            width: 20%;
+            text-align: center;
+            font-size: 24px;
+            color: #127a7b;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #48dbfb;
+            text-decoration: none;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #127a7b;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+    <table class="email-wrapper" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center">
+                <table class="email-container" cellpadding="0" cellspacing="0" role="presentation">
+                    
+                    <tr>
+                        <td class="header">
+                            <img src="https://img.icons8.com/ios-filled/100/ffffff/paper-plane.png" alt="SkyTravel Logo" style="height: 50px; margin-bottom: 10px;">
+                            <h1>SkyTravel</h1>
+                            <p>Cập nhật trạng thái vé của bạn</p>
+                        </td>
+                    </tr>
+                    
+                    
+                    <tr>
+                        <td class="content">
+                            <div class="greeting" style="margin-bottom: 10px;" th:text="'Xin chào ' + ${booking.user != null ? booking.user.fullName : 'Quý khách'} + ','">Xin chào Khách Hàng,</div>
+                            <p style="line-height: 1.4; margin-top: 0; margin-bottom: 25px;">Hệ thống vừa cập nhật trạng thái mới cho yêu cầu đặt vé của bạn.</p>
+                            
+                            <div class="status-card">
+                                <div class="booking-code">
+                                    <p>Mã Đặt Chỗ (Booking Code)</p>
+                                    <h2 th:text="${booking.bookingCode}">BKGC9836A89</h2>
+                                </div>
+                                
+                                <div th:class="'status-badge status-' + ${rawStatus}" th:text="${statusText}">ĐÃ XÁC NHẬN</div>
+                                
+                                <div class="flight-details">
+                                    <div class="airport">
+                                        <h3 th:text="${booking.flight.departureAirport.code}">SGN</h3>
+                                        <p th:text="${booking.flight.departureAirport.city}">Hồ Chí Minh</p>
+                                    </div>
+                                    <div class="flight-path">✈</div>
+                                    <div class="airport">
+                                        <h3 th:text="${booking.flight.arrivalAirport.code}">HAN</h3>
+                                        <p th:text="${booking.flight.arrivalAirport.city}">Hà Nội</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p>Nếu có thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi theo thông tin bên dưới.</p>
+                            
+                            <div class="text-center">
+                                <a href="http://localhost:8080/profile/bookings" class="btn">Kiểm Tra Trạng Thái</a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    
+                    <tr>
+                        <td class="footer">
+                            <p><strong>SkyTravel - Nâng tầm trải nghiệm bay</strong></p>
+                            <p>Hotline (Hỗ trợ khách hàng): <strong th:text="${booking.user != null and booking.user.phone != null and booking.user.phone != '' ? booking.user.phone : '1900 1234'}"></strong></p>
+                            <p>Email: support@skytravel.com</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

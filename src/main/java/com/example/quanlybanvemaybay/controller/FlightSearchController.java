@@ -34,9 +34,15 @@ public class FlightSearchController {
                          @RequestParam("depDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate depDate,
                          @RequestParam(value = "passengers", defaultValue = "1") int passengers,
                          Model model) {
-        
+
         List<Flight> flights = flightRepository.searchFlights(depId, arrId, depDate, passengers);
+
         
+        java.time.LocalDateTime cutoff3h = java.time.LocalDateTime.now().plusHours(3);
+        flights = flights.stream()
+                .filter(f -> f.getDepartureTime() != null && f.getDepartureTime().isAfter(cutoff3h))
+                .collect(java.util.stream.Collectors.toList());
+
         model.addAttribute("flights", flights);
         model.addAttribute("airports", airportService.findAll());
         model.addAttribute("airlines", airlineService.findAll());
@@ -44,7 +50,7 @@ public class FlightSearchController {
         model.addAttribute("arrId", arrId);
         model.addAttribute("depDate", depDate);
         model.addAttribute("passengers", passengers);
-        
+
         return "flight/search-results";
     }
 }

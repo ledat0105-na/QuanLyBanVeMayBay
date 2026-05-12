@@ -2,75 +2,226 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
 <head>
     <th:block th:replace="~{layout/header :: head}"></th:block>
-    <!-- DataTables CSS -->
+    
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <style>
+        /* Typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+        
+        /* Premium Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+        .btn-sm { padding: 6px 12px; font-size: 0.875rem; }
+        .btn-primary {
+            background: linear-gradient(135deg, #127a7b 0%, #0d5859 100%);
+            border: none;
+            box-shadow: 0 4px 10px rgba(18, 122, 123, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(18, 122, 123, 0.4);
+            background: linear-gradient(135deg, #0d5859 0%, #0a4041 100%);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border: none;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border: none;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+            color: #fff; border: none;
+            box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);
+        }
+        .btn-warning:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(241, 196, 15, 0.4);
+        }
+
+        /* Premium Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            background-color: #ffffff;
+        }
+        .card:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-weight: 700;
+            padding: 20px 25px;
+        }
+
+        /* Forms */
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            background-color: #fbfbfb;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #127a7b;
+            box-shadow: 0 0 0 0.25rem rgba(18, 122, 123, 0.15);
+            background-color: #fff;
+        }
+
+        /* DataTables Customization */
         .data-table th {
             white-space: nowrap;
+            background-color: #f8fafc !important;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding: 15px !important;
         }
+        .data-table td {
+            vertical-align: middle;
+            padding: 15px !important;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            font-weight: 500;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 8px !important;
+            border: none !important;
+            font-weight: 600;
+            margin: 0 3px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #127a7b !important;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(18, 122, 123, 0.3);
+        }
+        
+        /* Layout Sidebar */
         .admin-sidebar {
-            width: 250px;
+            width: 260px;
             height: 100vh;
-            background-color: #2c3e50;
+            background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             color: white;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: fixed;
             top: 0;
             left: 0;
             overflow-y: auto;
             z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
         }
-        /* Custom scrollbar for sidebar */
-        .admin-sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .admin-sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        .admin-sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        .admin-sidebar::-webkit-scrollbar { width: 6px; }
+        .admin-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        .admin-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        
         .admin-sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 14px 22px;
             font-size: 1.05rem;
+            font-weight: 500;
             border-left: 4px solid transparent;
             display: flex;
             align-items: center;
+            border-radius: 0 25px 25px 0;
+            margin-right: 15px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
         }
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active {
             color: #fff;
-            background-color: rgba(255,255,255,0.1);
-            border-left-color: #3498db;
+            background: rgba(255,255,255,0.15);
+            border-left-color: #48dbfb;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .admin-sidebar .nav-link i {
-            width: 25px;
+            width: 30px;
             text-align: center;
             margin-right: 12px;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
         }
+        .admin-sidebar .nav-link:hover i {
+            transform: scale(1.2);
+            color: #48dbfb;
+        }
+
+        /* Layout Topbar */
         .admin-content {
-            margin-left: 250px;
+            margin-left: 260px;
             min-height: 100vh;
-            background-color: #f8f9fa;
+            background-color: #f4f7f6;
         }
         .admin-topbar {
-            background-color: white;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .admin-topbar h5 {
+            font-weight: 800;
+            background: linear-gradient(135deg, #127a7b 0%, #2980b9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Global SweetAlert2 Premium Theme
+        const SwalPremium = Swal.mixin({
+            customClass: {
+                popup: 'rounded-4 shadow-lg border-0',
+                confirmButton: 'btn btn-primary px-4 py-2 mx-2',
+                cancelButton: 'btn btn-secondary px-4 py-2 mx-2'
+            },
+            buttonsStyling: false,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown animate__faster'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp animate__faster'
+            }
+        });
+        window.Swal = SwalPremium;
+    </script>
 </head>
 <body>
 
-<!-- Sidebar -->
+
 <div class="admin-sidebar shadow-lg">
     <div class="p-4 text-center border-bottom border-light mb-3" style="border-color: rgba(248, 249, 250, 0.1) !important;">
         <img th:src="@{/images/logo.png}" alt="SkyTravel Logo" style="height: 50px;" class="mb-2">
@@ -90,12 +241,7 @@
             <a th:href="@{/admin/flights}" class="nav-link"><i class="fas fa-calendar-alt"></i>Chuyến Bay</a>
             <a th:href="@{/admin/promotions}" class="nav-link"><i class="fas fa-ticket-alt"></i>Khuyến Mãi</a>
             
-            <!-- Thiet ke tong quan group -->
-            <div class="nav-link-group">
-                <a th:href="@{/admin/visual-editor#manage-carousel}" target="_blank" class="nav-link text-warning fw-bold">
-                    <i class="fas fa-paint-roller"></i>Thiết Kế Tổng Quan
-                </a>
-            </div>
+
             <a th:href="@{/admin/contacts}" class="nav-link position-relative">
                 <i class="fas fa-envelope"></i>Hộp Thư
                 <span th:if="${unreadContactCount != null and unreadContactCount > 0}"
@@ -104,18 +250,25 @@
             </a>
         </div>
         
-        <!-- Private Staff Profile -->
-        <div class="px-4 mt-4 mb-2 text-muted small fw-bold text-uppercase">Cá Nhân</div>
-        <a th:href="@{/admin/profile}" class="nav-link"><i class="fas fa-id-badge"></i>Trang Cá Nhân</a>
+        
+        <div sec:authorize="hasRole('ADMIN')">
+            <div class="px-4 mt-4 mb-2 text-muted small fw-bold text-uppercase">Thiết Kế</div>
+            <a th:href="@{/admin/visual-editor#manage-carousel}" target="_blank" class="nav-link text-warning fw-bold">
+                <i class="fas fa-paint-roller"></i>Thiết Kế Tổng Quan
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Main Content -->
+
 <div class="admin-content">
-    <!-- Topbar -->
+    
     <div class="admin-topbar">
-        <div>
-            <h5 class="m-0 text-dark fw-bold">Hệ Thống Quản Trị</h5>
+        <div class="d-flex align-items-center">
+            <h5 class="m-0 fw-bold me-4">Hệ Thống Quản Trị</h5>
+            <div id="liveClock" class="text-muted fw-bold d-none d-md-block" style="font-size: 0.95rem; border-left: 2px solid #e0e0e0; padding-left: 15px;">
+                <i class="far fa-clock text-primary me-1"></i> <span id="clockTime"></span> <span class="mx-1">|</span> <span id="clockDate"></span>
+            </div>
         </div>
         <div class="d-flex align-items-center">
             <div class="me-3 text-end d-none d-md-block">
@@ -123,7 +276,7 @@
                 <small class="text-success fw-bold"><i class="fas fa-circle me-1" style="font-size: 8px;"></i>Active</small>
             </div>
 
-            <!-- Notification Bell for Admin/Staff -->
+            
             <div class="dropdown me-3 position-relative">
                 <a href="#" class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center position-relative"
                    style="width: 40px; height: 40px;" data-bs-toggle="dropdown" title="Thông Báo">
@@ -143,7 +296,8 @@
                     </div>
                     <div th:unless="${userNotifications == null or #lists.isEmpty(userNotifications)}">
                         <a href="#" th:each="notif : ${userNotifications}"
-                           th:attr="onclick=|markNotifRead(${notif.id})|"
+                           th:attr="onclick=|markNotifRead(${notif.id}, this)|"
+                           th:data-title="${notif.title}"
                            class="dropdown-item py-3 border-bottom text-wrap"
                            th:classappend="${!notif.isRead} ? 'bg-light fw-bold' : ''">
                             <div class="d-flex align-items-start gap-2">
@@ -166,22 +320,14 @@
         </div>
     </div>
 
-    <!-- Page Content -->
+    
     <div class="p-4">
         <th:block th:replace="${content}"></th:block>
     </div>
     
 </div>
 
-<!-- JavaScript Libraries -->
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-<!-- SweetAlert2 Global Override -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
     .swal2-container {
         z-index: 30000 !important;
@@ -200,32 +346,93 @@
 </script>
 
 <script>
-    function markNotifRead(id) {
+    function markNotifRead(id, element) {
+        const title = element ? element.getAttribute('data-title') : '';
         fetch('/api/notifications/read/' + id, { method: 'POST' })
-        .then(res => { if (res.ok) window.location.reload(); });
+        .then(res => { 
+            if (res.ok) {
+                if (title.toLowerCase().includes('đặt vé') || title.toLowerCase().includes('thanh toán') || title.toLowerCase().includes('xử lý vé')) {
+                    window.location.href = '/admin/bookings';
+                } else if (title.toLowerCase().includes('tin nhắn') || title.toLowerCase().includes('liên hệ')) {
+                    window.location.href = '/admin/contacts';
+                } else {
+                    window.location.reload(); 
+                }
+            }
+        });
     }
 </script>
 
 <script>
     $(document).ready(function() {
-        // Initialize DataTables
-        $('.data-table').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [10, 20, 30, 50],
-            "language": {
-                "lengthMenu": "Hiển thị _MENU_ dòng / trang",
-                "zeroRecords": "Không tìm thấy dữ liệu phù hợp",
-                "info": "_START_ - _END_ / _TOTAL_",
-                "infoEmpty": "0 / 0",
-                "infoFiltered": "(đã lọc từ _MAX_ dòng)",
-                "search": "Lọc nhanh:",
-                "paginate": {
-                    "first": "Đầu",
-                    "last": "Cuối",
-                    "next": "Tiếp",
-                    "previous": "Trước"
+        // Initialize DataTables with dynamic STT column globally
+        $('.data-table').each(function() {
+            var $table = $(this);
+            
+            // Determine sorting column BEFORE prepending STT
+            var sortCol = 1; // Default to column 1 (was 0 before prepend, usually ID)
+            var idColIndex = -1; // To track if we have an ID column to hide
+            
+            $table.find('thead th').each(function(index) {
+                var text = $(this).text().trim().toLowerCase();
+                if (text === 'id') {
+                    idColIndex = index;
                 }
+                // For tables that don't have ID as the primary sort field
+                if (text === 'ngày gửi' || text === 'ngày đặt') {
+                    sortCol = index + 1; 
+                }
+            });
+            
+            // 1. Prepend STT headers and cells
+            $table.find('thead tr').prepend('<th class="text-center" style="width: 50px;">STT</th>');
+            $table.find('tbody tr').each(function() {
+                var $tds = $(this).children('td, th');
+                if ($tds.length === 1 && $tds.attr('colspan')) {
+                    $tds.attr('colspan', parseInt($tds.attr('colspan')) + 1);
+                } else {
+                    $(this).prepend('<td class="text-center fw-bold text-secondary"></td>');
+                }
+            });
+
+            // Prepare column defs
+            var colDefs = [
+                { "searchable": false, "orderable": false, "targets": 0 }
+            ];
+            if (idColIndex !== -1) {
+                // Hide the original ID column (which is now shifted by 1)
+                colDefs.push({ "visible": false, "targets": idColIndex + 1 });
             }
+
+            // 2. Initialize DataTable
+            var dt = $table.DataTable({
+                "pageLength": 10,
+                "lengthMenu": [10, 20, 30, 50],
+                "order": [ [sortCol, "desc"] ], // Sắp xếp theo cột đã xác định giảm dần để cái mới nhất lên đầu
+                "columnDefs": colDefs,
+                "language": {
+                    "lengthMenu": "Hiển thị _MENU_ dòng / trang",
+                    "zeroRecords": "Không tìm thấy dữ liệu phù hợp",
+                    "info": "_START_ - _END_ / _TOTAL_",
+                    "infoEmpty": "0 / 0",
+                    "infoFiltered": "(đã lọc từ _MAX_ dòng)",
+                    "search": "Lọc nhanh:",
+                    "paginate": {
+                        "first": "Đầu",
+                        "last": "Cuối",
+                        "next": "Tiếp",
+                        "previous": "Trước"
+                    }
+                }
+            });
+
+            // 3. Update STT column dynamically whenever ordering or searching
+            dt.on('order.dt search.dt', function () {
+                let i = 1;
+                dt.cells(null, 0, { search: 'applied', order: 'applied' }).every(function (cell) {
+                    this.data(i++);
+                });
+            }).draw();
         });
         var currentUrl = window.location.pathname;
         $('.sidebar-nav-links a.nav-link').each(function() {
@@ -236,6 +443,140 @@
             }
         });
     });
+
+    function updateClock() {
+        const now = new Date();
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const dateOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+        
+        const timeEl = document.getElementById('clockTime');
+        const dateEl = document.getElementById('clockDate');
+        
+        if(timeEl && dateEl) {
+            timeEl.innerText = now.toLocaleTimeString('vi-VN', timeOptions);
+            dateEl.innerText = now.toLocaleDateString('vi-VN', dateOptions);
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Polling Notification System
+    let knownNotifIds = new Set();
+    
+    fetch('/api/notifications/unread')
+        .then(res => res.json())
+        .then(data => {
+            if(data && Array.isArray(data)) {
+                data.forEach(n => knownNotifIds.add(n.id));
+            }
+        })
+        .catch(e => console.log('Init Notif Error:', e));
+
+    function pollNotifications() {
+        fetch('/api/notifications/unread')
+            .then(res => res.json())
+            .then(data => {
+                if(data && Array.isArray(data)) {
+                    data.forEach(n => {
+                        if (!knownNotifIds.has(n.id)) {
+                            knownNotifIds.add(n.id);
+                            
+                            const t = n.title.toLowerCase();
+                            if (t.includes('đặt vé') || t.includes('thanh toán') || t.includes('xử lý') || t.includes('booking')) {
+                                Swal.fire({
+                                    title: '<i class="fas fa-ticket-alt text-warning fa-2x mb-2"></i><br>Yêu Cầu Xử Lý Mới!',
+                                    html: `<div class="text-start"><b>${n.title}</b><hr class="my-2">${n.message}</div>`,
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#127a7b',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Xem & Duyệt Ngay',
+                                    cancelButtonText: 'Để sau',
+                                    allowOutsideClick: false,
+                                    customClass: { popup: 'rounded-4 shadow-lg border-0' }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        fetch('/api/notifications/read/' + n.id, { method: 'POST' })
+                                        .then(() => { window.location.href = '/admin/bookings'; });
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    
+                    const bellContainer = document.querySelector('[title="Thông Báo"]');
+                    if (bellContainer) {
+                        const badge = bellContainer.querySelector('.badge');
+                        if (data.length > 0) {
+                            if (badge) {
+                                badge.innerText = data.length;
+                            } else {
+                                bellContainer.insertAdjacentHTML('beforeend', `<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem;">${data.length}</span>`);
+                            }
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    }
+                }
+            })
+            .catch(e => console.log('Poll Notif Error:', e));
+    }
+    
+    setInterval(pollNotifications, 10000);
+
+    function confirmAction(event, message, element) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Xác nhận thao tác',
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#127a7b',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = element.closest('form');
+                if (form) {
+                    form.submit();
+                } else if (element.tagName === 'A') {
+                    window.location.href = element.href;
+                } else {
+                    // Fallback for form onsubmit
+                    if (element.tagName === 'FORM') {
+                        element.submit();
+                    }
+                }
+            }
+        });
+        return false;
+    }
+</script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var successMsg = /*[[${success}]]*/ null;
+    var errorMsg = /*[[${error}]]*/ null;
+
+    if (successMsg) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công!',
+            text: successMsg,
+            timer: 3000,
+            showConfirmButton: false
+        });
+    }
+
+    if (errorMsg) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: errorMsg,
+            confirmButtonColor: '#d33'
+        });
+    }
+    /*]]>*/
 </script>
 </body>
 </html>

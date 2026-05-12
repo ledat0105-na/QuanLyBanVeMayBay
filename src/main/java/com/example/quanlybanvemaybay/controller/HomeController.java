@@ -56,7 +56,7 @@ public class HomeController {
         List<com.example.quanlybanvemaybay.entity.Banner> allBanners = bannerRepository.findByIsActiveTrue();
         model.addAttribute("banners", allBanners);
         
-        // Pass dynamic History Images
+        
         String rawHomeAbout1 = allBanners.stream().filter(b -> "HOME_ABOUT_1".equals(b.getPosition())).findFirst().map(com.example.quanlybanvemaybay.entity.Banner::getImageUrl).orElse("/img/hero-slider-2.jpg");
         String rawHomeAbout2 = allBanners.stream().filter(b -> "HOME_ABOUT_2".equals(b.getPosition())).findFirst().map(com.example.quanlybanvemaybay.entity.Banner::getImageUrl).orElse("/img/hero-slider-3.jpg");
         
