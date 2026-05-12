@@ -59,7 +59,7 @@ public class PageController {
     public String sendMessage(@ModelAttribute ContactMessage message, RedirectAttributes ra) {
         contactRepo.save(message);
 
-        // Notify Admin/Staff
+        
         java.util.List<com.example.quanlybanvemaybay.entity.User> staffList = userRepo.findAll().stream()
             .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
             .toList();

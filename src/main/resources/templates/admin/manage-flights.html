@@ -1,10 +1,62 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
 <head>
-    <title>Chuyến Bay</title>
 </head>
 <body>
 <div class="admin-wrapper">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Premium Flatpickr Styling */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            border-radius: 16px !important;
+            padding: 10px;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            border-color: transparent !important;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(30, 60, 114, 0.3);
+        }
+        .flatpickr-months .flatpickr-month {
+            background: transparent !important;
+            color: #333 !important;
+            fill: #333 !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year {
+            color: #1e3c72 !important;
+            font-weight: 800 !important;
+        }
+        .flatpickr-day:hover {
+            background: #f0f4f8 !important;
+            border-color: #f0f4f8 !important;
+        }
+        /* Premium Inputs */
+        .premium-input {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+        .premium-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(42, 82, 152, 0.15);
+            border-color: #2a5298;
+        }
+        .premium-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+        .premium-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(42, 82, 152, 0.15);
+            border-color: #2a5298;
+        }
+    </style>
 <div class="container-fluid mt-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Quản lý Chuyến bay</h2>
@@ -22,262 +74,356 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle data-table">
-                    <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Số hiệu</th>
-                        <th>Hãng</th>
-                        <th>Chặng bay</th>
-                        <th>Ngày đi</th>
-                        <th>Ngày đến</th>
-                        <th>Giá vé</th>
-                        <th>Số ghế</th>
-                        <th>Trạng thái</th>
-                        <th class="text-center">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="f : ${flights}">
-                        <td th:text="${f.id}"></td>
-                        <td class="fw-bold text-primary" th:text="${f.flightNumber}"></td>
-                        <td th:text="${f.airline != null ? f.airline.name : ''}"></td>
-                        <td>
-                            <span th:text="${f.departureAirport != null ? f.departureAirport.code : ''}"></span>
-                            <i class="fas fa-arrow-right mx-1 text-muted"></i>
-                            <span th:text="${f.arrivalAirport != null ? f.arrivalAirport.code : ''}"></span>
-                        </td>
-                        <td th:text="${#temporals.format(f.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
-                        <td th:text="${#temporals.format(f.arrivalTime, 'dd/MM/yyyy HH:mm')}"></td>
-                        <td th:text="${#numbers.formatDecimal(f.basePrice, 1, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
-                        <td>
-                            <span class="badge bg-secondary" th:text="${(f.availableSeats != null ? f.availableSeats : '?') + ' / ' + (f.totalSeats != null ? f.totalSeats : '?')}"></span>
-                        </td>
-                        <td>
-                            <span class="badge" th:classappend="${f.isCancelled == true ? 'bg-danger' : 'bg-success'}"
-                                  th:text="${f.isCancelled == true ? 'Đã hủy' : 'Lịch trình'}"></span>
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary mb-1" 
-                                    data-bs-toggle="modal" 
-                                    th:data-bs-target="'#editFlightModal' + ${f.id}" title="Sửa">
-                                <i class="fas fa-edit fa-lg"></i>
-                            </button>
-                            <form th:action="@{/admin/flights/cancel/{id}(id=${f.id})}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm mb-1 border-0 bg-transparent text-secondary"
-                                        th:title="${f.isCancelled == true ? 'Hoạt động' : 'Hủy'}"
-                                        data-sky-confirm="Bạn có chắc chắn muốn thay đổi trạng thái hủy/mở của chuyến bay này?"
-                                        data-sky-title="Xác nhận"
-                                        data-sky-ok="Đồng ý">
-                                    <i class="fas fa-lg" th:classappend="${f.isCancelled == true ? 'fa-undo' : 'fa-ban'}"></i>
-                                </button>
-                            </form>
+    
+    <ul class="nav nav-pills mb-4 gap-2" id="flightTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-4 fw-bold d-flex align-items-center gap-2" id="domestic-tab"
+                    data-bs-toggle="pill" data-bs-target="#domestic" type="button" role="tab">
+                <i class="fas fa-map-marker-alt"></i> Nội Địa
+                <span class="badge bg-white text-primary rounded-pill ms-1" th:text="${#lists.size(domesticFlights)}">0</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 fw-bold d-flex align-items-center gap-2" id="international-tab"
+                    data-bs-toggle="pill" data-bs-target="#international" type="button" role="tab">
+                <i class="fas fa-globe-asia"></i> Quốc Tế
+                <span class="badge bg-white text-primary rounded-pill ms-1" th:text="${#lists.size(internationalFlights)}">0</span>
+            </button>
+        </li>
+    </ul>
 
-                            <!-- Modal Edit Flight -->
-                            <div class="modal fade text-start" th:id="'editFlightModal' + ${f.id}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <form th:action="@{/admin/flights/save}" method="post">
-                                            <input type="hidden" name="id" th:value="${f.id}">
-                                            <input type="hidden" name="isCancelled" th:value="${f.isCancelled}">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Sửa thông tin chuyến bay</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Số hiệu chuyến bay</label>
-                                                        <input type="text" name="flightNumber" class="form-control" th:value="${f.flightNumber}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Hãng hàng không</label>
-                                                        <select name="airline.id" class="form-select" required>
-                                                            <option th:each="al : ${airlines}" th:value="${al.id}" th:text="${al.name}" th:selected="${f.airline != null && f.airline.id == al.id}"></option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Từ sân bay (Khởi hành)</label>
-                                                        <select name="departureAirport.id" th:id="'editDepAir' + ${f.id}" class="form-select" required>
-                                                            <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}" th:selected="${f.departureAirport != null && f.departureAirport.id == ap.id}"></option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Đến sân bay (Hạ cánh)</label>
-                                                        <select name="arrivalAirport.id" th:id="'editArrAir' + ${f.id}" class="form-select" required>
-                                                            <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}" th:selected="${f.arrivalAirport != null && f.arrivalAirport.id == ap.id}"></option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold text-primary"><i class="fas fa-plane-departure me-1"></i>TG Khởi hành</label>
-                                                        <input type="datetime-local" name="departureTime"
-                                                               th:id="'editDep' + ${f.id}"
-                                                               class="form-control shadow-sm border-primary" style="background-color: #f8f9fa; font-weight: bold; color: #0d6efd;"
-                                                               th:value="${f.departureTime != null ? #temporals.format(f.departureTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold text-success"><i class="fas fa-plane-arrival me-1"></i>TG Hạ cánh</label>
-                                                        <input type="datetime-local" name="arrivalTime"
-                                                               th:id="'editArr' + ${f.id}"
-                                                               class="form-control shadow-sm border-success" style="background-color: #f8f9fa; font-weight: bold; color: #198754;"
-                                                               th:value="${f.arrivalTime != null ? #temporals.format(f.arrivalTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
-                                                               required>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold text-danger"><i class="fas fa-money-bill-wave me-1"></i>Giá vé cơ bản (VNĐ)</label>
-                                                        <input type="text" name="basePrice"
-                                                               th:id="'editPrice' + ${f.id}"
-                                                               class="form-control price-input shadow-sm border-danger" style="background-color: #f8f9fa; font-weight: bold; color: #dc3545; font-size: 1.1rem;"
-                                                               th:value="${f.basePrice}"
-                                                               placeholder="VD: 1.500.000"
-                                                               required>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Tổng số ghế</label>
-                                                        <input type="number" name="totalSeats" class="form-control" th:value="${f.totalSeats}" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Số ghế trống</label>
-                                                        <input type="number" name="availableSeats" class="form-control" th:value="${f.availableSeats}" required>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                                <button type="submit" class="btn btn-primary"
-                                                        th:onclick="'return validateFlight(\'' + ${f.id} + '\')'">
-                                                    Lưu thay đổi
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
+    <style>
+        #flightTabs .nav-link { background: #e8f0fe; color: #1a73e8; border-radius: 12px; transition: all .2s; }
+        #flightTabs .nav-link.active { background: linear-gradient(135deg,#1a73e8,#0f3460); color:#fff; box-shadow:0 4px 14px rgba(26,115,232,.35); }
+        .data-table tbody tr { cursor: pointer; }
+        .text-decoration-underline-hover:hover { text-decoration: underline !important; }
+    </style>
+
+    <div class="tab-content" id="flightTabsContent">
+
+        
+        <div class="tab-pane fade show active" id="domestic" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold text-primary mb-0"><i class="fas fa-map-marker-alt me-2"></i>Chuyến Bay Nội Địa</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle data-table text-nowrap" id="domesticTable">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th><th>Số hiệu</th><th>Hãng</th><th>Chặng bay</th>
+                                <th>Ngày đi</th><th>Ngày đến</th><th>Giá vé</th><th>Số ghế</th>
+                                <th>Trạng thái</th><th class="text-center">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="f : ${domesticFlights}">
+                                <td th:text="${f.id}"></td>
+                                <td>
+                                    <a href="#" class="text-decoration-none fw-bold text-primary text-decoration-underline-hover" data-bs-toggle="modal" th:data-bs-target="'#editFlightModal' + ${f.id}" th:text="${f.flightNumber}"></a>
+                                </td>
+                                <td>
+                                    <a href="#" class="text-decoration-none text-dark" data-bs-toggle="modal" th:data-bs-target="'#editFlightModal' + ${f.id}" th:text="${f.airline != null ? f.airline.name : ''}"></a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${f.departureAirport != null ? f.departureAirport.code : ''}"></span>
+                                    <i class="fas fa-arrow-right mx-1 text-muted small"></i>
+                                    <span class="badge bg-light text-dark border" th:text="${f.arrivalAirport != null ? f.arrivalAirport.code : ''}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(f.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#temporals.format(f.arrivalTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(f.basePrice, 1, 'COMMA', 0, 'POINT') + ' ₫'}"></td>
+                                <td><span class="badge bg-secondary" th:text="${(f.availableSeats != null ? f.availableSeats : '?') + ' / ' + (f.totalSeats != null ? f.totalSeats : '?')}"></span></td>
+                                <td>
+                                    <span class="badge" th:classappend="${f.isCancelled == true ? 'bg-danger' : 'bg-success'}"
+                                          th:text="${f.isCancelled == true ? 'Đã hủy' : 'Đang mở bán'}"></span>
+                                </td>
+                                <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary mb-1"
+                                        data-bs-toggle="modal"
+                                        th:data-bs-target="'#editFlightModal' + ${f.id}" title="Sửa">
+                                    <i class="fas fa-edit fa-lg"></i>
+                                </button>
+                                <form th:action="@{/admin/flights/cancel/{id}(id=${f.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm mb-1 border-0 bg-transparent text-secondary"
+                                            th:title="${f.isCancelled == true ? 'Hoạt động' : 'Hủy'}"
+                                            data-sky-confirm="Bạn có chắc chắn muốn thay đổi trạng thái hủy/mở của chuyến bay này?"
+                                            data-sky-title="Xác nhận"
+                                            data-sky-ok="Đồng ý">
+                                        <i class="fas fa-lg" th:classappend="${f.isCancelled == true ? 'fa-undo' : 'fa-ban'}"></i>
+                                    </button>
+                                </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="tab-pane fade" id="international" role="tabpanel">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h6 class="fw-bold text-success mb-0"><i class="fas fa-globe-asia me-2"></i>Chuyến Bay Quốc Tế</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle data-table text-nowrap" id="intlTable">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th><th>Số hiệu</th><th>Hãng</th><th>Chặng bay</th>
+                                <th>Ngày đi</th><th>Ngày đến</th><th>Giá vé</th><th>Số ghế</th>
+                                <th>Trạng thái</th><th class="text-center">Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="f : ${internationalFlights}">
+                                <td th:text="${f.id}"></td>
+                                <td>
+                                    <a href="#" class="text-decoration-none fw-bold text-success text-decoration-underline-hover" data-bs-toggle="modal" th:data-bs-target="'#editFlightModal' + ${f.id}" th:text="${f.flightNumber}"></a>
+                                </td>
+                                <td>
+                                    <a href="#" class="text-decoration-none text-dark" data-bs-toggle="modal" th:data-bs-target="'#editFlightModal' + ${f.id}" th:text="${f.airline != null ? f.airline.name : ''}"></a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${f.departureAirport != null ? f.departureAirport.code : ''}"></span>
+                                    <i class="fas fa-arrow-right mx-1 text-muted small"></i>
+                                    <span class="badge bg-light text-dark border" th:text="${f.arrivalAirport != null ? f.arrivalAirport.code : ''}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(f.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#temporals.format(f.arrivalTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(f.basePrice, 1, 'COMMA', 0, 'POINT') + ' ₫'}"></td>
+                                <td><span class="badge bg-secondary" th:text="${(f.availableSeats != null ? f.availableSeats : '?') + ' / ' + (f.totalSeats != null ? f.totalSeats : '?')}"></span></td>
+                                <td>
+                                    <span class="badge" th:classappend="${f.isCancelled == true ? 'bg-danger' : 'bg-success'}"
+                                          th:text="${f.isCancelled == true ? 'Đã hủy' : 'Đang mở bán'}"></span>
+                                </td>
+                                <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0 bg-transparent text-secondary mb-1"
+                                        data-bs-toggle="modal"
+                                        th:data-bs-target="'#editFlightModal' + ${f.id}" title="Sửa">
+                                    <i class="fas fa-edit fa-lg"></i>
+                                </button>
+                                <form th:action="@{/admin/flights/cancel/{id}(id=${f.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm mb-1 border-0 bg-transparent text-secondary"
+                                            th:title="${f.isCancelled == true ? 'Hoạt động' : 'Hủy'}"
+                                            data-sky-confirm="Bạn có chắc chắn muốn thay đổi trạng thái hủy/mở của chuyến bay này?"
+                                            data-sky-title="Xác nhận"
+                                            data-sky-ok="Đồng ý">
+                                        <i class="fas fa-lg" th:classappend="${f.isCancelled == true ? 'fa-undo' : 'fa-ban'}"></i>
+                                    </button>
+                                </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <div th:each="f : ${flights}">
+        <div class="modal fade text-start" th:id="'editFlightModal' + ${f.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form th:action="@{/admin/flights/save}" method="post" th:onsubmit="'return validateFlight(\'' + ${f.id} + '\')'">
+                        <input type="hidden" name="id" th:value="${f.id}">
+                        <input type="hidden" name="isCancelled" th:value="${f.isCancelled}">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sửa thông tin chuyến bay</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Số hiệu chuyến bay</label>
+                                    <input type="text" name="flightNumber" class="form-control" th:value="${f.flightNumber}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Hãng hàng không</label>
+                                    <select name="airline.id" class="form-select" required>
+                                        <option th:each="al : ${airlines}" th:value="${al.id}" th:text="${al.name}" th:selected="${f.airline != null && f.airline.id == al.id}"></option>
+                                    </select>
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-
-                    </tbody>
-                </table>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Từ sân bay (Khởi hành)</label>
+                                    <select name="departureAirport.id" th:id="'editDepAir' + ${f.id}" class="form-select" required>
+                                        <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}" th:selected="${f.departureAirport != null && f.departureAirport.id == ap.id}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Đến sân bay (Hạ cánh)</label>
+                                    <select name="arrivalAirport.id" th:id="'editArrAir' + ${f.id}" class="form-select" required>
+                                        <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}" th:selected="${f.arrivalAirport != null && f.arrivalAirport.id == ap.id}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold text-primary"><i class="fas fa-plane-departure me-1"></i>TG Khởi hành</label>
+                                    <input type="text" name="departureTime"
+                                           th:id="'editDep' + ${f.id}"
+                                           class="form-control shadow-sm border-primary flatpickr-dt" style="background-color: #f8f9fa; font-weight: bold; color: #0d6efd;"
+                                           th:data-val="${f.departureTime != null ? #temporals.format(f.departureTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                           required placeholder="Chọn ngày &amp; giờ...">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold text-success"><i class="fas fa-plane-arrival me-1"></i>TG Hạ cánh</label>
+                                    <input type="text" name="arrivalTime"
+                                           th:id="'editArr' + ${f.id}"
+                                           class="form-control shadow-sm border-success flatpickr-dt" style="background-color: #f8f9fa; font-weight: bold; color: #198754;"
+                                           th:data-val="${f.arrivalTime != null ? #temporals.format(f.arrivalTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                           required placeholder="Chọn ngày &amp; giờ...">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold text-danger"><i class="fas fa-money-bill-wave me-1"></i>Giá vé cơ bản (VNĐ)</label>
+                                    <input type="text" name="basePrice"
+                                           th:id="'editPrice' + ${f.id}"
+                                           class="form-control price-input shadow-sm border-danger" style="background-color: #f8f9fa; font-weight: bold; color: #dc3545; font-size: 1.1rem;"
+                                           th:value="${f.basePrice}"
+                                           placeholder="VD: 1.500.000"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tổng số ghế</label>
+                                    <input type="number" name="totalSeats" class="form-control" th:value="${f.totalSeats}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Số ghế bán</label>
+                                    <input type="number" name="availableSeats" class="form-control" th:value="${f.availableSeats}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
-<!-- Modal Create Flight -->
+
 <div class="modal fade text-start" id="createFlightModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form th:action="@{/admin/flights/save}" th:object="${flight}" method="post">
+            <form th:action="@{/admin/flights/save}" th:object="${flight}" method="post" onsubmit="return validateCreateFlight()">
                 <div class="modal-header">
                     <h5 class="modal-title">Tạo Chuyến Bay Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Số hiệu chuyến bay</label>
-                            <input type="text" name="flightNumber" class="form-control" required placeholder="VD: VN-123" autocomplete="off">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary mb-1">Số hiệu chuyến bay</label>
+                            <input type="text" name="flightNumber" class="form-control premium-input" required placeholder="VD: VN-123" autocomplete="off">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Hãng hàng không</label>
-                            <select name="airline.id" class="form-select" required>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary mb-1">Hãng hàng không</label>
+                            <select name="airline.id" class="form-select premium-select" required>
                                 <option value="" disabled selected>-- Chọn hãng --</option>
                                 <option th:each="al : ${airlines}" th:value="${al.id}" th:text="${al.name}"></option>
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Từ sân bay (Khởi hành)</label>
-                            <select name="departureAirport.id" id="createDepAir" class="form-select" required>
-                                <option value="" disabled selected>-- Chọn sân bay --</option>
-                                <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}"></option>
+
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-primary mb-1"><i class="fas fa-plane-departure me-1"></i>Sân bay đi</label>
+                            <select name="departureAirport.id" id="createDepAir" class="form-select premium-select border-primary" required>
+                                <option value="" disabled selected>-- Chọn sân bay đi --</option>
+                                <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.name + ' (' + ap.city + ')'}"></option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Đến sân bay (Hạ cánh)</label>
-                            <select name="arrivalAirport.id" id="createArrAir" class="form-select" required>
-                                <option value="" disabled selected>-- Chọn sân bay --</option>
-                                <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.code + ' - ' + ap.name}"></option>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-success mb-1"><i class="fas fa-plane-arrival me-1"></i>Sân bay đến</label>
+                            <select name="arrivalAirport.id" id="createArrAir" class="form-select premium-select border-success" required>
+                                <option value="" disabled selected>-- Chọn sân bay đến --</option>
+                                <option th:each="ap : ${airports}" th:value="${ap.id}" th:text="${ap.name + ' (' + ap.city + ')'}"></option>
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold text-primary"><i class="fas fa-plane-departure me-1"></i>TG Khởi hành</label>
-                            <input type="datetime-local" name="departureTime" id="createDep"
-                                   class="form-control shadow-sm border-primary" style="background-color: #f8f9fa; font-weight: bold; color: #0d6efd;" required>
+
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-primary mb-1"><i class="far fa-calendar-alt me-1"></i>Giờ khởi hành</label>
+                            <input type="text" name="departureTime" id="createDep" class="form-control premium-input border-primary flatpickr-dt" required placeholder="Chọn ngày &amp; giờ...">
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold text-success"><i class="fas fa-plane-arrival me-1"></i>TG Hạ cánh</label>
-                            <input type="datetime-local" name="arrivalTime" id="createArr"
-                                   class="form-control shadow-sm border-success" style="background-color: #f8f9fa; font-weight: bold; color: #198754;" required>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-success mb-1"><i class="far fa-calendar-check me-1"></i>Giờ hạ cánh</label>
+                            <input type="text" name="arrivalTime" id="createArr" class="form-control premium-input border-success flatpickr-dt" required placeholder="Chọn ngày &amp; giờ...">
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-bold text-danger"><i class="fas fa-money-bill-wave me-1"></i>Giá vé cơ bản (VNĐ)</label>
-                            <input type="text" name="basePrice" id="createPrice"
-                                   class="form-control price-input shadow-sm border-danger" style="background-color: #f8f9fa; font-weight: bold; color: #dc3545; font-size: 1.1rem;"
-                                   required placeholder="VD: 1.500.000">
+
+                        
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold text-danger mb-1"><i class="fas fa-money-bill-wave me-1"></i>Giá vé cơ bản (VNĐ)</label>
+                            <input type="text" name="basePrice" id="createPrice" class="form-control premium-input border-danger price-input" style="font-size: 1.1rem; font-weight: bold;" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tổng số ghế</label>
-                            <input type="number" name="totalSeats" class="form-control" required placeholder="VD: 150">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary mb-1">Tổng số ghế</label>
+                            <input type="number" name="totalSeats" class="form-control premium-input" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Số ghế trống</label>
-                            <input type="number" name="availableSeats" class="form-control" placeholder="Để trống nếu bằng tổng số ghế">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary mb-1">Số ghế trống</label>
+                            <input type="number" name="availableSeats" class="form-control premium-input" placeholder="Để trống nếu bằng tổng số ghế">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary" onclick="return validateCreateFlight()">Tạo mới</button>
+                    <button type="submit" class="btn btn-primary">Tạo mới</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-</div>
-</body>
-
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 // ============ PRICE FORMAT ============
-document.querySelectorAll('.price-input').forEach(function(input) {
-    input.addEventListener('input', function(e) {
-        let val = this.value.replace(/[^0-9]/g, '');
-        if (val) {
-            this.value = parseInt(val, 10).toLocaleString('en-US');
-        } else {
-            this.value = '';
+function formatVND(numStr) {
+    let val = String(numStr).replace(/[^0-9]/g, '');
+    if (!val) return '';
+    // Format with commas (0,000,000) as requested
+    return val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.price-input').forEach(function(input) {
+        // Init if value exists
+        if (input.value) {
+            input.value = formatVND(input.value);
+        }
+
+        input.addEventListener('input', function(e) {
+            let val = this.value.replace(/[^0-9]/g, '');
+            if (val) {
+                this.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            } else {
+                this.value = '';
+            }
+        });
+
+        // Strip formatting before submit
+        let form = input.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                input.value = input.value.replace(/[^0-9]/g, '');
+            });
         }
     });
-    input.closest('form').addEventListener('submit', function() {
-        input.value = input.value.replace(/[^0-9]/g, '');
-    });
-    // Init if value exists
-    if (input.value) {
-        let rawStr = input.value;
-        if (rawStr.includes('.')) {
-            rawStr = rawStr.split('.')[0];
-        }
-        let val = rawStr.replace(/[^0-9]/g, '');
-        if (val) {
-            input.value = parseInt(val, 10).toLocaleString('en-US');
-        }
-    }
 });
 
 // ============ VALIDATION ============
@@ -295,19 +441,33 @@ function validateForm(depAirId, arrAirId, depTimeId, arrTimeId) {
 
     const dep = document.getElementById(depTimeId);
     const arr = document.getElementById(arrTimeId);
+    
+    // Đồng bộ hóa thủ công nếu người dùng đang gõ dở vào ô hiển thị
+    if (dep && dep._flatpickr && dep._flatpickr.altInput) dep._flatpickr.setDate(dep._flatpickr.altInput.value, false);
+    if (arr && arr._flatpickr && arr._flatpickr.altInput) arr._flatpickr.setDate(arr._flatpickr.altInput.value, false);
+
+    let depVal = dep ? dep.value : '';
+    let arrVal = arr ? arr.value : '';
+
     const now = new Date();
-    const minDep = new Date(now.getTime() + 24 * 3600000); // 24 hours from now
+    const minDep = new Date(now.getTime() + 24 * 3600000); 
 
     dep.classList.remove('is-invalid');
     arr.classList.remove('is-invalid');
 
-    if (!dep.value) { 
+    if (!depVal) { 
         Swal.fire({icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn thời gian khởi hành!'});
-        dep.classList.add('is-invalid'); 
+        if (dep._flatpickr && dep._flatpickr.altInput) dep._flatpickr.altInput.classList.add('is-invalid');
+        else dep.classList.add('is-invalid'); 
         return false; 
     }
     
-    const depDate = new Date(dep.value);
+    const depDate = new Date(depVal);
+    if (isNaN(depDate.getTime())) {
+        Swal.fire({icon: 'error', title: 'Lỗi', text: 'Định dạng ngày khởi hành không hợp lệ!'});
+        return false;
+    }
+
     if (depDate < now) {
         Swal.fire({icon: 'error', title: 'Lỗi', text: 'Không được thêm chuyến bay trong quá khứ!'});
         dep.classList.add('is-invalid'); 
@@ -320,13 +480,18 @@ function validateForm(depAirId, arrAirId, depTimeId, arrTimeId) {
         return false;
     }
 
-    if (!arr.value) { 
+    if (!arrVal) { 
         Swal.fire({icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn thời gian hạ cánh!'});
-        arr.classList.add('is-invalid'); 
+        if (arr._flatpickr && arr._flatpickr.altInput) arr._flatpickr.altInput.classList.add('is-invalid');
+        else arr.classList.add('is-invalid'); 
         return false; 
     }
     
-    const arrDate = new Date(arr.value);
+    const arrDate = new Date(arrVal);
+    if (isNaN(arrDate.getTime())) {
+        Swal.fire({icon: 'error', title: 'Lỗi', text: 'Định dạng ngày hạ cánh không hợp lệ!'});
+        return false;
+    }
     const minFlight = 30 * 60000; // 30 min flight minimum
     if (arrDate <= depDate) {
         Swal.fire({icon: 'error', title: 'Lỗi thời gian', text: 'Thời gian hạ cánh phải diễn ra SAU thời gian khởi hành!'});
@@ -356,20 +521,36 @@ function validateFlight(fid) {
     return validateForm('editDepAir' + fid, 'editArrAir' + fid, 'editDep' + fid, 'editArr' + fid);
 }
 
-// Set min date to now on page load
+// ============ FLATPICKR INIT ============
 document.addEventListener('DOMContentLoaded', function() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() + 30);
-    const minVal = now.toISOString().slice(0,16);
-    const createDep = document.getElementById('createDep');
-    const createArr = document.getElementById('createArr');
-    if (createDep) { createDep.min = minVal; }
-    if (createArr) { createArr.min = minVal; }
-    if (createDep) {
-        createDep.addEventListener('change', function() {
-            if (createArr) createArr.min = createDep.value;
-        });
-    }
+    const minDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const locale = {
+        firstDayOfWeek: 1,
+        weekdays: { shorthand: ['CN','T2','T3','T4','T5','T6','T7'], longhand: ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'] },
+        months: { shorthand: ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'], longhand: ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'] }
+    };
+    const fpBase = { 
+        enableTime: true, 
+        dateFormat: 'Y-m-d\\TH:i', 
+        altInput: true, 
+        altFormat: 'd/m/Y H:i', 
+        time_24hr: true, 
+        minDate: minDate, 
+        locale: locale, 
+        allowInput: true 
+    };
+
+    const fpDep = flatpickr('#createDep', Object.assign({}, fpBase, {
+        onChange: function(sd) { if (sd[0]) fpArr.set('minDate', new Date(sd[0].getTime() + 30*60000)); }
+    }));
+    const fpArr = flatpickr('#createArr', Object.assign({}, fpBase));
+
+    document.querySelectorAll('.flatpickr-dt').forEach(function(el) {
+        if (el.id === 'createDep' || el.id === 'createArr') return;
+        const val = el.getAttribute('data-val') || '';
+        flatpickr(el, Object.assign({}, fpBase, { defaultDate: val || null }));
+    });
 });
 </script>
+</div>
 </html>

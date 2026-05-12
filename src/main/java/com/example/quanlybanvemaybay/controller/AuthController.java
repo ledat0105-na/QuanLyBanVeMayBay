@@ -22,12 +22,18 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String login(@RequestParam(value = "returnUrl", required = false) String returnUrl, jakarta.servlet.http.HttpSession session) {
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            session.setAttribute("returnUrl", returnUrl);
+        }
         return "auth/login";
     }
 
     @GetMapping("/register")
-    public String register(Model model) {
+    public String register(@RequestParam(value = "returnUrl", required = false) String returnUrl, Model model, jakarta.servlet.http.HttpSession session) {
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            session.setAttribute("returnUrl", returnUrl);
+        }
         model.addAttribute("registerRequest", new RegisterRequest());
         return "auth/register";
     }

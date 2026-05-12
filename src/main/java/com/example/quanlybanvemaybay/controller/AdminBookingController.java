@@ -50,14 +50,14 @@ public class AdminBookingController {
     public String confirmPayment(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Booking booking = bookingService.updateBookingStatus(id, "CONFIRMED");
-            // Also mark payments as COMPLETED
+            
             for (Payment p : booking.getPayments()) {
                 if ("PENDING".equals(p.getPaymentStatus())) {
                     p.setPaymentStatus("COMPLETED");
                     paymentRepository.save(p);
                 }
             }
-            // Send confirmation email to the user
+            
             if (booking.getUser() != null && booking.getUser().getEmail() != null) {
                 emailService.sendBookingConfirmationEmail(booking, booking.getUser().getEmail());
             }

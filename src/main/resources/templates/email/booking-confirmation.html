@@ -196,6 +196,73 @@
             text-align: center;
         }
         .text-center { text-align: center; }
+        
+        /* Realistic Boarding Pass Styles */
+        .boarding-pass-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            display: block;
+        }
+        .bp-header {
+            background: #127a7b;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bp-header-left { float: left; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+        .bp-header-right { float: right; font-size: 14px; opacity: 0.9; }
+        .bp-body {
+            padding: 20px;
+            position: relative;
+        }
+        .bp-row {
+            clear: both;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .bp-col {
+            float: left;
+            width: 33.33%;
+        }
+        .bp-col-half {
+            float: left;
+            width: 50%;
+        }
+        .bp-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            display: block;
+        }
+        .bp-val {
+            font-size: 16px;
+            color: #222;
+            font-weight: 700;
+        }
+        .bp-val-large {
+            font-size: 28px;
+            color: #127a7b;
+            font-weight: 900;
+        }
+        .bp-stub {
+            border-top: 2px dashed #ccc;
+            padding: 20px;
+            background: #fcfcfc;
+            text-align: center;
+        }
+        .barcode {
+            max-width: 100%;
+            height: 60px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -203,71 +270,80 @@
         <tr>
             <td align="center">
                 <table class="email-container" cellpadding="0" cellspacing="0" role="presentation">
-                    <!-- Header -->
+                    
                     <tr>
                         <td class="header">
+                            <img src="https://img.icons8.com/ios-filled/100/ffffff/paper-plane.png" alt="SkyTravel Logo" style="height: 50px; margin-bottom: 10px;">
                             <h1>SkyTravel</h1>
                             <p>Vé Điện Tử - Đặt Chỗ Thành Công</p>
                         </td>
                     </tr>
                     
-                    <!-- Content -->
+                    
                     <tr>
                         <td class="content">
-                            <p class="greeting">Xin chào <span th:text="${booking.user != null ? booking.user.fullName : 'Quý khách'}"></span>,</p>
-                            <p>Cảm ơn quý khách đã lựa chọn SkyTravel. Dưới đây là thông tin vé điện tử của quý khách. Xin vui lòng xuất trình mã đặt chỗ này khi làm thủ tục tại sân bay.</p>
+                            <p class="greeting" style="margin-bottom: 10px;">Xin chào <span th:text="${booking.user != null ? booking.user.fullName : 'Quý khách'}"></span>,</p>
+                            <p style="line-height: 1.4; margin-top: 0; margin-bottom: 25px;">Cảm ơn quý khách đã lựa chọn SkyTravel. Dưới đây là thông tin vé điện tử của quý khách. Xin vui lòng xuất trình mã đặt chỗ này khi làm thủ tục tại sân bay.</p>
                             
-                            <!-- Booking Card -->
-                            <div class="booking-card">
-                                <div class="booking-code">
-                                    <p>Mã Đặt Chỗ (Booking Reference)</p>
-                                    <h2 th:text="${booking.bookingCode}">BKG12345</h2>
+                            
+                            <div th:each="p : ${booking.passengers}" class="boarding-pass-wrapper">
+                                <div class="bp-header" style="overflow: hidden;">
+                                    <div class="bp-header-left">SKYTRAVEL</div>
+                                    <div class="bp-header-right">BOARDING PASS</div>
                                 </div>
                                 
-                                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
-                                    <tr>
-                                        <td class="airport" style="width: 40%; text-align: left;">
-                                            <h3 th:text="${booking.flight.departureAirport.code}">SGN</h3>
-                                            <p th:text="${booking.flight.departureAirport.city}">Hồ Chí Minh</p>
-                                        </td>
-                                        <td class="flight-path" style="width: 20%; text-align: center;">
-                                            <span style="font-size: 24px; color: #127a7b;">✈</span>
-                                        </td>
-                                        <td class="airport" style="width: 40%; text-align: right;">
-                                            <h3 th:text="${booking.flight.arrivalAirport.code}">HAN</h3>
-                                            <p th:text="${booking.flight.arrivalAirport.city}">Hà Nội</p>
-                                        </td>
-                                    </tr>
-                                </table>
-
-                                <table width="100%" cellpadding="0" cellspacing="0">
-                                    <tr>
-                                        <td style="padding-bottom: 15px; width: 50%;">
-                                            <span class="info-label">Chuyến bay</span>
-                                            <span class="info-value" th:text="${booking.flight.flightNumber}">VN123</span>
-                                        </td>
-                                        <td style="padding-bottom: 15px; width: 50%;">
-                                            <span class="info-label">Khởi hành</span>
-                                            <span class="info-value" th:text="${#temporals.format(booking.flight.departureTime, 'HH:mm - dd/MM/yyyy')}">10:00 01/01/2026</span>
-                                        </td>
-                                    </tr>
-                                </table>
+                                <div class="bp-body">
+                                    <div class="bp-row">
+                                        <div class="bp-col-half">
+                                            <span class="bp-label">Hành Khách (Passenger)</span>
+                                            <span class="bp-val" style="text-transform: uppercase;" th:text="${p.fullName}">NGUYEN VAN A</span>
+                                        </div>
+                                        <div class="bp-col-half text-right" style="text-align: right;">
+                                            <span class="bp-label">Chuyến Bay (Flight)</span>
+                                            <span class="bp-val" th:text="${booking.flight.flightNumber}">VN123</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bp-row" style="margin-top: 25px; margin-bottom: 25px;">
+                                        <div class="bp-col">
+                                            <span class="bp-label">Khởi Hành (From)</span>
+                                            <span class="bp-val-large" th:text="${booking.flight.departureAirport.code}">SGN</span>
+                                            <div style="font-size: 12px; color: #555;" th:text="${booking.flight.departureAirport.city}">Hồ Chí Minh</div>
+                                        </div>
+                                        <div class="bp-col text-center">
+                                            <span style="font-size: 30px; color: #127a7b; display: block; margin-top: 5px;">✈</span>
+                                        </div>
+                                        <div class="bp-col" style="text-align: right;">
+                                            <span class="bp-label">Hạ Cánh (To)</span>
+                                            <span class="bp-val-large" th:text="${booking.flight.arrivalAirport.code}">HAN</span>
+                                            <div style="font-size: 12px; color: #555;" th:text="${booking.flight.arrivalAirport.city}">Hà Nội</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bp-row">
+                                        <div class="bp-col">
+                                            <span class="bp-label">Ngày (Date)</span>
+                                            <span class="bp-val" th:text="${#temporals.format(booking.flight.departureTime, 'dd/MM/yyyy')}">01/01/2026</span>
+                                        </div>
+                                        <div class="bp-col text-center">
+                                            <span class="bp-label">Giờ (Time)</span>
+                                            <span class="bp-val" th:text="${#temporals.format(booking.flight.departureTime, 'HH:mm')}">10:00</span>
+                                        </div>
+                                        <div class="bp-col" style="text-align: right;">
+                                            <span class="bp-label">Mã Đặt Chỗ (PNR)</span>
+                                            <span class="bp-val" style="color: #d32f2f;" th:text="${booking.bookingCode}">BKG123</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 
-                                <div class="total-amount">
-                                    Tổng thanh toán: <span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                                <div class="bp-stub">
+                                    <span class="bp-label">Vui lòng xuất trình mã vạch này khi làm thủ tục</span>
+                                    <img th:src="@{'https://barcode.tec-it.com/barcode.ashx?data=' + ${booking.bookingCode} + '-' + ${p.id} + '&code=Code128&dpi=96'}" alt="Barcode" class="barcode" />
                                 </div>
                             </div>
                             
-                            <!-- Passengers -->
-                            <div class="passengers-section">
-                                <h3>Thông tin Hành Khách</h3>
-                                <div class="passenger-item" th:each="p : ${booking.passengers}">
-                                    <div class="passenger-name" th:text="${p.fullName}">Nguyen Van A</div>
-                                    <div class="passenger-details">
-                                        Giới tính: <span th:text="${p.gender == 'MALE' ? 'Nam' : (p.gender == 'FEMALE' ? 'Nữ' : 'Khác')}"></span> | 
-                                        CCCD/Passport: <span th:text="${p.passportNumber}">123456789</span>
-                                    </div>
-                                </div>
+                            <div class="total-amount" style="margin-top: 30px;">
+                                Đã thanh toán: <span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
                             </div>
                             
                             <div class="text-center">
@@ -276,7 +352,7 @@
                         </td>
                     </tr>
                     
-                    <!-- Footer -->
+                    
                     <tr>
                         <td class="footer">
                             <p><strong>SkyTravel - Nâng tầm trải nghiệm bay</strong></p>

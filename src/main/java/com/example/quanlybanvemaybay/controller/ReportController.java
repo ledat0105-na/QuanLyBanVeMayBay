@@ -89,12 +89,12 @@ public class ReportController {
         
         List<Object[]> popularFlights = bookingRepository.findPopularFlightsBetween(startDate, endDate, PageRequest.of(0, 5));
 
-        // Dynamic Chart Data based on Filter
+        
         List<String> chartLabels = new java.util.ArrayList<>();
         List<BigDecimal> chartData = new java.util.ArrayList<>();
 
         if ("YEAR".equals(filterType)) {
-            // Show 12 months of selected year
+            
             int year = date.getYear();
             for (int m = 1; m <= 12; m++) {
                 java.time.YearMonth ym = java.time.YearMonth.of(year, m);
@@ -105,7 +105,7 @@ public class ReportController {
                 chartData.add(rev != null ? rev : BigDecimal.ZERO);
             }
         } else if ("QUARTER".equals(filterType)) {
-            // Show 3 months of selected quarter
+            
             int startMonth = ((date.getMonthValue() - 1) / 3) * 3 + 1;
             for (int i = 0; i < 3; i++) {
                 java.time.YearMonth ym = java.time.YearMonth.of(date.getYear(), startMonth + i);
@@ -116,7 +116,7 @@ public class ReportController {
                 chartData.add(rev != null ? rev : BigDecimal.ZERO);
             }
         } else if ("MONTH".equals(filterType)) {
-            // Show all days of selected month
+            
             int days = date.lengthOfMonth();
             for (int d = 1; d <= days; d++) {
                 chartLabels.add(String.valueOf(d));
@@ -126,7 +126,7 @@ public class ReportController {
                 chartData.add(rev != null ? rev : BigDecimal.ZERO);
             }
         } else {
-            // DAY or DEFAULT: Show trend of last 7 days including selected day
+            
             for (int i = 6; i >= 0; i--) {
                 java.time.LocalDate d = date.minusDays(i);
                 chartLabels.add(d.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM")));

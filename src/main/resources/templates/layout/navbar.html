@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <th:block th:fragment="navbar">
-    <!-- Spinner Start -->
+    
     <div id="spinner"
       class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
       <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
         <span class="sr-only">Loading...</span>
       </div>
     </div>
-    <!-- Spinner End -->
+    
 
-    <!-- Navbar Start -->
+    
     <style>
       .navbar-nav .nav-link.active {
           color: var(--primary) !important;
@@ -63,6 +63,41 @@
               <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-primary rounded-pill py-2 px-4 fw-bold me-2">Đăng Nhập</a>
               <a sec:authorize="!isAuthenticated()" th:href="@{/register}" class="btn btn-outline-primary rounded-pill py-2 px-4 fw-bold">Đăng Ký</a>
 
+              <div class="dropdown me-3 position-relative d-flex align-items-center" sec:authorize="isAuthenticated()">
+                  <a href="#" class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center position-relative"
+                     style="width: 40px; height: 40px;" data-bs-toggle="dropdown" title="Thông Báo">
+                      <i class="fas fa-bell text-primary"></i>
+                      <span th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.55rem;" th:text="${unreadNotificationCount}"></span>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2" style="width: 340px; max-height: 420px; overflow-y: auto; z-index: 1050;">
+                      <div class="p-3 border-bottom bg-primary text-white rounded-top d-flex justify-content-between align-items-center">
+                          <h6 class="m-0 fw-bold"><i class="fas fa-bell me-2"></i>Thông Báo</h6>
+                      </div>
+                      <div th:if="${userNotifications == null or #lists.isEmpty(userNotifications)}" class="p-4 text-center text-muted">
+                          <i class="far fa-bell-slash fa-2x mb-2"></i>
+                          <p class="mb-0 small">Chưa có thông báo nào</p>
+                      </div>
+                      <div th:unless="${userNotifications == null or #lists.isEmpty(userNotifications)}">
+                          <a href="#" th:each="notif : ${userNotifications}"
+                             th:attr="onclick=|markNotificationAsRead(${notif.id}, this)|"
+                             th:data-title="${notif.title}"
+                             class="dropdown-item py-3 border-bottom text-wrap"
+                             th:classappend="${!notif.isRead} ? 'bg-light fw-bold' : ''">
+                              <div class="d-flex align-items-start gap-2">
+                                  <i class="fas mt-1 text-primary" th:classappend="${notif.isRead} ? 'fa-envelope-open' : 'fa-envelope'"></i>
+                                  <div>
+                                      <div class="small fw-bold" th:text="${notif.title}">Tiêu đề</div>
+                                      <div class="text-muted" style="font-size:0.78rem;" th:text="${#strings.abbreviate(notif.message,60)}">Nội dung</div>
+                                      <div class="text-primary" style="font-size:0.7rem;" th:text="${#temporals.format(notif.createdAt, 'dd/MM HH:mm')}">Thời gian</div>
+                                  </div>
+                              </div>
+                          </a>
+                      </div>
+                  </div>
+              </div>
+
               <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                   <a href="#" class="nav-link dropdown-toggle btn btn-primary rounded-pill py-2 px-4 fw-bold text-white shadow-sm" data-bs-toggle="dropdown" style="line-height: 1.5;">
                       <i class="fas fa-user-circle me-1"></i> <span sec:authentication="name">Tài Khoản</span>
@@ -82,15 +117,40 @@
         </nav>
       </div>
     </div>
-    <!-- Navbar End -->
+    
     
     <script>
-        function markNotificationAsRead(id) {
+        function markNotificationAsRead(id, element) {
+            const title = element ? element.getAttribute('data-title') : '';
             fetch('/api/notifications/read/' + id, { method: 'POST' })
             .then(res => {
-                if (res.ok) window.location.reload();
+                if (res.ok) {
+                    const t = title ? title.toLowerCase() : '';
+                    if (t.includes('đặt vé') || t.includes('thanh toán') || t.includes('xử lý vé') || t.includes('trạng thái') || t.includes('hành khách')) {
+                        window.location.href = '/profile/bookings';
+                    } else {
+                        window.location.reload();
+                    }
+                }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('login_success')) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đăng nhập thành công!',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+                const url = new URL(window.location);
+                url.searchParams.delete('login_success');
+                window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : ''));
+            }
+        });
     </script>
   </th:block>
 </html>

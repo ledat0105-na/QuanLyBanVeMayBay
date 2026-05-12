@@ -1,8 +1,4 @@
-/*
-* WOW wow.js - v1.3.0 - 2016-10-04
-* https://wowjs.uk
-* Copyright (c) 2016 Thomas Grainger; Licensed MIT
-*/
+
 
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
@@ -75,11 +71,11 @@
 
     var customEvent = void 0;
     if (document.createEvent != null) {
-      // W3C DOM
+      
       customEvent = document.createEvent('CustomEvent');
       customEvent.initCustomEvent(event, bubble, cancel, detail);
     } else if (document.createEventObject != null) {
-      // IE DOM < 9
+      
       customEvent = document.createEventObject();
       customEvent.eventType = event;
     } else {
@@ -91,7 +87,7 @@
 
   function emitEvent(elem, event) {
     if (elem.dispatchEvent != null) {
-      // W3C DOM
+      
       elem.dispatchEvent(event);
     } else if (event in (elem != null)) {
       elem[event]();
@@ -102,26 +98,26 @@
 
   function addEvent(elem, event, fn) {
     if (elem.addEventListener != null) {
-      // W3C DOM
+      
       elem.addEventListener(event, fn, false);
     } else if (elem.attachEvent != null) {
-      // IE DOM
+      
       elem.attachEvent('on' + event, fn);
     } else {
-      // fallback
+      
       elem[event] = fn;
     }
   }
 
   function removeEvent(elem, event, fn) {
     if (elem.removeEventListener != null) {
-      // W3C DOM
+      
       elem.removeEventListener(event, fn, false);
     } else if (elem.detachEvent != null) {
-      // IE DOM
+      
       elem.detachEvent('on' + event, fn);
     } else {
-      // fallback
+      
       delete elem[event];
     }
   }
@@ -134,7 +130,7 @@
     return document.documentElement.clientHeight;
   }
 
-  // Minimalistic WeakMap shim, just in case.
+  
   var WeakMap = window.WeakMap || window.MozWeakMap || function () {
     function WeakMap() {
       _classCallCheck(this, WeakMap);
@@ -173,7 +169,7 @@
     return WeakMap;
   }();
 
-  // Dummy MutationObserver, to avoid raising exceptions.
+  
   var MutationObserver = window.MutationObserver || window.WebkitMutationObserver || window.MozMutationObserver || (_temp = _class = function () {
     function MutationObserver() {
       _classCallCheck(this, MutationObserver);
@@ -192,7 +188,7 @@
     return MutationObserver;
   }(), _class.notSupported = true, _temp);
 
-  // getComputedStyle shim, from http://stackoverflow.com/a/21797294
+  
   var getComputedStyle = window.getComputedStyle || function getComputedStyle(el) {
     var getComputedStyleRX = /(\-([a-z]){1})/g;
     return {
@@ -251,7 +247,7 @@
       if (options.scrollContainer != null) {
         this.config.scrollContainer = document.querySelector(options.scrollContainer);
       }
-      // Map of elements to animation names:
+      
       this.animationNameCache = new WeakMap();
       this.wowEvent = createEvent(this.config.boxClass);
     }
@@ -451,12 +447,12 @@
         try {
           aName = this.vendorCSS(box, 'animation-name').cssText;
         } catch (error) {
-          // Opera, fall back to plain property value
+          
           aName = getComputedStyle(box).getPropertyValue('animation-name');
         }
 
         if (aName === 'none') {
-          return ''; // SVG/Firefox, unable to get animation name?
+          return ''; 
         }
 
         return aName;
@@ -464,8 +460,8 @@
     }, {
       key: 'cacheAnimationName',
       value: function cacheAnimationName(box) {
-        // https://bugzilla.mozilla.org/show_bug.cgi?id=921834
-        // box.dataset is not supported for SVG elements in Firefox
+        
+        
         return this.animationNameCache.set(box, this.animationName(box));
       }
     }, {
@@ -503,9 +499,9 @@
     }, {
       key: 'offsetTop',
       value: function offsetTop(element) {
-        // SVG elements don't have an offsetTop in Firefox.
-        // This will use their nearest parent that has an offsetTop.
-        // Also, using ('offsetTop' of element) causes an exception in Firefox.
+        
+        
+        
         while (element.offsetTop === undefined) {
           element = element.parentNode;
         }

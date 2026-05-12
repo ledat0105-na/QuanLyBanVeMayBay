@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/header :: head}"></th:block>
-    <!-- CSRF Meta Tags for Ajax -->
+    
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
@@ -10,7 +10,24 @@
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
 <main>
-    <!-- Hero Start -->
+    
+    <div th:if="${flightExpiredMsg}" class="d-none" id="flightExpiredAlert"
+         th:data-msg="${flightExpiredMsg}"></div>
+    <script th:if="${flightExpiredMsg}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var msg = document.getElementById('flightExpiredAlert')?.getAttribute('data-msg');
+            if (msg && typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Hết hạn đặt vé',
+                    text: msg,
+                    confirmButtonText: 'Tìm chuyến bay khác',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        });
+    </script>
+    
     <div class="container-fluid pb-5 hero-header bg-light mb-5">
         <div class="container py-5">
             <div class="row g-5 align-items-center mb-5">
@@ -19,11 +36,11 @@
                     <h5 class="d-inline-block border border-2 border-white py-3 px-5 mb-0 animated slideInRight" th:classappend="${isEditorMode} ? 'editable-text' : ''" th:onclick="${isEditorMode} ? 'openTextEditor(\'home_hero_subtitle\')' : ''" id="text-home_hero_subtitle" th:utext="${homeHeroSubtitle}">Nhanh Chóng - Tiết Kiệm - An Toàn</h5>
                 </div>
                 <div class="col-lg-6 position-relative">
-                    <!-- Bootstrap Auto-Sliding Carousel -->
+                    
                     <div id="heroCarousel" class="carousel slide rounded-4 overflow-hidden shadow-lg animated fadeIn" data-bs-ride="carousel" data-bs-interval="2000">
                         <div class="carousel-inner" style="height: 420px;" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
 
-                            <!-- Carousel items from DB -->
+                            
                             <th:block th:if="${not #lists.isEmpty(carouselBanners)}">
                                 <div th:each="bn, iterStat : ${carouselBanners}"
                                      class="carousel-item"
@@ -35,7 +52,7 @@
                                  </div>
                             </th:block>
 
-                            <!-- Default fallback if no carousel banners -->
+                            
                             <th:block th:if="${#lists.isEmpty(carouselBanners)}">
                                 <div class="carousel-item active" style="height: 420px;">
                                     <img th:src="@{/img/carousel-1.jpg}" alt="Default Banner 1"
@@ -48,7 +65,7 @@
                             </th:block>
                         </div>
 
-                        <!-- Controls -->
+                        
                         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon"></span>
                         </button>
@@ -56,7 +73,7 @@
                             <span class="carousel-control-next-icon"></span>
                         </button>
 
-                        <!-- Indicators -->
+                        
                         <div class="carousel-indicators" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
                             <th:block th:if="${not #lists.isEmpty(carouselBanners)}">
                                 <button th:each="bn, iterStat : ${carouselBanners}"
@@ -71,7 +88,7 @@
                         </div>
                     </div>
 
-                    <!-- Editor Mode: Manage Buttons -->
+                    
                     <div th:if="${isEditorMode}" class="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style="z-index: 200;">
                         <button type="button" class="btn btn-warning rounded-pill px-3 py-1 fw-bold shadow"
                                 onclick="openCarouselManager()" style="font-size: 0.85rem;">
@@ -85,11 +102,57 @@
                 </div>
             </div>
             
-            <!-- Flight Search Form -->
-            <div class="row g-5 pb-5" style="position: relative; z-index: 9999;">
+            
+            <div id="flight-search-section" class="row g-5 pb-5" style="position: relative; z-index: 9999;">
                 <div class="col-12">
                     <div class="card shadow-lg border-0 rounded-4 bg-white bg-opacity-75">
                         <div class="card-body p-4 p-md-5">
+                            
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                            <style>
+                                .search-box-custom {
+                                    height: 55px !important;
+                                    border-radius: 12px !important;
+                                    border: 1.5px solid #cbd5e1 !important;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                                    font-size: 1.05rem !important;
+                                    color: #334155 !important;
+                                    transition: all 0.3s ease;
+                                    background-color: #fff !important;
+                                }
+                                .search-box-custom:focus, .search-box-custom:hover {
+                                    border-color: #126c68 !important;
+                                    box-shadow: 0 4px 12px rgba(18,108,104,0.15) !important;
+                                    outline: none !important;
+                                }
+                                .flatpickr-input[readonly] { cursor: pointer !important; background-color: #fff !important; }
+                                .flatpickr-calendar {
+                                    border-radius: 20px !important;
+                                    box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important;
+                                    border: none !important;
+                                    padding: 10px !important;
+                                    font-family: 'Space Grotesk', sans-serif !important;
+                                    z-index: 9999 !important;
+                                    background-color: #fff !important;
+                                }
+                                .flatpickr-months { padding: 10px 0 !important; background: transparent !important; }
+                                .flatpickr-month { color: #126c68 !important; }
+                                .flatpickr-current-month { color: #126c68 !important; font-size: 1.3rem !important; font-weight: 800 !important; }
+                                .flatpickr-current-month .flatpickr-monthDropdown-months { color: #126c68 !important; background: transparent !important; font-weight: 800; }
+                                .flatpickr-current-month input.cur-year { color: #126c68 !important; font-weight: 800 !important; }
+                                .flatpickr-prev-month, .flatpickr-next-month { color: #126c68 !important; fill: #126c68 !important; padding: 10px !important; background: #f0fdfa !important; border-radius: 12px !important; margin: 5px !important; }
+                                .flatpickr-prev-month:hover, .flatpickr-next-month:hover { background: #126c68 !important; fill: #fff !important; }
+                                .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: #fff !important; }
+                                .flatpickr-weekdays { background: transparent !important; padding: 10px 0 !important; }
+                                span.flatpickr-weekday { color: #64748b !important; font-weight: 700 !important; font-size: 0.9rem !important; }
+                                .flatpickr-days { padding: 10px 0 !important; }
+                                .flatpickr-day { border-radius: 12px !important; font-weight: 600 !important; color: #475569 !important; transition: all 0.2s ease !important; width: 40px !important; height: 40px !important; line-height: 40px !important; margin: 2px !important; }
+                                .flatpickr-day:hover { background: #f0fdfa !important; color: #126c68 !important; border-color: transparent !important; transform: scale(1.05); }
+                                .flatpickr-day.selected, .flatpickr-day.selected:hover { background: #126c68 !important; border-color: #126c68 !important; color: #fff !important; box-shadow: 0 4px 12px rgba(18,108,104,0.3) !important; transform: scale(1.05); }
+                                .flatpickr-day.today { border: 2px solid #126c68 !important; color: #126c68 !important; }
+                                .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: #cbd5e1 !important; }
+                                .flatpickr-day.disabled { color: #e2e8f0 !important; text-decoration: line-through; }
+                            </style>
                             <form th:action="@{/flights/search}" method="get" id="flightSearchForm">
                                 <div class="mb-4 d-flex justify-content-center gap-4 flex-wrap">
                                     <div class="form-check">
@@ -114,14 +177,17 @@
                                     <div class="col-lg-3 col-md-6">
                                         <label class="form-label fw-bold"><i class="fas fa-plane-departure text-primary me-2"></i>Điểm đi</label>
                                         <div class="dropdown">
-                                            <div class="form-control border-primary d-flex align-items-center bg-white" data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px; cursor: pointer;">
+                                            <div class="form-control search-box-custom d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                                                 <div class="flex-grow-1 overflow-hidden" style="white-space: nowrap;">
                                                     <div class="fw-bold text-dark fs-6 lh-1" id="depLabel">Chọn điểm đi</div>
                                                     <small class="text-muted d-block text-truncate mt-1" id="depSubLabel" style="font-size: 0.75rem;">Sân bay khởi hành</small>
                                                 </div>
                                             </div>
                                             <input type="hidden" name="depId" id="depId" required>
-                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" id="depDropdown" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                                <li class="p-2 sticky-top bg-white border-bottom" style="z-index: 11;">
+                                                    <input type="text" class="form-control" id="searchDep" placeholder="Nhập tên sân bay, thành phố hoặc mã..." oninput="filterAirports('searchDep', 'depDropdown')" onclick="event.stopPropagation();">
+                                                </li>
                                                 <li class="bg-light px-3 py-2 border-bottom sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Tìm kiếm gần đây</small></li>
                                                 <li th:each="ap, iterStat : ${domesticAirports}" th:if="${iterStat.index < 2}">
                                                     <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('dep', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
@@ -160,14 +226,17 @@
                                     <div class="col-lg-3 col-md-6">
                                         <label class="form-label fw-bold"><i class="fas fa-plane-arrival text-primary me-2"></i>Điểm đến</label>
                                         <div class="dropdown">
-                                            <div class="form-control border-primary d-flex align-items-center bg-white" data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px; cursor: pointer;">
+                                            <div class="form-control search-box-custom d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                                                 <div class="flex-grow-1 overflow-hidden" style="white-space: nowrap;">
                                                     <div class="fw-bold text-dark fs-6 lh-1" id="arrLabel">Chọn điểm đến</div>
                                                     <small class="text-muted d-block text-truncate mt-1" id="arrSubLabel" style="font-size: 0.75rem;">Sân bay hạ cánh</small>
                                                 </div>
                                             </div>
                                             <input type="hidden" name="arrId" id="arrId" required>
-                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                            <ul class="dropdown-menu shadow-lg border-0 p-0 w-100" id="arrDropdown" style="max-height: 380px; overflow-y: auto; border-radius: 8px; min-width: 320px; z-index: 1050;">
+                                                <li class="p-2 sticky-top bg-white border-bottom" style="z-index: 11;">
+                                                    <input type="text" class="form-control" id="searchArr" placeholder="Nhập tên sân bay, thành phố hoặc mã..." oninput="filterAirports('searchArr', 'arrDropdown')" onclick="event.stopPropagation();">
+                                                </li>
                                                 <li class="bg-light px-3 py-2 border-bottom sticky-top" style="z-index: 10;"><small class="fw-bold text-secondary text-uppercase">Tìm kiếm gần đây</small></li>
                                                 <li th:each="ap, iterStat : ${domesticAirports}" th:if="${iterStat.index < 2}">
                                                     <a class="dropdown-item py-2 border-bottom d-flex align-items-center bg-white" href="javascript:void(0)" th:attr="onclick=|selectAirport('arr', '${ap.id}', '${ap.city} (${ap.code})', '${ap.name}')|">
@@ -205,15 +274,15 @@
                                     </div>
                                     <div class="col-lg-2 col-md-4">
                                         <label class="form-label fw-bold"><i class="far fa-calendar-alt text-primary me-2"></i>Ngày đi</label>
-                                        <input type="date" name="depDate" class="form-control border-primary" style="height: 50px;" required>
+                                        <input type="text" name="depDate" id="depDate" class="form-control search-box-custom" required placeholder="dd/mm/yyyy">
                                     </div>
                                     <div class="col-lg-2 col-md-4" id="returnDateCol" style="display: none;">
                                         <label class="form-label fw-bold"><i class="far fa-calendar-check text-primary me-2"></i>Ngày về</label>
-                                        <input type="date" name="retDate" id="retDate" class="form-control border-primary" style="height: 50px;">
+                                        <input type="text" name="retDate" id="retDate" class="form-control search-box-custom" placeholder="dd/mm/yyyy">
                                     </div>
                                     <div class="col-lg-2 col-md-4" id="passengersCol">
                                         <label class="form-label fw-bold"><i class="fas fa-users text-primary me-2"></i>Số hành khách</label>
-                                        <input type="number" name="passengers" class="form-control border-primary" value="1" min="1" max="10" style="height: 50px;" required>
+                                        <input type="number" name="passengers" class="form-control search-box-custom" value="1" min="1" max="10" required>
                                     </div>
                                 </div>
                                 <div class="row mt-4">
@@ -237,6 +306,24 @@
                                         returnDateCol.style.display = 'none';
                                         retDateInput.removeAttribute('required');
                                         retDateInput.value = '';
+                                    }
+                                }
+
+                                function filterAirports(inputId, dropdownId) {
+                                    const filter = document.getElementById(inputId).value.toLowerCase();
+                                    const dropdown = document.getElementById(dropdownId);
+                                    const items = dropdown.getElementsByTagName('li');
+                                    
+                                    for (let i = 0; i < items.length; i++) {
+                                        const a = items[i].getElementsByTagName('a')[0];
+                                        if (a) {
+                                            const textValue = a.textContent || a.innerText;
+                                            if (textValue.toLowerCase().indexOf(filter) > -1) {
+                                                items[i].style.display = '';
+                                            } else {
+                                                items[i].style.display = 'none';
+                                            }
+                                        }
                                     }
                                 }
 
@@ -275,6 +362,39 @@
                                         e.preventDefault();
                                         alert('Điểm đi và điểm đến không được trùng nhau. Vui lòng chọn lại sân bay!');
                                     }
+                                });
+                            </script>
+                            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const locale = {
+                                        firstDayOfWeek: 1,
+                                        weekdays: { shorthand: ['CN','T2','T3','T4','T5','T6','T7'], longhand: ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'] },
+                                        months: { shorthand: ['Th1','Th2','Th3','Th4','Th5','Th6','Th7','Th8','Th9','Th10','Th11','Th12'], longhand: ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'] }
+                                    };
+                                    
+                                    const fpRet = flatpickr('#retDate', {
+                                        dateFormat: 'Y-m-d',
+                                        altInput: true,
+                                        altFormat: 'd/m/Y',
+                                        minDate: 'today',
+                                        locale: locale,
+                                        allowInput: true
+                                    });
+
+                                    const fpDep = flatpickr('#depDate', {
+                                        dateFormat: 'Y-m-d',
+                                        altInput: true,
+                                        altFormat: 'd/m/Y',
+                                        minDate: 'today',
+                                        locale: locale,
+                                        allowInput: true,
+                                        onChange: function(selectedDates) {
+                                            if (selectedDates[0]) {
+                                                fpRet.set('minDate', selectedDates[0]);
+                                            }
+                                        }
+                                    });
                                 });
                             </script>
                         </div>
@@ -316,7 +436,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Banners Gallery -->
+            
             <div th:if="${not #lists.isEmpty(banners)}" class="container-fluid py-5 mt-5">
                 <div class="row g-4">
                     <div class="col-12 text-center mb-4">
@@ -327,7 +447,7 @@
                 <div class="row g-4 justify-content-center px-lg-5" th:with="destBanners=${banners.?[position == 'DESTINATION']}">
                     <th:block th:each="bn : ${destBanners}">
                         <div class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card position-relative">
-                            <!-- Nút Xóa & Sửa (chỉ hiện trong Editor Mode) -->
+                            
                             <div th:if="${isEditorMode}" class="position-absolute top-0 end-0 m-2 d-flex flex-column gap-1" style="z-index: 100;">
                                 <button class="btn btn-warning rounded-circle shadow" style="width:40px;height:40px;"
                                     th:data-id="${bn.id}"
@@ -351,7 +471,7 @@
                                      style="background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
                                     <h3 class="text-white fw-bold mb-0 shadow-text" th:text="${bn.title}"></h3>
                                 </div>
-                                <!-- Hover overlay effect -->
+                                
                                 <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center btn-overlay p-4 text-center">
                                     <h5 class="text-warning mb-3 fw-bold animated fadeInDown" th:text="${bn.subtitle}"></h5>
                                     <a href="#" onclick="document.querySelector('input[type=date]').focus()" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-lg fs-6 text-primary animated fadeInUp">Đặt Ngay</a>
@@ -360,7 +480,7 @@
                         </div>
                     </th:block>
                     
-                    <!-- Add New Banner Placeholder (Editor Mode Only) -->
+                    
                     <div th:if="${isEditorMode}" class="col-lg-4 col-md-6 wow fadeInUp flight-banner-card" onclick="openAddModal('banner')" style="cursor: pointer;">
                         <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-light border border-2 border-primary border-dashed d-flex align-items-center justify-content-center" style="height: 380px; border-style: dashed;">
                             <div class="text-center text-primary">
@@ -377,12 +497,12 @@
                     .shadow-text { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
                 </style>
             </div>
-            <!-- Gallery End -->
+            
         </div>
     </div>
-    <!-- Hero End -->
+    
 
-    <!-- About Start -->
+    
     <div class="container-fluid py-5">
         <div class="container">
             <div class="row g-5">
@@ -435,9 +555,9 @@
             </div>
         </div>
     </div>
-    <!-- About End -->
+    
 
-    <!-- Service Start -->
+    
     <div class="container-xxl py-5 mt-5">
         <div class="container">
             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
@@ -446,13 +566,13 @@
             </div>
             <div class="row g-4">
                 <div th:each="svc : ${services}" class="col-lg-4 col-md-6 wow fadeInUp position-relative" data-wow-delay="0.1s">
-                    <!-- Nút xóa (editor mode) -->
+                    
                     <button th:if="${isEditorMode}" class="btn btn-danger position-absolute top-0 end-0 mt-2 me-3 rounded-circle shadow" style="z-index: 100; width: 40px; height: 40px;"
                             th:onclick="'deleteEntity(\'service\', ' + ${svc.id} + ')'">
                         <i class="fas fa-trash"></i>
                     </button>
 
-                    <!-- Card: chỉ hiển thị ảnh + tiêu đề, click để xem chi tiết -->
+                    
                     <div class="svc-card bg-white rounded-4 shadow-sm border overflow-hidden"
                          style="cursor: pointer; transition: all 0.3s ease;"
                          th:data-title="${svc.title}"
@@ -461,19 +581,19 @@
                          th:data-icon="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"
                          onclick="openServiceDetail(this)">
 
-                        <!-- Vùng ảnh -->
+                        
                         <div class="svc-card-img position-relative overflow-hidden" style="height: 200px; background: #f0f4f8;">
-                            <!-- Nếu có ảnh URL -->
+                            
                             <th:block th:if="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
                                 <img th:src="@{${svc.imageUrl}}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.4s ease;" alt="">
                             </th:block>
-                            <!-- Nếu chỉ có icon -->
+                            
                             <th:block th:unless="${svc.imageUrl != null and !svc.imageUrl.isEmpty()}">
                                 <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10">
                                     <i class="text-primary" style="font-size: 4rem;" th:class="${svc.iconClass != null ? svc.iconClass : 'fas fa-star'}"></i>
                                 </div>
                             </th:block>
-                            <!-- Overlay "Xem chi tiết" -->
+                            
                             <div class="svc-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 text-center"
                                  style="background: rgba(13,107,104,0.85); opacity: 0; transition: opacity 0.3s;">
                                 <p class="text-white small mb-3 px-2" th:text="${svc.description}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;"></p>
@@ -481,14 +601,14 @@
                             </div>
                         </div>
 
-                        <!-- Tiêu đề -->
+                        
                         <div class="p-4">
                             <h5 class="fw-bold mb-0 text-dark" th:text="${svc.title}"></h5>
                         </div>
                     </div>
                 </div>
 
-                <!-- Add New Service Placeholder (Editor Mode Only) -->
+                
                 <div th:if="${isEditorMode}" class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" onclick="openAddModal('service')" style="cursor: pointer;">
                     <div class="svc-card bg-light rounded-4 shadow-sm border border-2 border-primary d-flex flex-column align-items-center justify-content-center text-center" style="height: 288px; border-style: dashed;">
                         <i class="fas fa-plus-circle fa-4x text-primary mb-3"></i>
@@ -499,17 +619,17 @@
         </div>
     </div>
 
-    <!-- Service Detail Modal -->
+    
     <div id="serviceDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:50000; overflow-y:auto;" onclick="if(event.target===this) closeServiceDetail()">
         <div style="max-width:560px; margin:60px auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <!-- Ảnh lớn -->
+            
             <div id="svcModalImgWrap" style="height:260px; background:#f0f4f8; overflow:hidden; position:relative;">
                 <img id="svcModalImg" src="" class="w-100 h-100" style="object-fit:cover; display:none;" alt="">
                 <div id="svcModalIcon" class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="display:flex!important;">
                     <i id="svcModalIconEl" class="text-primary" style="font-size: 5rem;"></i>
                 </div>
             </div>
-            <!-- Nội dung -->
+            
             <div style="padding: 32px;">
                 <h3 id="svcModalTitle" class="fw-bold text-dark mb-3"></h3>
                 <p id="svcModalDesc" class="text-muted lh-lg" style="font-size:1.05rem;"></p>
@@ -528,11 +648,11 @@
         .svc-card:hover img { transform: scale(1.08); }
         .hover-shadow:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
     </style>
-    <!-- Service End -->
+    
 
 
 
-    <!-- Team Start -->
+    
     <div class="container-xxl py-5 mt-5 bg-white">
         <div class="container">
             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 800px;">
@@ -553,7 +673,7 @@
                     </div>
                 </div>
                 
-                <!-- Add New Team Placeholder (Editor Mode Only) -->
+                
                 <div th:if="${isEditorMode}" class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s" onclick="openAddModal('team')" style="cursor: pointer;">
                     <div class="team-item text-center rounded-4 overflow-hidden shadow-sm border border-2 border-primary border-dashed h-100 p-4 bg-light d-flex flex-column align-items-center justify-content-center" style="border-style: dashed;">
                         <i class="fas fa-plus-circle fa-4x text-primary mb-3"></i>
@@ -563,11 +683,11 @@
             </div>
         </div>
     </div>
-    <!-- Team End -->
+    
 </main>
 
 <th:block th:if="${isEditorMode}">
-    <!-- Visual Editor Floating Toolbar -->
+    
     <div class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-lg d-flex justify-content-between align-items-center" style="z-index: 9999;">
         <div class="d-flex align-items-center">
             <div class="bg-primary px-3 py-1 rounded me-3 fw-bold"><i class="fa fa-paint-brush me-2"></i> CHẾ ĐỘ THIẾT KẾ TRỰC QUAN</div>
@@ -577,7 +697,7 @@
         </div>
     </div>
 
-    <!-- Visual Editor Modal Overlay (Hidden by Default) -->
+    
     <div id="visualEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -613,7 +733,7 @@
         </div>
     </div>
 
-    <!-- Text Editor Modal Overlay -->
+    
     <div id="textEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -636,7 +756,7 @@
         </div>
     </div>
 
-    <!-- Add Entity Modal Overlay -->
+    
     <div id="addEntityModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -658,7 +778,7 @@
         </div>
     </div>
 
-    <!-- Edit Banner Modal -->
+    
     <div id="editBannerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.82); z-index: 11000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
         <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -702,7 +822,7 @@
         </div>
     </div>
 
-    <!-- Carousel Manager Modal -->
+    
     <div id="carouselManagerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.85); z-index: 20000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
         <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -714,14 +834,14 @@
                     <p class="text-muted mb-4"><i class="fas fa-info-circle me-2"></i>Carousel sẽ tự động chuyển ảnh sau mỗi 2 giây. Bạn có thể thêm tối đa 5 ảnh bằng cách dán link hoặc tải tệp lên.</p>
                     
                     <div class="row g-4" id="carouselSlotsContainer" th:with="carouselBanners=${banners.?[position == 'HOME_CAROUSEL']}">
-                        <!-- We will show 5 slots here -->
+                        
                         <th:block th:each="i : ${#numbers.sequence(0, 4)}">
                             <div class="col-md-6 col-lg-4">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative carousel-slot-card">
                                     <div class="slot-number position-absolute top-0 start-0 bg-primary text-white px-2 py-1 small fw-bold" style="z-index: 10; border-bottom-right-radius: 10px;" th:text="${i + 1}"></div>
                                     
                                     <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 160px; overflow: hidden;">
-                                        <!-- Simplified logic: Render existing banners first, then placeholders -->
+                                        
                                         <div th:if="${i < carouselBanners.size()}" class="w-100 h-100">
                                             <img th:src="${carouselBanners.get(i).imageUrl}" class="w-100 h-100" style="object-fit: cover;">
                                             <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" 
@@ -745,7 +865,7 @@
                                                     <i class="fas fa-plus me-1"></i>Thêm Ảnh
                                                 </button>
                                             </div>
-                                            <!-- Hidden add form for this slot -->
+                                            
                                             <div th:id="'addRow-' + ${i}" style="display: none;" class="mt-3">
                                                 <div class="mb-2">
                                                     <input type="text" th:id="'cNewUrl-' + ${i}" class="form-control form-control-sm mb-2" placeholder="Dán link ảnh...">
@@ -1409,6 +1529,33 @@
             } catch(e) {
                 alert('Lỗi kết nối!');
                 console.error(e);
+            }
+        }
+        
+        function filterAirports(inputId, dropdownId) {
+            let input = document.getElementById(inputId).value.toLowerCase();
+            let ul = document.getElementById(dropdownId);
+            let items = ul.getElementsByTagName("li");
+            for (let i = 1; i < items.length; i++) {
+                let a = items[i].querySelector("a");
+                if (a) {
+                    let txtValue = a.textContent || a.innerText;
+                    let normalizedTxt = txtValue.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    let normalizedInput = input.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    
+                    if (normalizedTxt.indexOf(normalizedInput) > -1 || txtValue.toLowerCase().indexOf(input) > -1) {
+                        items[i].style.setProperty("display", "", "important");
+                    } else {
+                        items[i].style.setProperty("display", "none", "important");
+                    }
+                } else {
+                    // Header items
+                    if (input.trim() !== "") {
+                        items[i].style.setProperty("display", "none", "important");
+                    } else {
+                        items[i].style.setProperty("display", "", "important");
+                    }
+                }
             }
         }
 

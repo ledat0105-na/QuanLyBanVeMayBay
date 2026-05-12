@@ -1,6 +1,6 @@
-/********** Template CSS **********/
 
-/*** Spinner ***/
+
+
 #spinner {
     opacity: 0;
     visibility: hidden;
@@ -22,7 +22,7 @@
     z-index: 99;
 }
 
-/*** Button ***/
+
 .btn {
     transition: .5s;
 }
@@ -53,7 +53,7 @@
 }
 
 
-/*** Navbar ***/
+
 .sticky-top {
     top: -150px;
     transition: .5s;
@@ -119,7 +119,7 @@
 }
 
 
-/*** Hero Header ***/
+
 .hero-header {
     margin-top: -100px;
     padding-top: 150px;
@@ -174,7 +174,7 @@
 }
 
 
-/*** About ***/
+
 .about-img {
     position: relative;
     overflow: hidden;
@@ -192,7 +192,7 @@
 }
 
 
-/*** Project ***/
+
 .project-item img {
     transition: .5s;
 }
@@ -217,7 +217,7 @@
 }
 
 
-/*** Service ***/
+
 .service-item {
     position: relative;
     padding: 30px 25px;
@@ -281,7 +281,7 @@
 }
 
 
-/*** Our Team ***/
+
 .team-item img {
     transition: .5s;
 }
@@ -313,7 +313,7 @@
 }
 
 
-/*** Testimonial ***/
+
 .testimonial-img {
     position: relative;
     padding: 45px 0 45px 90px;
@@ -383,7 +383,7 @@
 }
 
 
-/*** Newsletter ***/
+
 .newsletter {
     background: url(../img/hero-bg.jpg) bottom right no-repeat;
     background-size: cover;
@@ -412,7 +412,7 @@
 }
 
 
-/*** Footer ***/
+
 .footer .btn.btn-link {
     display: block;
     margin-bottom: 10px;

@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div})}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin-layout :: layout(~{::div.admin-wrapper})}">
 
 <head>
     <title>Quản Lý Đặt Vé - SkyTravel</title>
 </head>
 
 <body>
-    <div>
+    <div class="admin-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-book text-primary me-2"></i>Quản Lý Đặt Vé</h2>
         </div>
 
-        <!-- Alert Messages -->
+        
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -22,11 +22,62 @@
         </div>
 
 
-        <!-- Data Table -->
+        
+        <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm border" id="bookingTabs" role="tablist">
+            <li class="nav-item flex-sm-fill text-center" role="presentation">
+                <button class="nav-link active rounded-pill w-100 fw-bold" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
+                    <i class="fas fa-list me-1"></i> Tất Cả
+                </button>
+            </li>
+            <li class="nav-item flex-sm-fill text-center" role="presentation">
+                <button class="nav-link rounded-pill w-100 fw-bold" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button" role="tab" style="color: #fd7e14;">
+                    <i class="fas fa-clock me-1"></i> Chờ Xử Lý / Thanh Toán
+                </button>
+            </li>
+            <li class="nav-item flex-sm-fill text-center" role="presentation">
+                <button class="nav-link rounded-pill w-100 fw-bold text-success" id="confirmed-tab" data-bs-toggle="pill" data-bs-target="#confirmed" type="button" role="tab">
+                    <i class="fas fa-check-circle me-1"></i> Đã Xác Nhận
+                </button>
+            </li>
+            <li class="nav-item flex-sm-fill text-center" role="presentation">
+                <button class="nav-link rounded-pill w-100 fw-bold text-danger" id="cancelled-tab" data-bs-toggle="pill" data-bs-target="#cancelled" type="button" role="tab">
+                    <i class="fas fa-ban me-1"></i> Đã Hủy / Hoàn Tiền
+                </button>
+            </li>
+        </ul>
+
+        
+        <div class="tab-content" id="bookingTabsContent">
+            
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                <th:block th:replace="~{::bookingTable('ALL')}"></th:block>
+            </div>
+            
+            
+            <div class="tab-pane fade" id="pending" role="tabpanel">
+                <th:block th:replace="~{::bookingTable('PENDING')}"></th:block>
+            </div>
+            
+            
+            <div class="tab-pane fade" id="confirmed" role="tabpanel">
+                <th:block th:replace="~{::bookingTable('CONFIRMED')}"></th:block>
+            </div>
+            
+            
+            <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                <th:block th:replace="~{::bookingTable('CANCELLED')}"></th:block>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    
+    <th:block th:fragment="bookingTable(filterStatus)">
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-body p-4">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 data-table" id="bookingsTable">
+                    <table class="table table-hover align-middle mb-0 data-table" style="width:100%">
                         <thead class="bg-light text-secondary">
                             <tr>
                                 <th class="ps-4">Mã Vé</th>
@@ -38,7 +89,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="b : ${bookings}">
+                            <tr th:each="b : ${bookings}" th:if="${filterStatus == 'ALL' or (filterStatus == 'PENDING' and (b.bookingStatus == 'PENDING' or b.bookingStatus == 'WAITING_PAYMENT')) or (filterStatus == 'CONFIRMED' and b.bookingStatus == 'CONFIRMED') or (filterStatus == 'CANCELLED' and (b.bookingStatus == 'CANCELLED' or b.bookingStatus == 'REFUND_REQUESTED' or b.bookingStatus == 'REFUNDED'))}">
                                 <td class="ps-4 fw-bold">
                                     <a th:href="@{/admin/bookings/{id}(id=${b.id})}" class="text-primary text-decoration-none" th:text="${b.bookingCode}">BKG001</a>
                                 </td>
@@ -51,12 +102,9 @@
                                 </td>
                                 <td>
                                     <span th:text="${b.flight.flightNumber}">VN123</span><br>
-                                    <small class="text-muted"
-                                        th:text="${b.flight.departureAirport.code + ' → ' + b.flight.arrivalAirport.code}"></small>
+                                    <small class="text-muted" th:text="${b.flight.departureAirport.code + ' → ' + b.flight.arrivalAirport.code}"></small>
                                 </td>
-                                <td class="fw-bold text-danger"
-                                    th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                    1.000.000 VND</td>
+                                <td class="fw-bold text-danger" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">1.000.000 VND</td>
                                 <td class="booking-status" th:data-status="${b.bookingStatus}">
                                     <span th:if="${b.bookingStatus == 'PENDING'}" class="fw-bold text-primary"><i class="fas fa-spinner me-1"></i>Đang Xử Lý</span>
                                     <span th:if="${b.bookingStatus == 'WAITING_PAYMENT'}" class="fw-bold text-warning"><i class="fas fa-clock me-1"></i>Chờ Thanh Toán</span>
@@ -67,13 +115,12 @@
                                     <span th:if="${b.bookingStatus != 'PENDING' and b.bookingStatus != 'WAITING_PAYMENT' and b.bookingStatus != 'CONFIRMED' and b.bookingStatus != 'CANCELLED' and b.bookingStatus != 'REFUND_REQUESTED' and b.bookingStatus != 'REFUNDED'}" class="fw-bold text-dark"><i class="fas fa-question-circle me-1"></i><span th:text="${b.bookingStatus != null ? b.bookingStatus : 'Không Rõ'}"></span></span>
                                 </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
+    </th:block>
 </body>
 
 </html>

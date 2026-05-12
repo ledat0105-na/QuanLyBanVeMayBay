@@ -17,7 +17,7 @@
                         Tên đăng nhập hoặc mật khẩu không đúng.
                     </div>
                     
-                    <!-- Locked Account Notification Script -->
+                    
                     <script th:if="${param.error != null and session['SPRING_SECURITY_LAST_EXCEPTION'] != null}">
                         document.addEventListener('DOMContentLoaded', function() {
                             const errorMsg = "[[${session['SPRING_SECURITY_LAST_EXCEPTION'].message}]]";

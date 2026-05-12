@@ -7,7 +7,7 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<!-- Stepper Navigation -->
+
 <style>
     .stepper-glow {
         background-color: #127a7b !important;
@@ -76,7 +76,7 @@
 
 <main class="container mb-5">
     <div class="row">
-        <!-- Main Form Content -->
+        
         <div class="col-lg-8 mb-4">
             <form th:action="@{/booking/step2}" th:object="${req}" method="post" id="step2Form">
                 
@@ -106,7 +106,10 @@
                         <div class="row g-3 align-items-end">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Nhập mã ưu đãi (Tùy chọn)</label>
-                                <input type="text" th:field="*{promotionCode}" class="form-control text-uppercase border-primary py-2" placeholder="VD: SUMMER2024" id="promoInput">
+                                <div class="input-group">
+                                    <input type="text" th:field="*{promotionCode}" class="form-control text-uppercase border-primary py-2" placeholder="VD: SUMMER2024" id="promoInput">
+                                    <button class="btn btn-outline-primary px-4 fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#promoModal"><i class="fas fa-tags me-2"></i>Chọn mã</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -119,7 +122,7 @@
             </form>
         </div>
 
-        <!-- Sidebar Summary -->
+        
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
                 <div class="card-header bg-primary text-white pt-4 pb-3 rounded-top-4">
@@ -145,18 +148,101 @@
     </div>
 </main>
 
+
+<div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold"><i class="fas fa-ticket-alt me-2"></i>Chọn mã khuyến mãi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3">
+                    <th:block th:if="${#lists.isEmpty(promotions)}">
+                        <div class="col-12 text-center py-4">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có mã khuyến mãi nào</h5>
+                        </div>
+                    </th:block>
+                    <div class="col-md-6" th:each="p : ${promotions}" th:if="${p.isActive}">
+                        <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition-all">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="fw-bold text-primary mb-0" th:text="${p.code}"></h5>
+                                    <span class="badge bg-danger rounded-pill px-3" th:text="'-' + ${p.discountPercent} + '%'"></span>
+                                </div>
+                                <p class="text-muted small mb-3" th:text="'Giảm ' + ${p.discountPercent} + '% cho chuyến bay này'"></p>
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-bold rounded-pill"
+                                        th:attr="onclick=|applyPromo('${p.code}', ${p.discountPercent})|">
+                                    Áp dụng mã này
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 
 <script th:inline="javascript">
     const baseTotalStr = /*[[${req.flight.basePrice * req.numberOfPassengers}]]*/ 0;
     const baseTotal = parseFloat(baseTotalStr);
-    
-    document.getElementById('baggageSelect').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+    let currentDiscountPercent = 0;
+
+    function applyPromo(code, percent) {
+        document.getElementById('promoInput').value = code;
+        currentDiscountPercent = percent;
+        
+        var myModalEl = document.getElementById('promoModal');
+        var modal = bootstrap.Modal.getInstance(myModalEl);
+        if(modal) { modal.hide(); }
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Áp dụng thành công!',
+            text: 'Mã giảm giá ' + code + ' đã được áp dụng.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const selectedOption = document.getElementById('baggageSelect').options[document.getElementById('baggageSelect').selectedIndex];
         const extraPrice = parseFloat(selectedOption.getAttribute('data-price') || 0);
         
         document.getElementById('baggagePriceDisplay').innerText = '+' + extraPrice.toLocaleString('vi-VN') + ' đ';
-        document.getElementById('finalTotalDisplay').innerText = (baseTotal + extraPrice).toLocaleString('vi-VN') + ' đ';
+        
+        let currentDiscountAmount = (baseTotal * currentDiscountPercent) / 100;
+        let total = baseTotal + extraPrice - currentDiscountAmount;
+        if (total < 0) total = 0;
+        
+        let discountDisplay = document.getElementById('discountDisplay');
+        if (currentDiscountAmount > 0) {
+            if (!discountDisplay) {
+                const discountHtml = `
+                    <div class="d-flex justify-content-between mb-2 text-danger" id="discountDisplay">
+                        <span class="fw-bold">Giảm giá (${currentDiscountPercent}%)</span>
+                        <span class="fw-bold">-${currentDiscountAmount.toLocaleString('vi-VN')} đ</span>
+                    </div>
+                `;
+                document.getElementById('baggagePriceDisplay').parentNode.insertAdjacentHTML('afterend', discountHtml);
+            } else {
+                discountDisplay.innerHTML = `<span class="fw-bold">Giảm giá (${currentDiscountPercent}%)</span><span class="fw-bold">-${currentDiscountAmount.toLocaleString('vi-VN')} đ</span>`;
+            }
+        } else {
+            if (discountDisplay) discountDisplay.remove();
+        }
+        
+        document.getElementById('finalTotalDisplay').innerText = total.toLocaleString('vi-VN') + ' đ';
+    }
+
+    document.getElementById('baggageSelect').addEventListener('change', function() {
+        updateTotal();
     });
 </script>
 </body>

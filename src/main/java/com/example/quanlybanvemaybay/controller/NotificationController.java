@@ -25,7 +25,7 @@ public class NotificationController {
         this.userRepository = userRepository;
     }
 
-    // DTO for Grouped Notifications in Admin UI
+    
     public static class GroupedNotificationDto {
         private Long id;
         private String title;
@@ -36,7 +36,7 @@ public class NotificationController {
         private String allRecipients;
         private boolean isGroup;
 
-        // getters and setters
+        
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
         public String getTitle() { return title; }
@@ -55,12 +55,12 @@ public class NotificationController {
         public void setIsGroup(boolean isGroup) { this.isGroup = isGroup; }
     }
 
-    // 1. ADMIN UI - Quản lý thông báo
+    
     @GetMapping("/admin/notifications")
     public String manageNotifications(Model model) {
         List<Notification> all = notificationRepository.findAllByOrderByCreatedAtDesc();
         
-        // Group by title + message
+        
         java.util.Map<String, java.util.List<Notification>> groupedMap = new java.util.LinkedHashMap<>();
         for (Notification n : all) {
             String key = n.getTitle() + "|||" + n.getMessage();
@@ -73,11 +73,11 @@ public class NotificationController {
             Notification first = group.get(0);
             
             GroupedNotificationDto dto = new GroupedNotificationDto();
-            dto.setId(first.getId()); // Use first ID for editing/deleting reference
+            dto.setId(first.getId()); 
             dto.setTitle(first.getTitle());
             dto.setMessage(first.getMessage());
-            dto.setCreatedAt(first.getCreatedAt()); // most recent in group
-            dto.setIsRead(group.stream().allMatch(Notification::getIsRead)); // true if all are read
+            dto.setCreatedAt(first.getCreatedAt()); 
+            dto.setIsRead(group.stream().allMatch(Notification::getIsRead)); 
             dto.setIsGroup(group.size() > 1 || first.getGroupId() != null);
             
             if (group.size() > 1) {
@@ -96,7 +96,7 @@ public class NotificationController {
         return "admin/manage-notifications";
     }
 
-    // 2. ADMIN API - Gửi thông báo
+    
     @PostMapping("/admin/notifications/send")
     public String sendNotification(@RequestParam String title,
                                    @RequestParam String message,
@@ -139,7 +139,7 @@ public class NotificationController {
         return "redirect:/admin/notifications";
     }
 
-    // 3. ADMIN API - Cập nhật thông báo
+    
     @PostMapping("/admin/notifications/update")
     @org.springframework.transaction.annotation.Transactional
     public String updateNotification(@RequestParam Long id,
@@ -169,7 +169,7 @@ public class NotificationController {
         return "redirect:/admin/notifications";
     }
 
-    // 4. ADMIN API - Xóa thông báo
+    
     @PostMapping("/admin/notifications/delete/{id}")
     @org.springframework.transaction.annotation.Transactional
     public String deleteNotification(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -184,7 +184,7 @@ public class NotificationController {
         return "redirect:/admin/notifications";
     }
 
-    // 5. USER API - Đánh dấu đã đọc
+    
     @PostMapping("/api/notifications/read/{id}")
     @ResponseBody
     public ResponseEntity<?> markAsRead(@PathVariable Long id) {
@@ -192,7 +192,7 @@ public class NotificationController {
         if (notifOpt.isPresent()) {
             Notification notif = notifOpt.get();
             if (notif.getGroupId() != null) {
-                // If it belongs to a group, mark all as read (useful for shared admin/staff notifications)
+                
                 List<Notification> group = notificationRepository.findByGroupId(notif.getGroupId());
                 for (Notification n : group) {
                     n.setIsRead(true);
@@ -205,5 +205,25 @@ public class NotificationController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    
+    @GetMapping("/api/notifications/unread")
+    @ResponseBody
+    public ResponseEntity<List<java.util.Map<String, Object>>> getUnreadNotifications(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        Optional<User> userOpt = userRepository.findByUsername(principal.getName());
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).build();
+        
+        List<Notification> unread = notificationRepository.findByUserIdAndIsReadFalse(userOpt.get().getId());
+        List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
+        for(Notification n : unread) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", n.getId());
+            map.put("title", n.getTitle());
+            map.put("message", n.getMessage());
+            result.add(map);
+        }
+        return ResponseEntity.ok(result);
     }
 }

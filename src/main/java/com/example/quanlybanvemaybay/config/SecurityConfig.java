@@ -54,14 +54,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(Customizer.withDefaults())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error", "/api/notifications/read/**", "/flights/**").permitAll()
                         .requestMatchers("/login", "/register", "/forgot-password", "/reset-password", "/api/auth/send-otp", "/api/auth/reset-password", "/fix-pass").permitAll()
                         .requestMatchers("/about", "/services", "/projects", "/contact", "/contact/send").permitAll()
                         .requestMatchers("/admin/report", "/admin/bookings/**", "/admin/passengers/**", "/admin/profile/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/booking/**").hasAnyRole("USER", "STAFF")
+                        .requestMatchers("/booking/**").hasAnyRole("USER", "STAFF", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -69,23 +69,47 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
-                        .successHandler(new org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler() {
-                            @Override
-                            public void onAuthenticationSuccess(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response, org.springframework.security.core.Authentication authentication) throws java.io.IOException, jakarta.servlet.ServletException {
-                                boolean isAdmin = authentication.getAuthorities().stream()
-                                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                                boolean isStaff = authentication.getAuthorities().stream()
-                                        .anyMatch(a -> a.getAuthority().equals("ROLE_STAFF"));
-                                if (isAdmin) {
-                                    this.setDefaultTargetUrl("/admin/report");
-                                } else if (isStaff) {
-                                    this.setDefaultTargetUrl("/admin/bookings");
-                                } else {
-                                    this.setDefaultTargetUrl("/");
+                        .successHandler((request, response, authentication) -> {
+                            jakarta.servlet.http.HttpSession session = request.getSession();
+                            String returnUrl = (String) session.getAttribute("returnUrl");
+                            
+                            boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                            boolean isStaff = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_STAFF"));
+
+                            
+                            if (returnUrl != null && !returnUrl.isBlank()) {
+                                session.removeAttribute("returnUrl");
+                                if (!returnUrl.contains("login_success=true")) {
+                                    returnUrl = returnUrl.contains("?") ? returnUrl + "&login_success=true" : returnUrl + "?login_success=true";
                                 }
-                                this.setAlwaysUseDefaultTargetUrl(true);
-                                super.onAuthenticationSuccess(request, response, authentication);
+                                new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request, response, returnUrl);
+                                return;
                             }
+                            
+                            
+                            org.springframework.security.web.savedrequest.SavedRequest savedRequest = 
+                                new org.springframework.security.web.savedrequest.HttpSessionRequestCache().getRequest(request, response);
+                            if (savedRequest != null) {
+                                String redirectUrl = savedRequest.getRedirectUrl();
+                                
+                                redirectUrl = redirectUrl.replace("?continue", "").replace("&continue", "");
+                                
+                                if (!redirectUrl.contains("login_success=true")) {
+                                    redirectUrl = redirectUrl.contains("?") ? redirectUrl + "&login_success=true" : redirectUrl + "?login_success=true";
+                                }
+                                new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
+                                return;
+                            }
+
+                            
+                            String targetUrl = "/";
+                            if (isAdmin) targetUrl = "/admin/report";
+                            else if (isStaff) targetUrl = "/admin/bookings";
+                            
+                            if (!targetUrl.contains("login_success=true")) {
+                                targetUrl = targetUrl.contains("?") ? targetUrl + "&login_success=true" : targetUrl + "?login_success=true";
+                            }
+                            new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request, response, targetUrl);
                         })
                         .failureUrl("/login?error=true")
                         .permitAll()

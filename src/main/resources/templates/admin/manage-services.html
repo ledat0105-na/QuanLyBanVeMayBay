@@ -43,7 +43,7 @@
                                 <i class="fas fa-edit fa-lg"></i>
                             </button>
                             <form th:action="@{/admin/services/delete/{id}(id=${it.id})}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirm('Xóa dịch vụ này?')" title="Xóa">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent text-secondary" onclick="return confirmAction(event, 'Xóa dịch vụ này?', this)" title="Xóa">
                                     <i class="fas fa-trash fa-lg"></i>
                                 </button>
                             </form>

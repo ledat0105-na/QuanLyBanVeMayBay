@@ -26,7 +26,7 @@ public class FlightServiceImpl implements FlightService {
         try {
             jdbcTemplate.execute("ALTER TABLE flights MODIFY aircraft_id BIGINT NULL");
         } catch (Exception e) {
-            // Ignore if column doesn't exist or table doesn't exist
+            
         }
     }
 
@@ -44,6 +44,9 @@ public class FlightServiceImpl implements FlightService {
     public void save(Flight flight) {
         if (flight.getTotalSeats() != null && flight.getAvailableSeats() == null) {
             flight.setAvailableSeats(flight.getTotalSeats());
+        }
+        if (flight.getIsCancelled() == null) {
+            flight.setIsCancelled(false);
         }
         flightRepository.save(flight);
     }

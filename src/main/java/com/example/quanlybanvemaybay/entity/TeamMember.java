@@ -20,7 +20,7 @@ public class TeamMember {
     private String name;
 
     @Column(name = "role", length = 100)
-    private String role; // e.g., "Cơ trưởng" or "Tiếp viên trưởng"
+    private String role; 
 
     @Column(name = "image_url")
     private String imageUrl;
