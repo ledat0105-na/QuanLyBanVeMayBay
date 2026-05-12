@@ -54,6 +54,9 @@
                                 style="font-size: 0.65rem;" th:text="${unreadContactCount}"></span>
                       </a>
                       <div class="dropdown-divider"></div>
+                      <a href="?editor=true" class="dropdown-item fw-bold text-success" th:if="${!isEditorMode}"><i class="fas fa-magic me-2"></i>Sửa Giao Diện Trang Này</a>
+                      <a href="?" class="dropdown-item fw-bold text-danger" th:if="${isEditorMode}"><i class="fas fa-times-circle me-2"></i>Tắt Sửa Giao Diện</a>
+                      <div class="dropdown-divider"></div>
                       <a th:href="@{/admin/report}" class="dropdown-item fw-bold text-primary"><i class="fas fa-chart-line me-2"></i>Thống Kê</a>
                   </div>
               </div>

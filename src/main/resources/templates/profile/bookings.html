@@ -7,8 +7,10 @@
 
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
-<div class="container-fluid bg-primary py-5 mb-5 hero-header"
-     th:style="${pageBanners['MY_BOOKINGS_HERO'] != null ? 'background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(' + pageBanners['MY_BOOKINGS_HERO'].imageUrl + ') center center/cover no-repeat;' : (pageBanners['DEFAULT_HERO'] != null ? 'background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(' + pageBanners['DEFAULT_HERO'].imageUrl + ') center center/cover no-repeat;' : '')}">
+<div id="img-HEADER_PROFILE_BOOKINGS" class="container-fluid bg-primary py-5 mb-5 hero-header"
+     th:classappend="${isEditorMode} ? 'editable-img' : ''" 
+     th:onclick="${isEditorMode} ? |openEditor('HEADER_PROFILE_BOOKINGS')| : null"
+     th:style="|background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${pageBanners['HEADER_PROFILE_BOOKINGS'] != null ? pageBanners['HEADER_PROFILE_BOOKINGS'].imageUrl : 'https://i.pinimg.com/1200x/5e/ad/ea/5eadea4b8fcaa0114432e87f543c9b25.jpg'}') center center/cover no-repeat;|">
     <div class="container py-5">
         <div class="row justify-content-center py-5">
             <div class="col-lg-10 pt-lg-5 mt-lg-5 text-center">
@@ -84,6 +86,7 @@
     </div>
 </div>
 
+<th:block th:if="${isEditorMode}" th:replace="~{layout/visual-editor :: editor}"></th:block>
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 </body>
 </html>
