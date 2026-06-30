@@ -66,6 +66,18 @@ public class GlobalControllerAdvice {
         return request.getRequestURI();
     }
 
+    @ModelAttribute("isEditorMode")
+    public boolean getEditorMode(HttpServletRequest request) {
+        if ("true".equals(request.getParameter("editor"))) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+                return auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            }
+        }
+        return false;
+    }
+
     @ModelAttribute("pageBanners")
     public Map<String, Banner> getPageBanners() {
         return bannerRepository.findAll().stream()
@@ -75,6 +87,13 @@ public class GlobalControllerAdvice {
                     b -> b, 
                     (existing, replacement) -> existing
                 ));
+    }
+
+    @ModelAttribute("banners")
+    public List<Banner> getAllBanners() {
+        return bannerRepository.findAll().stream()
+                .filter(b -> b.getIsActive() != null && b.getIsActive())
+                .collect(Collectors.toList());
     }
 
     @ModelAttribute("userNotifications")

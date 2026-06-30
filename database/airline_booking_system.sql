@@ -1,3 +1,4 @@
+
 -- ======================================================
 -- DATABASE: AIRLINE BOOKING SYSTEM
 -- STRUCTURE FIRST, DATA AFTER

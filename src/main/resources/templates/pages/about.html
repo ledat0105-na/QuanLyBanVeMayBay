@@ -8,7 +8,10 @@
 <th:block th:replace="~{layout/navbar :: navbar}"></th:block>
 
 
-<div class="container-fluid page-header py-5 mb-5" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop'); background-position: center;">
+<div id="img-HEADER_ABOUT" class="container-fluid page-header py-5 mb-5" 
+     th:classappend="${isEditorMode} ? 'editable-img' : ''" 
+     th:onclick="${isEditorMode} ? |openEditor('HEADER_ABOUT')| : null"
+     th:style="|background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${pageBanners['HEADER_ABOUT'] != null ? pageBanners['HEADER_ABOUT'].imageUrl : 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05'}') center center / cover;|">
     <div class="container py-5 text-center">
         <h1 class="display-3 text-white fw-bold mb-3 animated slideInDown">Về Chúng Tôi</h1>
         <nav aria-label="breadcrumb animated slideInDown">
@@ -67,6 +70,7 @@
 </div>
 
 
+<th:block th:if="${isEditorMode}" th:replace="~{layout/visual-editor :: editor}"></th:block>
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
 </body>
 </html>

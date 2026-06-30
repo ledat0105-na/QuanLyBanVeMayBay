@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="editor">
+<th:block th:if="${isEditorMode}">
+    
+    <div class="position-fixed bottom-0 start-0 w-100 bg-dark text-white p-3 shadow-lg d-flex justify-content-between align-items-center" style="z-index: 9999;">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary px-3 py-1 rounded me-3 fw-bold"><i class="fa fa-paint-brush me-2"></i> CHẾ ĐỘ THIẾT KẾ TRỰC QUAN</div>
+        </div>
+        <div>
+            <a th:href="@{/admin/report}" class="btn btn-outline-light me-2"><i class="fa fa-times"></i> Hủy & Thoát</a>
+        </div>
+    </div>
+
+    
+    <div id="visualEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fa fa-image me-2"></i>Thay Đổi Hình Ảnh</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeEditor()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editingPosition">
+                    
+                    <div class="mb-4 text-center">
+                        <label class="btn btn-outline-primary btn-lg w-100 fw-bold border-2" style="border-style: dashed;">
+                            <i class="fa fa-cloud-upload-alt me-2 fs-4"></i>Tải Ảnh Lên (Upload)
+                            <input type="file" id="uploadInput" accept="image/*" class="d-none" onchange="handleFileUpload(this)">
+                        </label>
+                        <div id="uploadStatus" class="mt-2 text-success" style="display: none;"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>
+                    </div>
+                    
+                    <div class="position-relative text-center mb-4">
+                        <hr><span class="position-absolute top-50 start-50 translate-middle bg-light px-3 text-muted">HOẶC DÁN LINK</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Đường dẫn ảnh (URL)</label>
+                        <input type="text" id="imageUrlInput" class="form-control" placeholder="https://example.com/image.jpg">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeEditor()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="applyAndSave()">Xác Nhận & Lưu Trên Web</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="textEditorModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-success text-white">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fa fa-edit me-2"></i>Chỉnh Sửa Văn Bản</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeTextEditor()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editingTextKey">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nội dung (Hỗ trợ HTML)</label>
+                        <textarea id="textEditorContent" class="form-control" rows="8"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeTextEditor()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="applyAndSaveText()">Xác Nhận & Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="addEntityModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.8); z-index: 10000; display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white">
+                    <h5 class="modal-title m-0 fw-bold" id="addEntityModalTitle"><i class="fa fa-plus-circle me-2"></i>Thêm Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeAddModal()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="addEntityType">
+                    <form id="addEntityForm">
+                        <div id="addEntityFields"></div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4" onclick="closeAddModal()">Hủy</button>
+                    <button type="button" class="btn btn-success px-4" onclick="submitAddEntity()">Xác Nhận & Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="editBannerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.82); z-index: 11000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-warning text-dark">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fas fa-pencil-alt me-2"></i>Chỉnh Sửa Điểm Đến</h5>
+                    <button type="button" class="btn-close" onclick="closeEditBanner()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="editBannerId">
+                    <div class="col-12 text-center mb-4">
+                        <img id="editBannerPreview" src="" class="rounded-4 shadow-sm border" style="max-height: 200px; width: 100%; object-fit: cover; display: none;">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tiêu đề (Tên địa điểm)</label>
+                            <input type="text" id="editBannerTitle" class="form-control form-control-lg" placeholder="VD: Hà Nội, Đà Nẵng...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Phụ đề (Mô tả / Ưu đãi)</label>
+                            <input type="text" id="editBannerSubtitle" class="form-control" placeholder="VD: Giảm đến 20% chuyến bay nội địa">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tải ảnh mới lên (Upload)</label>
+                            <input type="file" id="editBannerFile" class="form-control" accept="image/*" onchange="handleEditBannerFile(this)">
+                            <div id="editBannerUploadStatus" class="mt-1 text-primary small" style="display:none;"><i class="fas fa-spinner fa-spin me-1"></i>Đang tải ảnh...</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Hoặc dán link ảnh mới (URL)</label>
+                            <input type="text" id="editBannerImage" class="form-control" placeholder="https://example.com/image.jpg">
+                            <div class="form-text text-muted">Để trống nếu không muốn thay ảnh.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" onclick="closeEditBanner()">Hủy</button>
+                    <button type="button" class="btn btn-warning px-4 rounded-pill fw-bold" id="saveEditBannerBtn" onclick="submitEditBanner()">
+                        <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="carouselManagerModal" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.85); z-index: 20000; display: none; position: fixed; top:0; left:0; width:100%; height:100%; overflow-y:auto;">
+        <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: 40px auto;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-warning text-dark">
+                    <h5 class="modal-title m-0 fw-bold"><i class="fas fa-images me-2"></i>Quản Lý Ảnh Carousel (Tối đa 5 ảnh)</h5>
+                    <button type="button" class="btn-close" onclick="closeCarouselManager()"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <p class="text-muted mb-4"><i class="fas fa-info-circle me-2"></i>Carousel sẽ tự động chuyển ảnh sau mỗi 2 giây. Bạn có thể thêm tối đa 5 ảnh bằng cách dán link hoặc tải tệp lên.</p>
+                    
+                    <div class="row g-4" id="carouselSlotsContainer" th:with="carouselBanners=${banners != null ? banners.?[position == 'HOME_CAROUSEL'] : {}}">
+                        
+                        <th:block th:each="i : ${#numbers.sequence(0, 4)}">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative carousel-slot-card">
+                                    <div class="slot-number position-absolute top-0 start-0 bg-primary text-white px-2 py-1 small fw-bold" style="z-index: 10; border-bottom-right-radius: 10px;" th:text="${i + 1}"></div>
+                                    
+                                    <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 160px; overflow: hidden;">
+                                        
+                                        <div th:if="${i < carouselBanners.size()}" class="w-100 h-100">
+                                            <img th:src="${carouselBanners.get(i).imageUrl}" class="w-100 h-100" style="object-fit: cover;">
+                                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" 
+                                                    th:onclick="'deleteCarouselSlide(' + ${carouselBanners.get(i).id} + ')'" title="Xóa">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div th:unless="${i < carouselBanners.size()}" class="text-white-50 text-center p-3">
+                                            <i class="fas fa-image fa-3x mb-2"></i>
+                                            <div class="small">Trống</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body p-3">
+                                        <div th:if="${i < carouselBanners.size()}">
+                                            <div class="small text-truncate text-muted mb-0" th:text="${carouselBanners.get(i).title}"></div>
+                                        </div>
+                                        <div th:unless="${i < carouselBanners.size()}">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" th:onclick="'showAddRow(' + ${i} + ')'">
+                                                    <i class="fas fa-plus me-1"></i>Thêm Ảnh
+                                                </button>
+                                            </div>
+                                            
+                                            <div th:id="'addRow-' + ${i}" style="display: none;" class="mt-3">
+                                                <div class="mb-2">
+                                                    <input type="text" th:id="'cNewUrl-' + ${i}" class="form-control form-control-sm mb-2" placeholder="Dán link ảnh...">
+                                                    <div class="d-flex gap-2">
+                                                        <input type="file" th:id="'cNewFile-' + ${i}" class="form-control form-control-sm" accept="image/*" th:onchange="'uploadToSlot(' + ${i} + ')'">
+                                                        <button class="btn btn-success btn-sm" th:onclick="'saveToSlot(' + ${i} + ')'"><i class="fas fa-check"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4 bg-light">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" onclick="closeCarouselManager()">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .editable-img {
+            transition: all 0.3s;
+            position: relative;
+        }
+        .editable-img:hover {
+            box-shadow: 0 0 0 5px #0d6efd !important;
+            filter: brightness(0.8);
+        }
+        .editable-img::after {
+            content: "\f304"; /* FontAwesome pencil */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3rem;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        .editable-img:hover::after {
+            opacity: 1;
+        }
+        .editable-text {
+            position: relative;
+            cursor: text;
+            transition: all 0.2s;
+            border: 2px dashed transparent;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editable-text:hover {
+            background-color: rgba(255,235,59,0.3);
+            border-color: #ff9800;
+        }
+        .editable-text::before {
+            content: "\f044"; /* FontAwesome pencil-alt */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #ff9800;
+            color: white;
+            font-size: 14px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .editable-text:hover::before {
+            opacity: 1;
+        }
+        body { padding-bottom: 80px; } /* Space for toolbar */
+    </style>
+
+    <script>
+        // Helper: lấy CSRF token và header name từ meta tags
+        function getCsrf() {
+            const token = document.querySelector('meta[name="_csrf"]');
+            const header = document.querySelector('meta[name="_csrf_header"]');
+            return {
+                token: token ? token.content : '',
+                header: header ? header.content : 'X-CSRF-TOKEN'
+            };
+        }
+
+        // Helper: tạo URL fetch với CSRF token dưới dạng query param (đáng tin cậy nhất với Spring Security + multipart)
+        function csrfUrl(url) {
+            const csrf = getCsrf();
+            if (!csrf.token) return url;
+            const sep = url.includes('?') ? '&' : '?';
+            return url + sep + '_csrf=' + encodeURIComponent(csrf.token);
+        }
+
+        function openEditor(position) {
+            document.getElementById('editingPosition').value = position;
+            let el = document.getElementById('img-' + position);
+            let url = el.src;
+            if (!url && el.style.backgroundImage) {
+                url = el.style.backgroundImage.slice(4, -1).replace(/["']/g, "");
+            }
+            // For linear-gradient + url combined background
+            if (!url && el.style.background) {
+                 let bg = el.style.background;
+                 let match = bg.match(/url\(['"]?(.*?)['"]?\)/);
+                 if (match && match[1]) {
+                     url = match[1];
+                 }
+            }
+            document.getElementById('imageUrlInput').value = url || '';
+            document.getElementById('visualEditorModal').style.display = 'block';
+        }
+
+        function closeEditor() {
+            document.getElementById('visualEditorModal').style.display = 'none';
+            document.getElementById('uploadStatus').style.display = 'none';
+        }
+
+        function handleFileUpload(input) {
+            if (!input.files || input.files.length === 0) return;
+            let file = input.files[0];
+            let formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('uploadStatus').style.display = 'block';
+            
+            fetch(csrfUrl('/admin/visual-editor/upload'), {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('uploadStatus').style.display = 'none';
+                if(data.success) {
+                    document.getElementById('imageUrlInput').value = data.url;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(err => {
+                document.getElementById('uploadStatus').style.display = 'none';
+                alert('Lỗi tải file lên mạng.');
+            });
+        }
+
+        function applyAndSave() {
+            let position = document.getElementById('editingPosition').value;
+            let newUrl = document.getElementById('imageUrlInput').value;
+            
+            if(!newUrl) return alert("Vui lòng nhập link ảnh!");
+
+            // Update preview instantly
+            let el = document.getElementById('img-' + position);
+            if (el.tagName.toLowerCase() === 'img') {
+                el.src = newUrl;
+            } else {
+                if (el.style.background && el.style.background.includes('linear-gradient')) {
+                    // Replace the url(...) part
+                    el.style.background = el.style.background.replace(/url\(['"]?(.*?)['"]?\)/, `url('${newUrl}')`);
+                } else {
+                    el.style.backgroundImage = `url('${newUrl}')`;
+                }
+            }
+            
+            let formData = new FormData();
+            formData.append('position', position);
+            formData.append('imageUrl', newUrl);
+            
+            fetch(csrfUrl('/admin/visual-editor/save'), {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    closeEditor();
+                    let btn = document.querySelector('button[onclick="applyAndSave()"]');
+                    let oldHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa fa-check"></i> Đã Lưu Trang!';
+                    setTimeout(() => { 
+                        btn.innerHTML = oldHtml; 
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Không lưu được cấu hình: ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+            });
+        }
+
+        // TEXT EDITOR LOGIC
+        function openTextEditor(key) {
+            document.getElementById('editingTextKey').value = key;
+            // Get current HTML content from the DOM
+            let currentHtml = document.getElementById('text-' + key).innerHTML.trim();
+            document.getElementById('textEditorContent').value = currentHtml;
+            document.getElementById('textEditorModal').style.display = 'block';
+        }
+
+        function closeTextEditor() {
+            document.getElementById('textEditorModal').style.display = 'none';
+        }
+
+        function applyAndSaveText() {
+            let key = document.getElementById('editingTextKey').value;
+            let newHtml = document.getElementById('textEditorContent').value;
+            
+            if(!newHtml.trim()) return alert("Vui lòng nhập nội dung!");
+
+            // Update preview instantly
+            document.getElementById('text-' + key).innerHTML = newHtml;
+            
+            // Send to server
+            let formData = new FormData();
+            formData.append('sectionKey', key);
+            formData.append('htmlContent', newHtml);
+            
+            let btn = document.querySelector('button[onclick="applyAndSaveText()"]');
+            let oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+            
+            fetch(csrfUrl('/admin/visual-editor/save-text'), {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    closeTextEditor();
+                    btn.innerHTML = '<i class="fa fa-check"></i> Đã Lưu!';
+                    setTimeout(() => { btn.innerHTML = oldHtml; }, 1000);
+                } else {
+                    btn.innerHTML = oldHtml;
+                    alert('Không lưu được văn bản: ' + data.message);
+                }
+            })
+            .catch(e => {
+                btn.innerHTML = oldHtml;
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            });
+        }
+
+        // FULL CRUD LOGIC (Add & Delete)
+        async function deleteEntity(type, id) {
+            const ok = await skyConfirm('Bạn có chắc chắn muốn xóa thẻ này khỏi trang chủ không?', 'Xác nhận xóa', 'Xóa');
+            if (!ok) return;
+
+            let formData = new FormData();
+            formData.append('type', type);
+            formData.append('id', id);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/delete-entity'), {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!res.ok) {
+                    alert('Xóa thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5) và thử lại!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Xóa thất bại: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            } catch(e) {
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            }
+        }
+
+        function openAddModal(type) {
+            document.getElementById('addEntityType').value = type;
+            let title = '';
+            let fieldsHtml = '';
+            
+            if (type === 'banner') {
+                title = 'Thêm Điểm Đến Mới';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tiêu đề (Tên địa điểm)</label><input type="text" id="addBannerTitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Phụ đề (Mô tả ngắn)</label><input type="text" id="addBannerSubtitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Đường dẫn ảnh (URL)</label><input type="text" id="addBannerImage" class="form-control" placeholder="https://example.com/image.jpg" required autocomplete="off"></div>
+                `;
+            } else if (type === 'service') {
+                title = 'Thêm Dịch Vụ Mới';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tên dịch vụ</label><input type="text" id="addServiceTitle" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Mô tả</label><textarea id="addServiceDesc" class="form-control" rows="3" required autocomplete="off"></textarea></div>
+                    <div class="mb-3"><label class="form-label fw-bold"><i class="fas fa-image text-primary me-1"></i>Đường dẫn ảnh (URL)</label><input type="text" id="addServiceImage" class="form-control" placeholder="https://example.com/image.jpg" autocomplete="off"></div>
+                `;
+            } else if (type === 'team') {
+                title = 'Thêm Nhân Sự';
+                fieldsHtml = `
+                    <div class="mb-3"><label class="form-label fw-bold">Tên nhân sự</label><input type="text" id="addTeamName" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Chức vụ</label><input type="text" id="addTeamRole" class="form-control" required autocomplete="off"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">Đường dẫn ảnh chân dung (URL)</label><input type="text" id="addTeamImage" class="form-control" placeholder="https://example.com/portrait.jpg" required autocomplete="off"></div>
+                `;
+            }
+            
+            document.getElementById('addEntityModalTitle').innerHTML = '<i class="fa fa-plus-circle me-2"></i>' + title;
+            document.getElementById('addEntityFields').innerHTML = fieldsHtml;
+            document.getElementById('addEntityModal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addEntityModal').style.display = 'none';
+        }
+
+        // ===================== EDIT BANNER =====================
+        // Wrapper gọi từ data-* attributes (an toàn, tránh NPE khi Thymeleaf render)
+        function openEditBannerFromBtn(btn) {
+            let title = btn.dataset.title;
+            let subtitle = btn.dataset.subtitle;
+            let image = btn.dataset.image;
+            
+            // Fallback: Nếu không lấy được data-* thì đọc trực tiếp từ thẻ HTML trên màn hình
+            if (!title) {
+                const card = btn.closest('.flight-banner-card') || btn.closest('.svc-card');
+                if (card) {
+                    const titleEl = card.querySelector('h3, h5.fw-bold');
+                    const subEl = card.querySelector('p.text-warning, p.text-muted');
+                    if (titleEl) title = titleEl.innerText;
+                    if (subEl) subtitle = subEl.innerText;
+                }
+            }
+
+            openEditBanner(
+                btn.dataset.id,
+                title,
+                subtitle,
+                image
+            );
+        }
+
+        function openEditBanner(id, title, subtitle, imageUrl) {
+            document.getElementById('editBannerId').value = id;
+            document.getElementById('editBannerTitle').value = title || '';
+            document.getElementById('editBannerSubtitle').value = subtitle || '';
+            document.getElementById('editBannerImage').value = imageUrl || '';
+            document.getElementById('editBannerFile').value = '';
+            document.getElementById('editBannerUploadStatus').style.display = 'none';
+
+            // Hiển thị ảnh preview
+            const preview = document.getElementById('editBannerPreview');
+            if (imageUrl) {
+                preview.src = imageUrl;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+
+            const btn = document.getElementById('saveEditBannerBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu Thay Đổi';
+            document.getElementById('editBannerModal').style.display = 'block';
+        }
+
+        function closeEditBanner() {
+            document.getElementById('editBannerModal').style.display = 'none';
+        }
+
+        async function handleEditBannerFile(input) {
+            if (!input.files || !input.files.length) return;
+            const statusEl = document.getElementById('editBannerUploadStatus');
+            statusEl.style.display = 'block';
+            const fd = new FormData();
+            fd.append('file', input.files[0]);
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/upload'), { method: 'POST', body: fd });
+                const data = await res.json();
+                statusEl.style.display = 'none';
+                if (data.success) {
+                    document.getElementById('editBannerImage').value = data.url;
+                    const preview = document.getElementById('editBannerPreview');
+                    preview.src = data.url;
+                    preview.style.display = 'block';
+                } else {
+                    alert('Tải ảnh thất bại: ' + data.message);
+                }
+            } catch(e) {
+                statusEl.style.display = 'none';
+                alert('Lỗi kết nối khi tải ảnh!');
+            }
+        }
+
+        async function submitEditBanner() {
+            const id    = document.getElementById('editBannerId').value;
+            const title = document.getElementById('editBannerTitle').value.trim();
+            const sub   = document.getElementById('editBannerSubtitle').value.trim();
+            const img   = document.getElementById('editBannerImage').value.trim();
+
+            if (!title) return alert('Vui lòng nhập tiêu đề!');
+
+            const btn = document.getElementById('saveEditBannerBtn');
+            const oldHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('title', title);
+            fd.append('subtitle', sub);
+            fd.append('imageUrl', img);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/update-banner'), { method: 'POST', body: fd });
+                if (!res.ok) {
+                    btn.disabled = false; btn.innerHTML = oldHtml;
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    // Cập nhật DOM theo data-id attribute
+                    const editBtn = document.querySelector('[data-id="' + id + '"]');
+                    if (editBtn) {
+                        const card = editBtn.closest('.col-lg-4, .col-md-6');
+                        if (card) {
+                            const h3 = card.querySelector('h3');
+                            const h5 = card.querySelector('h5.text-warning');
+                            const imgEl = card.querySelector('img.img-fluid');
+                            if (h3) h3.textContent = title;
+                            if (h5) h5.textContent = sub;
+                            if (imgEl && img) imgEl.src = img;
+                        }
+                    }
+                    closeEditBanner();
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>Đã Lưu!';
+                    setTimeout(() => { btn.disabled = false; btn.innerHTML = oldHtml; }, 1500);
+                } else {
+                    btn.disabled = false; btn.innerHTML = oldHtml;
+                    alert('Lỗi: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            } catch(e) {
+                btn.disabled = false; btn.innerHTML = oldHtml;
+                alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                console.error(e);
+            }
+        }
+
+        function submitAddEntity() {
+            let type = document.getElementById('addEntityType').value;
+            let formData = new FormData();
+            let url = '';
+            
+            if (type === 'banner') {
+                formData.append('title', document.getElementById('addBannerTitle').value);
+                formData.append('subtitle', document.getElementById('addBannerSubtitle').value);
+                formData.append('imageUrl', document.getElementById('addBannerImage').value);
+                url = '/admin/visual-editor/add-banner';
+            } else if (type === 'service') {
+                formData.append('title', document.getElementById('addServiceTitle').value);
+                formData.append('description', document.getElementById('addServiceDesc').value);
+                // Dùng imageUrl thay vì iconClass
+                const imgEl = document.getElementById('addServiceImage');
+                formData.append('imageUrl', imgEl ? imgEl.value : '');
+                url = '/admin/visual-editor/add-service';
+            } else if (type === 'team') {
+                formData.append('name', document.getElementById('addTeamName').value);
+                formData.append('role', document.getElementById('addTeamRole').value);
+                formData.append('imageUrl', document.getElementById('addTeamImage').value);
+                url = '/admin/visual-editor/add-team';
+            }
+            
+            let btn = document.querySelector('button[onclick="submitAddEntity()"]');
+            let oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+            
+            const csrf = getCsrf();
+
+            fetch(csrfUrl(url), {
+                method: 'POST',
+                body: formData
+            }).then(res => {
+                if (!res.ok) {
+                    btn.innerHTML = oldHtml;
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return Promise.reject();
+                }
+                return res.json();
+            }).then(data => {
+                if(data.success) {
+                    window.location.reload();
+                } else {
+                    btn.innerHTML = oldHtml;
+                    alert('Lỗi: ' + (data.message || 'Không xác định được lỗi'));
+                }
+            }).catch(e => {
+                if (e) {
+                    btn.innerHTML = oldHtml;
+                    alert('Lỗi kết nối. Vui lòng tải lại trang (F5)!');
+                    console.error(e);
+                }
+            });
+        }
+
+        // ===================== SERVICE DETAIL MODAL =====================
+        function openServiceDetail(card) {
+            const title = card.dataset.title || '';
+            const desc = card.dataset.desc || '';
+            const imgUrl = card.dataset.img || '';
+            const iconClass = card.dataset.icon || 'fas fa-star';
+
+            document.getElementById('svcModalTitle').textContent = title;
+            document.getElementById('svcModalDesc').textContent = desc;
+
+            const imgEl = document.getElementById('svcModalImg');
+            const iconWrap = document.getElementById('svcModalIcon');
+            const iconEl = document.getElementById('svcModalIconEl');
+
+            if (imgUrl) {
+                imgEl.src = imgUrl;
+                imgEl.style.display = 'block';
+                iconWrap.style.setProperty('display', 'none', 'important');
+            } else {
+                imgEl.style.display = 'none';
+                iconEl.className = 'text-primary ' + iconClass;
+                iconWrap.style.setProperty('display', 'flex', 'important');
+            }
+
+            document.getElementById('serviceDetailModal').style.display = 'block';
+        }
+
+        function closeServiceDetail() {
+            document.getElementById('serviceDetailModal').style.display = 'none';
+        }
+
+        // ===================== CAROUSEL MANAGER =====================
+        const MAX_CAROUSEL = 5;
+
+        // Theo dõi xem có thay đổi nào chưa reload chưa
+        let carouselNeedsReload = false;
+
+        function openCarouselManager() {
+            const modal = document.getElementById('carouselManagerModal');
+            if (modal) modal.style.display = 'block';
+        }
+        function closeCarouselManager() {
+            document.getElementById('carouselManagerModal').style.display = 'none';
+            // Chỉ reload khi đã có thay đổi thực sự
+            if (carouselNeedsReload) {
+                window.location.reload();
+            }
+        }
+
+        function showAddRow(index) {
+            document.getElementById('addRow-' + index).style.display = 'block';
+        }
+
+        async function uploadToSlot(index) {
+            const input = document.getElementById('cNewFile-' + index);
+            if (!input.files.length) return;
+            
+            const fd = new FormData();
+            fd.append('file', input.files[0]);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/upload'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    alert('Upload thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('cNewUrl-' + index).value = data.url;
+                    await saveToSlot(index);
+                } else {
+                    alert('Upload thất bại: ' + data.message);
+                }
+            } catch(e) {
+                alert('Lỗi kết nối khi upload ảnh!');
+                console.error(e);
+            }
+        }
+
+        async function saveToSlot(index) {
+            const url = document.getElementById('cNewUrl-' + index).value.trim();
+            if (!url) return alert('Vui lòng nhập URL ảnh hoặc tải ảnh lên!');
+
+            const fd = new FormData();
+            fd.append('title', 'Carousel Slide ' + (index + 1));
+            fd.append('imageUrl', url);
+
+            const tickBtn = document.querySelector(`[onclick="saveToSlot(${index})"]`);
+            if (tickBtn) { tickBtn.disabled = true; tickBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/add-carousel'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                    alert('Lưu thất bại! Lỗi ' + res.status + '. Vui lòng tải lại trang (F5)!');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    carouselNeedsReload = true;
+                    updateSlotUI(index, url, data.id);
+                } else {
+                    if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch(e) {
+                if (tickBtn) { tickBtn.disabled = false; tickBtn.innerHTML = '<i class="fas fa-check"></i>'; }
+                alert('Lỗi kết nối!');
+                console.error(e);
+            }
+        }
+
+        // Cập nhật giao diện slot sau khi lưu thành công (không reload)
+        function updateSlotUI(index, imgUrl, bannerId) {
+            // Tìm card chứa slot này (col thứ index)
+            const allSlotCols = document.querySelectorAll('#carouselSlotsContainer > .col-md-6, #carouselSlotsContainer > .col-lg-4, #carouselSlotsContainer [class*="col-"]');
+            // Tìm addRow element của slot này
+            const addRow = document.getElementById('addRow-' + index);
+            if (!addRow) return;
+
+            // Tìm card-img-top gần nhất (parent chain: addRow -> card-body -> card -> card-img-top)
+            const cardBody = addRow.closest('.card-body');
+            const card = cardBody ? cardBody.closest('.card') : null;
+            const imgContainer = card ? card.querySelector('.card-img-top') : null;
+
+            if (imgContainer) {
+                // Thay thế vùng trống bằng ảnh vừa lưu
+                imgContainer.innerHTML = `
+                    <div class="w-100 h-100" style="position:relative;">
+                        <img src="${imgUrl}" class="w-100 h-100" style="object-fit: cover;">
+                        ${bannerId ? `<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" onclick="deleteCarouselSlide(${bannerId})" title="Xóa"><i class="fas fa-times"></i></button>` : ''}
+                    </div>`;
+            }
+
+            // Thay thế phần card-body của slot: ẩn nút Thêm Ảnh, hiện tên slide
+            if (cardBody) {
+                cardBody.innerHTML = `<div class="small text-truncate text-muted mb-0">Carousel Slide ${index + 1}</div>`;
+            }
+        }
+
+        async function deleteCarouselSlide(id) {
+            const ok = await skyConfirm('Bạn có chắc muốn xóa ảnh này khỏi carousel?', 'Xác nhận xóa', 'Xóa');
+            if (!ok) return;
+            const fd = new FormData();
+            fd.append('type', 'banner');
+            fd.append('id', id);
+
+            try {
+                const res = await fetch(csrfUrl('/admin/visual-editor/delete-entity'), { 
+                    method: 'POST', 
+                    body: fd
+                });
+                if (!res.ok) {
+                    alert('Xóa thất bại! Lỗi ' + res.status + '.');
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    carouselNeedsReload = true;
+                    window.location.reload();
+                } else {
+                    alert('Xóa thất bại: ' + data.message);
+                }
+            } catch(e) {
+                alert('Lỗi kết nối!');
+                console.error(e);
+            }
+        }
+        
+        function filterAirports(inputId, dropdownId) {
+            let input = document.getElementById(inputId).value.toLowerCase();
+            let ul = document.getElementById(dropdownId);
+            let items = ul.getElementsByTagName("li");
+            for (let i = 1; i < items.length; i++) {
+                let a = items[i].querySelector("a");
+                if (a) {
+                    let txtValue = a.textContent || a.innerText;
+                    let normalizedTxt = txtValue.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    let normalizedInput = input.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                    
+                    if (normalizedTxt.indexOf(normalizedInput) > -1 || txtValue.toLowerCase().indexOf(input) > -1) {
+                        items[i].style.setProperty("display", "", "important");
+                    } else {
+                        items[i].style.setProperty("display", "none", "important");
+                    }
+                } else {
+                    // Header items
+                    if (input.trim() !== "") {
+                        items[i].style.setProperty("display", "none", "important");
+                    } else {
+                        items[i].style.setProperty("display", "", "important");
+                    }
+                }
+            }
+        }
+
+
+    </script>
+</th:block>
+</th:block>
+</html>
