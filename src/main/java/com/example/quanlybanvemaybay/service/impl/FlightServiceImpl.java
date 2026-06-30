@@ -28,6 +28,11 @@ public class FlightServiceImpl implements FlightService {
         } catch (Exception e) {
             
         }
+        try {
+            jdbcTemplate.execute("ALTER TABLE flights MODIFY base_price DECIMAL(10,2) NOT NULL");
+        } catch (Exception e) {
+            
+        }
     }
 
     @Override

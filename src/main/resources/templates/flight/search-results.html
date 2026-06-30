@@ -96,12 +96,9 @@
                             </div>
                             <div th:if="${f.availableSeats == null || f.availableSeats > 10}" class="mb-4"></div>
                             
-                            <a sec:authorize="isAuthenticated() and !hasRole('ADMIN')" th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
+                            <a sec:authorize="isAuthenticated()" th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
                                 Chọn chuyến
                             </a>
-                            <button sec:authorize="hasRole('ADMIN')" type="button" class="btn btn-secondary rounded-pill w-100 fw-bold shadow-sm py-2 disabled" title="Admin chỉ thực hiện quản lý, không đặt vé">
-                                Khóa chức năng
-                            </button>
                             <button sec:authorize="!isAuthenticated()" type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
                                     data-bs-toggle="modal" data-bs-target="#loginPromptModal"
                                     th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&passengers=${passengers}')|">
