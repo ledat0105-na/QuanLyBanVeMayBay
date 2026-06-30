@@ -82,7 +82,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span th:if="${booking.bookingStatus == 'WAITING_PAYMENT'}" class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chờ thanh toán</span>
+                                        <span th:if="${booking.bookingStatus == 'WAITING_PAYMENT'}" 
+                                              class="badge bg-warning text-dark booking-status-badge"
+                                              th:data-booking-id="${booking.id}"
+                                              th:data-created-time="${#temporals.format(booking.bookingDate, 'yyyy-MM-dd\'T\'HH:mm:ss')}">
+                                            <i class="fas fa-clock me-1"></i>Chờ thanh toán (<span class="countdown-timer">10:00</span>)
+                                        </span>
                                         <span th:if="${booking.bookingStatus == 'CONFIRMED'}" class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đã xác nhận</span>
                                         <span th:if="${booking.bookingStatus == 'CANCELLED'}" class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Đã hủy</span>
                                         <span th:if="${booking.bookingStatus == 'REFUNDED'}" class="badge bg-secondary"><i class="fas fa-undo me-1"></i>Đã hoàn tiền</span>
@@ -131,5 +136,56 @@
 
 <th:block th:if="${isEditorMode}" th:replace="~{layout/visual-editor :: editor}"></th:block>
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const badges = document.querySelectorAll('.booking-status-badge[data-created-time]');
+        
+        function updateTimers() {
+            const now = new Date();
+            let activeTimers = 0;
+            
+            badges.forEach(badge => {
+                const createdTimeStr = badge.getAttribute('data-created-time');
+                if (!createdTimeStr) return;
+                
+                const createdTime = new Date(createdTimeStr);
+                const expiryTime = new Date(createdTime.getTime() + 10 * 60 * 1000); // 10 minutes
+                const diffMs = expiryTime - now;
+                
+                const timerSpan = badge.querySelector('.countdown-timer');
+                const row = badge.closest('tr');
+                const payBtn = row ? row.querySelector('a.btn-primary') : null;
+                
+                if (diffMs <= 0) {
+                    badge.className = 'badge bg-danger';
+                    badge.innerHTML = '<i class="fas fa-times-circle me-1"></i>Đã hủy';
+                    badge.removeAttribute('data-created-time');
+                    if (payBtn) {
+                        payBtn.remove();
+                    }
+                    
+                    const bookingId = badge.getAttribute('data-booking-id');
+                    if (bookingId) {
+                        fetch('/api/booking/cancel-silent?bookingId=' + bookingId, { method: 'POST' });
+                    }
+                } else {
+                    activeTimers++;
+                    const diffSecs = Math.floor(diffMs / 1000);
+                    const minutes = Math.floor(diffSecs / 60);
+                    const seconds = diffSecs % 60;
+                    if (timerSpan) {
+                        timerSpan.innerText = (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+                    }
+                }
+            });
+            
+            if (activeTimers > 0) {
+                setTimeout(updateTimers, 1000);
+            }
+        }
+        
+        updateTimers();
+    });
+</script>
 </body>
 </html>

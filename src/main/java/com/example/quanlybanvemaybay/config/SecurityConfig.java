@@ -56,7 +56,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error", "/api/notifications/read/**", "/api/notifications/unread", "/flights/**").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error", "/api/notifications/read/**", "/api/notifications/unread", "/flights/**", "/api/ai/chat").permitAll()
                         .requestMatchers("/login", "/register", "/forgot-password", "/reset-password", "/api/auth/send-otp", "/api/auth/reset-password", "/fix-pass").permitAll()
                         .requestMatchers("/about", "/services", "/projects", "/contact", "/contact/send").permitAll()
                         .requestMatchers("/admin/report", "/admin/bookings/**", "/admin/passengers/**", "/admin/profile/**").hasAnyRole("ADMIN", "STAFF")

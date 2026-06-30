@@ -291,7 +291,62 @@
                                     </div>
                                     <div class="col-lg-2 col-md-4" id="passengersCol">
                                         <label class="form-label fw-bold"><i class="fas fa-users text-primary me-2"></i>Số hành khách</label>
-                                        <input type="number" name="passengers" class="form-control search-box-custom" value="1" min="1" max="10" required>
+                                        <div class="dropdown">
+                                            <div class="form-control search-box-custom d-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="cursor: pointer;">
+                                                <div class="flex-grow-1 overflow-hidden" style="white-space: nowrap;">
+                                                    <div class="fw-bold text-dark fs-6 lh-1" id="passengersLabel">1 Người lớn</div>
+                                                    <small class="text-muted d-block mt-1" id="passengersSubLabel" style="font-size: 0.75rem;">Hành khách</small>
+                                                </div>
+                                            </div>
+                                            <!-- Hidden Inputs -->
+                                            <input type="hidden" name="adults" id="adultsInput" value="1">
+                                            <input type="hidden" name="children" id="childrenInput" value="0">
+                                            <input type="hidden" name="infants" id="infantsInput" value="0">
+
+                                            <div class="dropdown-menu shadow-lg border-0 p-4" style="border-radius: 16px; min-width: 300px; z-index: 1050;">
+                                                <!-- Row 1: Người lớn -->
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <div>
+                                                        <span class="fw-bold text-dark d-block">Người lớn</span>
+                                                        <small class="text-muted">Từ 12 tuổi</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('adults', -1)">-</button>
+                                                        <span class="fw-bold fs-5" id="adultsCount" style="min-width: 20px; text-align: center;">1</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('adults', 1)">+</button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Row 2: Trẻ em -->
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <div>
+                                                        <span class="fw-bold text-dark d-block">Trẻ em</span>
+                                                        <small class="text-muted">Từ 2 - 11 tuổi</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('children', -1)">-</button>
+                                                        <span class="fw-bold fs-5" id="childrenCount" style="min-width: 20px; text-align: center;">0</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('children', 1)">+</button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Row 3: Em bé -->
+                                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                                    <div>
+                                                        <span class="fw-bold text-dark d-block">Em bé</span>
+                                                        <small class="text-muted">Dưới 2 tuổi</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('infants', -1)">-</button>
+                                                        <span class="fw-bold fs-5" id="infantsCount" style="min-width: 20px; text-align: center;">0</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 32px; height: 32px; font-weight: bold;" onclick="changeCount('infants', 1)">+</button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Done Button -->
+                                                <button type="button" class="btn btn-primary w-100 rounded-pill fw-bold py-2 text-white" onclick="closeDropdown()">Xong</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row mt-4">
@@ -362,6 +417,50 @@
                                     document.getElementById(type + 'Id').value = id;
                                     document.getElementById(type + 'Label').innerText = label;
                                     document.getElementById(type + 'SubLabel').innerText = subLabel;
+                                }
+
+                                function changeCount(type, val) {
+                                    const adultsEl = document.getElementById('adultsCount');
+                                    const childrenEl = document.getElementById('childrenCount');
+                                    const infantsEl = document.getElementById('infantsCount');
+
+                                    let adults = parseInt(adultsEl.innerText);
+                                    let children = parseInt(childrenEl.innerText);
+                                    let infants = parseInt(infantsEl.innerText);
+
+                                    if (type === 'adults') {
+                                        adults = Math.max(1, adults + val);
+                                    } else if (type === 'children') {
+                                        children = Math.max(0, children + val);
+                                    } else if (type === 'infants') {
+                                        infants = Math.max(0, infants + val);
+                                    }
+
+                                    if (adults + children + infants > 10) {
+                                        alert('Tối đa 10 hành khách cho mỗi đơn đặt chỗ!');
+                                        return;
+                                    }
+
+                                    adultsEl.innerText = adults;
+                                    childrenEl.innerText = children;
+                                    infantsEl.innerText = infants;
+
+                                    document.getElementById('adultsInput').value = adults;
+                                    document.getElementById('childrenInput').value = children;
+                                    document.getElementById('infantsInput').value = infants;
+
+                                    let label = adults + ' Người lớn';
+                                    if (children > 0) label += ', ' + children + ' Trẻ em';
+                                    if (infants > 0) label += ', ' + infants + ' Em bé';
+                                    document.getElementById('passengersLabel').innerText = label;
+                                }
+
+                                function closeDropdown() {
+                                    const dropdownToggle = document.querySelector('#passengersCol [data-bs-toggle="dropdown"]');
+                                    if (dropdownToggle) {
+                                        const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                                        if (dropdown) dropdown.hide();
+                                    }
                                 }
 
                                 document.getElementById('flightSearchForm').addEventListener('submit', function(e) {

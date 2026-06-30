@@ -42,15 +42,16 @@ public class BookingController {
     @GetMapping("/step1")
     public String step1(@RequestParam("flightId") Long flightId,
                         @RequestParam(value = "returnFlightId", required = false) Long returnFlightId,
-                        @RequestParam(value = "passengers", defaultValue = "1") int numPassengers,
-                        Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+                        @RequestParam(value = "adults", defaultValue = "1") int adults,
+                        @RequestParam(value = "children", defaultValue = "0") int children,
+                        @RequestParam(value = "infants", defaultValue = "0") int infants,
+                        Model model, HttpSession session, java.security.Principal principal, RedirectAttributes redirectAttributes) {
 
         Flight flight = flightService.findById(flightId);
         if (flight == null) {
             return "redirect:/";
         }
 
-        
         if (flight.getDepartureTime() != null) {
             LocalDateTime cutoff = flight.getDepartureTime().minusHours(3);
             if (LocalDateTime.now().isAfter(cutoff)) {
@@ -76,6 +77,10 @@ public class BookingController {
         BookingRequestDTO req = new BookingRequestDTO();
         req.setFlight(flight);
         req.setReturnFlight(returnFlight);
+        req.setAdults(adults);
+        req.setChildren(children);
+        req.setInfants(infants);
+        int numPassengers = adults + children + infants;
         req.setNumberOfPassengers(numPassengers);
 
         for (int i = 0; i < numPassengers; i++) {
@@ -84,6 +89,11 @@ public class BookingController {
 
         session.setAttribute("bookingReq", req);
         model.addAttribute("req", req);
+
+        if (principal != null) {
+            com.example.quanlybanvemaybay.entity.User currentUser = userRepo.findByUsername(principal.getName()).orElse(null);
+            model.addAttribute("currentUser", currentUser);
+        }
 
         return "booking/step1";
     }
@@ -231,5 +241,12 @@ public class BookingController {
         if (booking == null) return "redirect:/";
         model.addAttribute("booking", booking);
         return "booking/success";
+    }
+
+    @PostMapping("/api/booking/cancel-silent")
+    @ResponseBody
+    public String cancelSilent(@RequestParam("bookingId") Long bookingId) {
+        bookingService.cancelBooking(bookingId);
+        return "OK";
     }
 }

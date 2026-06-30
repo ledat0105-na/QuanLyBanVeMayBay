@@ -33,6 +33,11 @@ public class FlightServiceImpl implements FlightService {
         } catch (Exception e) {
             
         }
+        try {
+            jdbcTemplate.execute("ALTER TABLE bookings ADD COLUMN return_flight_id BIGINT NULL");
+        } catch (Exception e) {
+            
+        }
     }
 
     @Override

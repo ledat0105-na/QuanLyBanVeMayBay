@@ -40,6 +40,18 @@ public class ProfileController {
         String username = principal.getName();
         List<Booking> bookings = bookingService.getBookingsByUsername(username);
         
+        // Auto-cancel expired unpaid bookings
+        for (Booking booking : bookings) {
+            if ("WAITING_PAYMENT".equals(booking.getBookingStatus()) && 
+                booking.getBookingDate() != null && 
+                booking.getBookingDate().plusMinutes(10).isBefore(java.time.LocalDateTime.now())) {
+                bookingService.cancelBooking(booking.getId());
+            }
+        }
+        
+        // Reload to reflect cancellations
+        bookings = bookingService.getBookingsByUsername(username);
+        
         model.addAttribute("bookings", bookings);
         return "profile/bookings";
     }

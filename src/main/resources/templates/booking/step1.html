@@ -79,6 +79,43 @@
         
         <div class="col-lg-8 mb-4">
             <form th:action="@{/booking/step1}" th:object="${req}" method="post">
+                <!-- Thông tin liên hệ -->
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2 rounded-top-4">
+                        <h4 class="fw-bold mb-0 text-dark"><i class="fas fa-address-book text-primary me-2"></i>Thông tin liên hệ (nhận vé/phiếu thanh toán)</h4>
+                        
+                        <div class="alert d-flex align-items-center mt-3 mb-0 border-0 rounded-3" style="background-color: rgba(18, 122, 123, 0.08);">
+                            <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                            <div>
+                                <span class="fw-bold text-dark d-block" th:if="${currentUser != null}" th:text="'Đăng nhập với tên ' + ${currentUser.fullName}"></span>
+                                <span class="fw-bold text-dark d-block" th:if="${currentUser == null}">Khách vãng lai</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label>
+                                <input type="text" name="contactName" class="form-control" th:value="${currentUser != null ? currentUser.fullName : ''}" required>
+                                <small class="text-muted">Người Việt: nhập Tên đệm + Tên chính + Họ. Người nước ngoài: nhập Tên + Họ.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Điện thoại di động <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">+84</span>
+                                    <input type="tel" name="contactPhone" class="form-control" th:value="${currentUser != null ? currentUser.phone : ''}" required>
+                                </div>
+                                <small class="text-muted">Nhập số điện thoại không bao gồm mã điện thoại quốc gia/khu vực đã chọn</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                                <input type="email" name="contactEmail" class="form-control" th:value="${currentUser != null ? currentUser.email : ''}" required placeholder="VD: email@example.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông tin hành khách -->
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white border-bottom-0 pt-4 pb-2 rounded-top-4">
                         <h4 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Thông tin hành khách</h4>
@@ -87,14 +124,14 @@
                     <div class="card-body">
                         <div th:each="p, stat : *{passengers}" class="mb-4 pb-4 border-bottom position-relative">
                             <h5 class="fw-bold text-secondary mb-3">
-                                Hành khách <span th:text="${stat.count}"></span>
+                                <span th:if="${stat.index < req.adults}" th:text="'Người lớn ' + ${stat.index + 1}"></span>
+                                <span th:if="${stat.index >= req.adults && stat.index < req.adults + req.children}" th:text="'Trẻ em ' + ${stat.index - req.adults + 1}"></span>
+                                <span th:if="${stat.index >= req.adults + req.children}" th:text="'Em bé ' + ${stat.index - req.adults - req.children + 1}"></span>
                             </h5>
                             
+                            <input type="hidden" th:field="*{passengers[__${stat.index}__].fullName}" th:id="'fullname_' + ${stat.index}">
+                            
                             <div class="row g-3">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                    <input type="text" th:field="*{passengers[__${stat.index}__].fullName}" class="form-control text-uppercase" required placeholder="Họ và tên hành khách">
-                                </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Giới tính <span class="text-danger">*</span></label>
                                     <select th:field="*{passengers[__${stat.index}__].gender}" class="form-select" required>
@@ -103,13 +140,37 @@
                                         <option value="Nữ">Nữ</option>
                                     </select>
                                 </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Họ (vd: NGUYEN) <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control text-uppercase" th:id="'lastname_' + ${stat.index}" required placeholder="Họ">
+                                    <small class="text-muted" style="font-size: 0.75rem;">như trên CMND (không dấu)</small>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Chữ đệm và tên (vd: VAN ANH) <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control text-uppercase" th:id="'firstname_' + ${stat.index}" required placeholder="Chữ đệm & tên">
+                                    <small class="text-muted" style="font-size: 0.75rem;">như trên CMND (không dấu)</small>
+                                </div>
+                                
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Ngày sinh <span class="text-danger">*</span></label>
-                                    <input type="text" th:field="*{passengers[__${stat.index}__].dateOfBirth}" class="form-control flatpickr-dob" placeholder="dd/mm/yyyy" required>
+                                    <input type="date" th:field="*{passengers[__${stat.index}__].dateOfBirth}" th:id="'dob_' + ${stat.index}" class="form-control" required>
+                                    <small class="text-muted" th:if="${stat.index < req.adults}">Hành khách người lớn (yêu cầu từ 18 tuổi trở lên)</small>
+                                    <small class="text-muted" th:if="${stat.index >= req.adults && stat.index < req.adults + req.children}">Hành khách trẻ em (từ 2 - 11 tuổi)</small>
+                                    <small class="text-muted" th:if="${stat.index >= req.adults + req.children}">Hành khách trẻ sơ sinh (dưới 2 tuổi)</small>
                                 </div>
+                                
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">CCCD / Hộ chiếu <span class="text-danger">*</span></label>
+                                    <label class="form-label">Quốc tịch <span class="text-danger">*</span></label>
+                                    <select class="form-select" required>
+                                        <option value="Việt Nam" selected>Việt Nam</option>
+                                        <option value="Nước ngoài">Nước ngoài</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Số căn cước công dân / Hộ chiếu <span class="text-danger">*</span></label>
                                     <input type="text" th:field="*{passengers[__${stat.index}__].passportNumber}" class="form-control" placeholder="Số giấy tờ tùy thân" required>
+                                    <small class="text-muted" th:if="${stat.index >= req.adults}">Đối với hành khách là trẻ em hoặc trẻ sơ sinh, vui lòng nhập giấy tờ tùy thân của người giám hộ đi cùng trẻ. (Vui lòng đảm bảo chỉ nhập số trong trường này)</small>
                                 </div>
                             </div>
                         </div>
@@ -231,17 +292,50 @@
         border-color: #e0ecec !important;
     }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
-<script>
+<script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        flatpickr(".flatpickr-dob", {
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "d/m/Y",
-            locale: "vn",
-            maxDate: "today",
-            allowInput: true
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const adults = /*[[${req.adults}]]*/ 1;
+            const children = /*[[${req.children}]]*/ 0;
+            const infants = /*[[${req.infants}]]*/ 0;
+            const passengerCount = /*[[${req.numberOfPassengers}]]*/ 1;
+            
+            const now = new Date();
+            
+            for (let i = 0; i < passengerCount; i++) {
+                const lastname = document.getElementById('lastname_' + i).value.trim();
+                const firstname = document.getElementById('firstname_' + i).value.trim();
+                document.getElementById('fullname_' + i).value = (lastname + ' ' + firstname).toUpperCase();
+                
+                const dobVal = document.getElementById('dob_' + i).value;
+                if (!dobVal) continue;
+                
+                const dob = new Date(dobVal);
+                const ageDiffMs = now - dob.getTime();
+                const ageDate = new Date(ageDiffMs);
+                const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+                
+                if (i < adults) {
+                    if (age < 18) {
+                        e.preventDefault();
+                        alert('Hành khách [Người lớn ' + (i + 1) + '] yêu cầu từ 18 tuổi trở lên. Vui lòng kiểm tra lại ngày sinh!');
+                        return;
+                    }
+                } else if (i < adults + children) {
+                    if (age < 2 || age > 11) {
+                        e.preventDefault();
+                        alert('Hành khách [Trẻ em ' + (i - adults + 1) + '] yêu cầu từ 2 đến 11 tuổi. Vui lòng kiểm tra lại ngày sinh!');
+                        return;
+                    }
+                } else {
+                    if (age >= 2) {
+                        e.preventDefault();
+                        alert('Hành khách [Em bé ' + (i - adults - children + 1) + '] yêu cầu dưới 2 tuổi. Vui lòng kiểm tra lại ngày sinh!');
+                        return;
+                    }
+                }
+            }
         });
     });
 </script>

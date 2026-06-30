@@ -42,8 +42,13 @@ public class FlightSearchController {
                          @RequestParam(value = "retDate", required = false) String retDateStr,
                          @RequestParam(value = "tripType", required = false, defaultValue = "ONE_WAY") String tripType,
                          @RequestParam(value = "outboundFlightId", required = false) Long outboundFlightId,
-                         @RequestParam(value = "passengers", defaultValue = "1") int passengers,
+                         @RequestParam(value = "adults", defaultValue = "1") int adults,
+                         @RequestParam(value = "children", defaultValue = "0") int children,
+                         @RequestParam(value = "infants", defaultValue = "0") int infants,
                          Model model) {
+
+        int passengers = adults + children + infants;
+        if (passengers < 1) passengers = 1;
 
         LocalDate depDate;
         try {
@@ -102,6 +107,9 @@ public class FlightSearchController {
         model.addAttribute("tripType", tripType);
         model.addAttribute("outboundFlightId", outboundFlightId);
         model.addAttribute("passengers", passengers);
+        model.addAttribute("adults", adults);
+        model.addAttribute("children", children);
+        model.addAttribute("infants", infants);
         model.addAttribute("isSelectReturnPhase", isSelectReturnPhase);
 
         return "flight/search-results";

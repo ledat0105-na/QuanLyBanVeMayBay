@@ -133,19 +133,19 @@
                             <th:block sec:authorize="isAuthenticated()">
                                 <!-- Chiều đi của khứ hồi -->
                                 <a th:if="${tripType == 'ROUND_TRIP' and !isSelectReturnPhase}" 
-                                   th:href="@{/flights/search(tripType='ROUND_TRIP', depId=${depId}, arrId=${arrId}, depDate=${depDate}, retDate=${retDate}, passengers=${passengers}, outboundFlightId=${f.id})}" 
+                                   th:href="@{/flights/search(tripType='ROUND_TRIP', depId=${depId}, arrId=${arrId}, depDate=${depDate}, retDate=${retDate}, adults=${adults}, children=${children}, infants=${infants}, outboundFlightId=${f.id})}" 
                                    class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
                                     Chọn chiều đi
                                 </a>
                                 <!-- Chiều về của khứ hồi -->
                                 <a th:if="${isSelectReturnPhase}" 
-                                   th:href="@{/booking/step1(flightId=${outboundFlightId}, returnFlightId=${f.id}, passengers=${passengers})}" 
+                                   th:href="@{/booking/step1(flightId=${outboundFlightId}, returnFlightId=${f.id}, adults=${adults}, children=${children}, infants=${infants})}" 
                                    class="btn btn-success rounded-pill w-100 fw-bold shadow-sm py-2">
                                     Chọn chiều về
                                 </a>
                                 <!-- Một chiều -->
                                 <a th:if="${tripType != 'ROUND_TRIP'}" 
-                                   th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" 
+                                   th:href="@{/booking/step1(flightId=${f.id}, adults=${adults}, children=${children}, infants=${infants})}" 
                                    class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
                                     Chọn chuyến
                                 </a>
@@ -157,21 +157,21 @@
                                 <button th:if="${tripType == 'ROUND_TRIP' and !isSelectReturnPhase}" 
                                         type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
                                         data-bs-toggle="modal" data-bs-target="#loginPromptModal"
-                                        th:attr="onclick=|setReturnUrl('/flights/search?tripType=ROUND_TRIP&depId=${depId}&arrId=${arrId}&depDate=${depDate}&retDate=${retDate}&passengers=${passengers}&outboundFlightId=${f.id}')|">
+                                        th:attr="onclick=|setReturnUrl('/flights/search?tripType=ROUND_TRIP&depId=${depId}&arrId=${arrId}&depDate=${depDate}&retDate=${retDate}&adults=${adults}&children=${children}&infants=${infants}&outboundFlightId=${f.id}')|">
                                     Chọn chiều đi
                                 </button>
                                 <!-- Chiều về của khứ hồi -->
                                 <button th:if="${isSelectReturnPhase}" 
                                         type="button" class="btn btn-success rounded-pill w-100 fw-bold shadow-sm py-2" 
                                         data-bs-toggle="modal" data-bs-target="#loginPromptModal"
-                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${outboundFlightId}&returnFlightId=${f.id}&passengers=${passengers}')|">
+                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${outboundFlightId}&returnFlightId=${f.id}&adults=${adults}&children=${children}&infants=${infants}')|">
                                     Chọn chiều về
                                 </button>
                                 <!-- Một chiều -->
                                 <button th:if="${tripType != 'ROUND_TRIP'}" 
                                         type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
                                         data-bs-toggle="modal" data-bs-target="#loginPromptModal"
-                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&passengers=${passengers}')|">
+                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&adults=${adults}&children=${children}&infants=${infants}')|">
                                     Chọn chuyến
                                 </button>
                             </th:block>

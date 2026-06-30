@@ -12,6 +12,9 @@ public class BookingRequestDTO {
     private Flight flight;
     private Flight returnFlight;
     private int numberOfPassengers;
+    private int adults = 1;
+    private int children = 0;
+    private int infants = 0;
     private List<Passenger> passengers = new ArrayList<>();
     private Long selectedBaggageId;
     private String promotionCode;
