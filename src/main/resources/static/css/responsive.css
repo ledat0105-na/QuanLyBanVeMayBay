@@ -1,0 +1,168 @@
+/* =========================================================
+   SkyTravel - Responsive CSS
+   Covers: mobile (< 576px), tablet (576-991px), desktop (992px+)
+   ========================================================= */
+
+/* ---- Scrollbar global ---- */
+html { scroll-behavior: smooth; }
+body { overflow-x: hidden; }
+
+/* ---- Navbar ---- */
+@media (max-width: 991.98px) {
+  .navbar-brand h1 { font-size: 1.3rem !important; }
+  .navbar-brand img { height: 32px !important; }
+  #navbarCollapse { background: #fff; border-radius: 12px; padding: 10px 16px; margin-top: 8px; box-shadow: 0 4px 24px rgba(0,0,0,.1); }
+  .navbar-nav .nav-link { padding: 10px 8px !important; }
+  /* Notification / profile buttons */
+  .navbar .dropdown-menu { position: static !important; transform: none !important; width: 100% !important; }
+}
+
+/* ---- Home search box ---- */
+@media (max-width: 767.98px) {
+  .flight-search-card { margin: 0 8px; }
+  .flight-search-card .form-control,
+  .flight-search-card .form-select { font-size: 0.9rem; }
+  /* Passenger popover */
+  #passengerPopover { width: 100% !important; left: 0 !important; right: 0 !important; }
+}
+
+/* ---- Search Results ---- */
+@media (max-width: 991.98px) {
+  /* Sidebar filter becomes top bar */
+  .col-lg-3.mb-4 { position: static !important; margin-bottom: 16px !important; }
+  .col-lg-3.mb-4 .card { position: static !important; }
+}
+
+@media (max-width: 767.98px) {
+  /* Flight card stacked */
+  .flight-card .row.g-0 { flex-direction: column !important; }
+  .flight-card .col-md-3,
+  .flight-card .col-md-6 { border-right: none !important; border-bottom: 1px solid #f0f0f0; }
+  .flight-card .col-md-3.bg-light { border-radius: 0 0 1rem 1rem !important; }
+  .flight-card .col-md-6 .d-flex { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ---- Booking Steps (step1, step2, step3) ---- */
+@media (max-width: 767.98px) {
+  /* Stepper text smaller */
+  .stepper-circle { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 1rem !important; }
+  .stepper-line-container { top: 17px !important; }
+
+  /* Step1 passenger form */
+  .passenger-section .row { flex-direction: column; }
+  .passenger-section .col-md-6,
+  .passenger-section .col-md-4 { width: 100% !important; }
+
+  /* Step3 payment layout */
+  .col-md-5.bg-light { border-right: none !important; border-bottom: 1px solid #dee2e6; }
+  .col-md-7.p-5 { padding: 1.5rem !important; }
+  .col-md-5 { padding: 1.5rem !important; }
+
+  /* QR image smaller */
+  .img-fluid.rounded-3[style*="max-width: 200px"] { max-width: 150px !important; }
+}
+
+/* ---- Profile & Bookings page ---- */
+@media (max-width: 767.98px) {
+  .profile-sidebar { margin-bottom: 1.5rem; }
+  .profile-sidebar .card { border-radius: 12px !important; }
+  /* Booking cards */
+  .booking-card .d-flex.justify-content-between { flex-direction: column; gap: 8px; }
+  .booking-card .badge { align-self: flex-start; }
+}
+
+/* ---- Admin panel ---- */
+@media (max-width: 991.98px) {
+  .admin-sidebar { display: none; }
+  .admin-content { padding: 12px !important; }
+  .table-responsive { overflow-x: auto; }
+}
+
+/* ---- Tables ---- */
+@media (max-width: 767.98px) {
+  .table thead { display: none; }
+  .table tbody tr { display: block; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 12px; padding: 8px; }
+  .table tbody td { display: flex; justify-content: space-between; padding: 6px 8px; border: none; font-size: 0.85rem; }
+  .table tbody td::before { content: attr(data-label); font-weight: 600; color: #495057; margin-right: 8px; }
+}
+
+/* ---- AI Chatbox ---- */
+@media (max-width: 575.98px) {
+  #skybotWidget { bottom: 12px !important; right: 12px !important; }
+  #skybotChatWindow {
+    width: calc(100vw - 24px) !important;
+    max-width: 100vw !important;
+    right: 0 !important;
+    left: 12px !important;
+    bottom: 72px !important;
+    height: 70vh !important;
+  }
+}
+
+/* ---- Footer ---- */
+@media (max-width: 767.98px) {
+  .footer .row > div { margin-bottom: 24px; }
+  .footer .copyright { text-align: center !important; }
+  .footer .footer-menu { justify-content: center !important; }
+}
+
+/* ---- Modals ---- */
+@media (max-width: 575.98px) {
+  .modal-dialog { margin: 12px !important; }
+  .modal-body.p-5 { padding: 1.5rem !important; }
+}
+
+/* ---- General spacing helpers for mobile ---- */
+@media (max-width: 575.98px) {
+  .py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .fs-5 { font-size: 1rem !important; }
+  .fs-4 { font-size: 1.1rem !important; }
+  h2 { font-size: 1.4rem !important; }
+  h3 { font-size: 1.2rem !important; }
+  /* Card padding compact */
+  .card-body.p-4 { padding: 1rem !important; }
+  .p-5 { padding: 1.25rem !important; }
+}
+
+/* ---- Banner / hero section ---- */
+@media (max-width: 767.98px) {
+  .banner-hero-text h1 { font-size: 1.6rem !important; }
+  .banner-hero-text p { font-size: 0.95rem !important; }
+  .owl-carousel .item img { object-fit: cover; height: 220px; width: 100%; }
+}
+
+/* ---- Make images non-overflowing ---- */
+img { max-width: 100%; height: auto; }
+
+/* ---- Sticky bottom CTA on mobile ---- */
+@media (max-width: 575.98px) {
+  .sticky-mobile-cta {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 999;
+    padding: 12px 16px;
+    background: #fff;
+    box-shadow: 0 -2px 16px rgba(0,0,0,.12);
+    border-top: 1px solid #dee2e6;
+  }
+}
+
+/* ---- Touch-friendly tap targets ---- */
+@media (max-width: 767.98px) {
+  .btn { min-height: 44px; }
+  input, select, textarea { min-height: 44px; font-size: 16px !important; /* prevents iOS zoom */ }
+}
+
+/* ---- Step1 contact + passenger form layout ---- */
+@media (max-width: 575.98px) {
+  .booking-step-form .row .col-sm-6 { flex: 0 0 100%; max-width: 100%; }
+  .booking-form-btn { width: 100% !important; }
+}
+
+/* ---- Search results header info bar ---- */
+@media (max-width: 575.98px) {
+  .container-fluid.bg-primary .container { flex-direction: column; gap: 12px; }
+  .container-fluid.bg-primary p.mb-0.fs-5 { font-size: 0.85rem !important; }
+  .container-fluid.bg-primary a.btn { align-self: flex-start; }
+}

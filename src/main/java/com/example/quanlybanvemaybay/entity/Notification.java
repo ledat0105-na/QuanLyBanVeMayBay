@@ -18,7 +18,7 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -38,4 +38,10 @@ public class Notification {
 
     @Column(name = "group_id")
     private String groupId;
+
+    // Explicit getter for Thymeleaf compatibility
+    // Lombok generates getIsRead() for Boolean fields, but Thymeleaf looks for isRead()
+    public boolean isRead() {
+        return isRead != null && isRead;
+    }
 }
