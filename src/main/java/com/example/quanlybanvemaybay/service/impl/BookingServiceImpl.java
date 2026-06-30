@@ -210,4 +210,14 @@ public class BookingServiceImpl implements BookingService {
             passengerRepository.save(passenger);
         }
     }
+
+    @Override
+    @Transactional
+    public void checkInBooking(Long id) {
+        Booking booking = findById(id);
+        if (booking != null) {
+            booking.setIsCheckedIn(true);
+            bookingRepository.save(booking);
+        }
+    }
 }

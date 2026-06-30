@@ -1,5 +1,6 @@
 package com.example.quanlybanvemaybay;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -18,7 +19,7 @@ public class QuanLyBanVeMayBayApplication {
     @org.springframework.beans.factory.annotation.Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    @jakarta.annotation.PostConstruct
+    @PostConstruct
     public void dropPassportIndex() {
         try {
             jdbcTemplate.execute("ALTER TABLE passengers DROP INDEX passport_number");

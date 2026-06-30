@@ -1,9 +1,11 @@
 package com.example.quanlybanvemaybay.controller;
 
+import com.example.quanlybanvemaybay.entity.Airport;
 import com.example.quanlybanvemaybay.entity.Flight;
 import com.example.quanlybanvemaybay.repository.FlightRepository;
 import com.example.quanlybanvemaybay.service.itf.AirlineService;
 import com.example.quanlybanvemaybay.service.itf.AirportService;
+import com.example.quanlybanvemaybay.service.itf.ExternalFlightService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,11 +23,16 @@ public class FlightSearchController {
     private final FlightRepository flightRepository;
     private final AirportService airportService;
     private final AirlineService airlineService;
+    private final ExternalFlightService externalFlightService;
 
-    public FlightSearchController(FlightRepository flightRepository, AirportService airportService, AirlineService airlineService) {
+    public FlightSearchController(FlightRepository flightRepository, 
+                                  AirportService airportService, 
+                                  AirlineService airlineService,
+                                  ExternalFlightService externalFlightService) {
         this.flightRepository = flightRepository;
         this.airportService = airportService;
         this.airlineService = airlineService;
+        this.externalFlightService = externalFlightService;
     }
 
     @GetMapping("/search")
@@ -34,6 +41,13 @@ public class FlightSearchController {
                          @RequestParam("depDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate depDate,
                          @RequestParam(value = "passengers", defaultValue = "1") int passengers,
                          Model model) {
+
+        Airport depAirport = airportService.findById(depId);
+        Airport arrAirport = airportService.findById(arrId);
+        
+        if (depAirport != null && arrAirport != null) {
+            externalFlightService.generateAndSaveFlightsForRoute(depAirport, arrAirport, depDate);
+        }
 
         List<Flight> flights = flightRepository.searchFlights(depId, arrId, depDate, passengers);
 

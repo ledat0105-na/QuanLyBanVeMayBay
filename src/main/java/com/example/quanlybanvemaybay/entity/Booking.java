@@ -61,4 +61,40 @@ public class Booking {
     @Builder.Default
     @OneToMany(mappedBy = "booking")
     private List<Ticket> tickets = new ArrayList<>();
+
+    @Builder.Default
+    @Column(name = "is_checked_in")
+    private Boolean isCheckedIn = false;
+
+    public boolean isCheckedIn() {
+        return isCheckedIn != null && isCheckedIn;
+    }
+
+    public boolean isCheckInAllowed() {
+        if (!"CONFIRMED".equals(bookingStatus) || flight == null || flight.getDepartureTime() == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openTime = flight.getDepartureTime().minusHours(23);
+        LocalDateTime closeTime = flight.getDepartureTime().minusHours(1);
+        return now.isAfter(openTime) && now.isBefore(closeTime);
+    }
+
+    public boolean isCheckInClosed() {
+        if (flight == null || flight.getDepartureTime() == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime closeTime = flight.getDepartureTime().minusHours(1);
+        return now.isAfter(closeTime);
+    }
+
+    public boolean isCheckInNotOpenYet() {
+        if (flight == null || flight.getDepartureTime() == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openTime = flight.getDepartureTime().minusHours(23);
+        return now.isBefore(openTime);
+    }
 }

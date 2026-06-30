@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
@@ -80,5 +81,40 @@ public class ProfileController {
             redirectAttributes.addFlashAttribute("errorSecurity", "Có lỗi xảy ra khi đổi mật khẩu.");
         }
         return "redirect:/profile/info";
+    }
+
+    @PostMapping("/bookings/{id}/checkin")
+    public String checkIn(@PathVariable("id") Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        
+        try {
+            Booking booking = bookingService.findById(id);
+            if (booking == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông tin đặt vé!");
+                return "redirect:/profile/bookings";
+            }
+            
+            // Check ownership
+            if (booking.getUser() == null || !booking.getUser().getUsername().equals(principal.getName())) {
+                redirectAttributes.addFlashAttribute("error", "Bạn không có quyền thực hiện thao tác này!");
+                return "redirect:/profile/bookings";
+            }
+            
+            if (booking.isCheckedIn()) {
+                redirectAttributes.addFlashAttribute("success", "Bạn đã làm thủ tục check-in cho vé này rồi!");
+                return "redirect:/profile/bookings";
+            }
+            
+            if (!booking.isCheckInAllowed()) {
+                redirectAttributes.addFlashAttribute("error", "Thời gian làm thủ tục không hợp lệ. Check-in chỉ mở từ 23 giờ đến 1 giờ trước giờ khởi hành!");
+                return "redirect:/profile/bookings";
+            }
+            
+            bookingService.checkInBooking(id);
+            redirectAttributes.addFlashAttribute("success", "Làm thủ tục check-in thành công cho mã đặt chỗ: " + booking.getBookingCode() + "!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+        }
+        return "redirect:/profile/bookings";
     }
 }
