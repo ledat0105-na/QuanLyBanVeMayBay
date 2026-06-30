@@ -473,12 +473,6 @@ function validateForm(depAirId, arrAirId, depTimeId, arrTimeId) {
         dep.classList.add('is-invalid'); 
         return false;
     }
-    
-    if (depDate < minDep) {
-        Swal.fire({icon: 'error', title: 'Cảnh báo hàng không', text: 'Chuyến bay phải được lên lịch trước ít nhất 24 giờ kể từ thời điểm hiện tại!'});
-        dep.classList.add('is-invalid'); 
-        return false;
-    }
 
     if (!arrVal) { 
         Swal.fire({icon: 'warning', title: 'Thông báo', text: 'Vui lòng chọn thời gian hạ cánh!'});
@@ -523,7 +517,6 @@ function validateFlight(fid) {
 
 // ============ FLATPICKR INIT ============
 document.addEventListener('DOMContentLoaded', function() {
-    const minDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const locale = {
         firstDayOfWeek: 1,
         weekdays: { shorthand: ['CN','T2','T3','T4','T5','T6','T7'], longhand: ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'] },
@@ -535,9 +528,32 @@ document.addEventListener('DOMContentLoaded', function() {
         altInput: true, 
         altFormat: 'd/m/Y H:i', 
         time_24hr: true, 
-        minDate: minDate, 
+        minDate: new Date(), 
         locale: locale, 
-        allowInput: true 
+        allowInput: true,
+        minuteIncrement: 5,
+        parseDate: function(datestr, format) {
+            if (!datestr) return null;
+            const parts = datestr.trim().split(/[\s/:\-T]+/);
+            if (parts.length >= 5) {
+                if (parts[0].length === 4) {
+                    const year = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const day = parseInt(parts[2], 10);
+                    const hour = parseInt(parts[3], 10);
+                    const minute = parseInt(parts[4], 10);
+                    return new Date(year, month, day, hour, minute);
+                } else {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    const hour = parseInt(parts[3], 10);
+                    const minute = parseInt(parts[4], 10);
+                    return new Date(year, month, day, hour, minute);
+                }
+            }
+            return null;
+        }
     };
 
     const fpDep = flatpickr('#createDep', Object.assign({}, fpBase, {
