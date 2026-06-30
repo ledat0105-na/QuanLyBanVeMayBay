@@ -56,7 +56,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error", "/api/notifications/read/**", "/flights/**").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/lib/**", "/webjars/**", "/uploads/**", "/error", "/api/notifications/read/**", "/api/notifications/unread", "/flights/**").permitAll()
                         .requestMatchers("/login", "/register", "/forgot-password", "/reset-password", "/api/auth/send-otp", "/api/auth/reset-password", "/fix-pass").permitAll()
                         .requestMatchers("/about", "/services", "/projects", "/contact", "/contact/send").permitAll()
                         .requestMatchers("/admin/report", "/admin/bookings/**", "/admin/passengers/**", "/admin/profile/**").hasAnyRole("ADMIN", "STAFF")
@@ -91,14 +91,15 @@ public class SecurityConfig {
                                 new org.springframework.security.web.savedrequest.HttpSessionRequestCache().getRequest(request, response);
                             if (savedRequest != null) {
                                 String redirectUrl = savedRequest.getRedirectUrl();
-                                
-                                redirectUrl = redirectUrl.replace("?continue", "").replace("&continue", "");
-                                
-                                if (!redirectUrl.contains("login_success=true")) {
-                                    redirectUrl = redirectUrl.contains("?") ? redirectUrl + "&login_success=true" : redirectUrl + "?login_success=true";
+                                if (!redirectUrl.contains("/api/")) {
+                                    redirectUrl = redirectUrl.replace("?continue", "").replace("&continue", "");
+                                    
+                                    if (!redirectUrl.contains("login_success=true")) {
+                                        redirectUrl = redirectUrl.contains("?") ? redirectUrl + "&login_success=true" : redirectUrl + "?login_success=true";
+                                    }
+                                    new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
+                                    return;
                                 }
-                                new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request, response, redirectUrl);
-                                return;
                             }
 
                             
