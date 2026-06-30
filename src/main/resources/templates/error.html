@@ -140,6 +140,11 @@
             <span th:if="${status != 404 and status != 403 and status != 500}" th:text="${message} ?: 'Đã có lỗi xảy ra trong quá trình xử lý yêu cầu của bạn.'">Đã có lỗi xảy ra.</span>
             <br>
             <small class="text-muted d-block mt-2" th:if="${timestamp}" th:text="'Thời gian: ' + ${#dates.format(timestamp, 'dd/MM/yyyy HH:mm:ss')}"></small>
+            <!-- Debug: show trace for diagnosis -->
+            <details class="mt-3 text-start" th:if="${trace}">
+                <summary class="text-danger fw-bold" style="cursor:pointer;">Chi tiết lỗi (debug)</summary>
+                <pre class="bg-light border rounded p-2 mt-2 text-danger" style="font-size:0.7rem;max-height:300px;overflow:auto;white-space:pre-wrap;" th:text="${trace}"></pre>
+            </details>
         </div>
 
         <button onclick="goBack()" class="btn-home mb-3 w-100 bg-secondary" style="background: #6c757d !important; box-shadow: none;">

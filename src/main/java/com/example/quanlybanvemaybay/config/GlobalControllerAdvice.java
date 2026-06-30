@@ -98,27 +98,31 @@ public class GlobalControllerAdvice {
 
     @ModelAttribute("userNotifications")
     public List<Notification> getNotifications() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
-            String username = auth.getName();
-            User user = userRepository.findByUsername(username).orElse(null);
-            if (user != null) {
-                return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+                String username = auth.getName();
+                User user = userRepository.findByUsername(username).orElse(null);
+                if (user != null) {
+                    return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+                }
             }
-        }
+        } catch (Exception ignored) {}
         return Collections.emptyList();
     }
 
     @ModelAttribute("unreadNotificationCount")
     public int getUnreadCount() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
-            String username = auth.getName();
-            User user = userRepository.findByUsername(username).orElse(null);
-            if (user != null) {
-                return notificationRepository.countByUserIdAndIsReadFalse(user.getId());
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+                String username = auth.getName();
+                User user = userRepository.findByUsername(username).orElse(null);
+                if (user != null) {
+                    return notificationRepository.countByUserIdAndIsReadFalse(user.getId());
+                }
             }
-        }
+        } catch (Exception ignored) {}
         return 0;
     }
 
