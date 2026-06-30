@@ -528,12 +528,13 @@ document.addEventListener('DOMContentLoaded', function() {
         altInput: true, 
         altFormat: 'd/m/Y H:i', 
         time_24hr: true, 
-        minDate: new Date(), 
         locale: locale, 
         allowInput: true,
         minuteIncrement: 5,
         parseDate: function(datestr, format) {
             if (!datestr) return null;
+            if (datestr instanceof Date) return datestr;
+            if (typeof datestr !== 'string') return new Date(datestr);
             const parts = datestr.trim().split(/[\s/:\-T]+/);
             if (parts.length >= 5) {
                 if (parts[0].length === 4) {
@@ -557,9 +558,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const fpDep = flatpickr('#createDep', Object.assign({}, fpBase, {
+        minDate: new Date(),
         onChange: function(sd) { if (sd[0]) fpArr.set('minDate', new Date(sd[0].getTime() + 30*60000)); }
     }));
-    const fpArr = flatpickr('#createArr', Object.assign({}, fpBase));
+    const fpArr = flatpickr('#createArr', Object.assign({}, fpBase, {
+        minDate: new Date()
+    }));
 
     document.querySelectorAll('.flatpickr-dt').forEach(function(el) {
         if (el.id === 'createDep' || el.id === 'createArr') return;
