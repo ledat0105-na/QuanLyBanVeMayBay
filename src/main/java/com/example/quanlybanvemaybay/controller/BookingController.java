@@ -145,18 +145,60 @@ public class BookingController {
     }
 
     @GetMapping("/step3")
-    public String step3(@RequestParam("bookingId") Long bookingId, Model model) {
+    public String step3(@RequestParam("bookingId") Long bookingId, Model model, RedirectAttributes redirectAttributes) {
         Booking booking = bookingService.findById(bookingId);
         if (booking == null) return "redirect:/";
+        
+        if ("WAITING_PAYMENT".equals(booking.getBookingStatus()) && 
+            booking.getBookingDate() != null && 
+            booking.getBookingDate().plusMinutes(10).isBefore(LocalDateTime.now())) {
+            
+            bookingService.cancelBooking(booking.getId());
+            booking = bookingService.findById(bookingId);
+        }
+
+        if ("CANCELLED".equals(booking.getBookingStatus())) {
+            redirectAttributes.addFlashAttribute("bookingExpiredMsg", "Mã đặt chỗ này đã bị hủy do quá hạn thanh toán 10 phút.");
+            return "redirect:/";
+        }
+
         model.addAttribute("booking", booking);
+        
+        long secondsLeft = 0;
+        if (booking.getBookingDate() != null) {
+            LocalDateTime expiryTime = booking.getBookingDate().plusMinutes(10);
+            secondsLeft = java.time.Duration.between(LocalDateTime.now(), expiryTime).getSeconds();
+            if (secondsLeft < 0) secondsLeft = 0;
+        }
+        model.addAttribute("secondsLeft", secondsLeft);
+        
         return "booking/step3";
     }
 
     @PostMapping("/confirmPayment")
-    public String confirmPayment(@RequestParam("bookingId") Long bookingId, @RequestParam("paymentMethod") String paymentMethod) {
+    public String confirmPayment(@RequestParam("bookingId") Long bookingId, 
+                                 @RequestParam("paymentMethod") String paymentMethod,
+                                 RedirectAttributes redirectAttributes) {
+        Booking booking = bookingService.findById(bookingId);
+        if (booking == null) return "redirect:/";
+
+        if ("WAITING_PAYMENT".equals(booking.getBookingStatus()) && 
+            booking.getBookingDate() != null && 
+            booking.getBookingDate().plusMinutes(10).isBefore(LocalDateTime.now())) {
+            
+            bookingService.cancelBooking(booking.getId());
+            redirectAttributes.addFlashAttribute("bookingExpiredMsg", "Đơn đặt chỗ đã bị hủy do quá hạn thanh toán 10 phút.");
+            return "redirect:/";
+        }
+
+        if ("CANCELLED".equals(booking.getBookingStatus())) {
+            redirectAttributes.addFlashAttribute("bookingExpiredMsg", "Không thể thanh toán. Đơn đặt chỗ đã bị hủy.");
+            return "redirect:/";
+        }
+
         bookingService.createPaymentForBooking(bookingId, paymentMethod);
         
-        Booking booking = bookingService.findById(bookingId);
+        booking = bookingService.findById(bookingId);
         if (booking != null && booking.getUser() != null && booking.getUser().getEmail() != null) {
             emailService.sendBookingConfirmationEmail(booking, booking.getUser().getEmail());
         }

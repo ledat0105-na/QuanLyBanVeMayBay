@@ -160,6 +160,15 @@
                         </div>
                     </div>
                     <div class="col-md-7 p-5 bg-white">
+                        <!-- Hạn thanh toán đếm ngược -->
+                        <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4 p-3 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock fs-4 me-2 text-danger animate-pulse"></i>
+                                <span class="fw-bold text-danger">Hạn thanh toán còn lại:</span>
+                            </div>
+                            <span class="fs-4 fw-bold text-danger" id="countdownTimer">10:00</span>
+                        </div>
+
                         <h4 class="fw-bold mb-4" style="color: #212529 !important;">Chi tiết Booking</h4>
                         
                         <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
@@ -199,5 +208,45 @@
 </main>
 
 <th:block th:replace="~{layout/footer :: footer}"></th:block>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        let secondsLeft = /*[[${secondsLeft}]]*/ 600;
+        const countdownEl = document.getElementById('countdownTimer');
+        const payButton = document.querySelector('#paymentConfirmForm button[type="submit"]');
+
+        function updateTimer() {
+            if (secondsLeft <= 0) {
+                countdownEl.innerText = "Đã hết hạn!";
+                if (payButton) {
+                    payButton.disabled = true;
+                    payButton.classList.remove('btn-primary');
+                    payButton.classList.add('btn-secondary');
+                    payButton.innerHTML = '<i class="fas fa-ban me-2"></i>Đơn đặt vé đã hết hạn thanh toán';
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hết hạn thanh toán!',
+                    text: 'Mã đặt chỗ này đã quá hạn 10 phút và đã tự động hủy. Bạn vui lòng thực hiện đặt vé mới.',
+                    confirmButtonText: 'Quay về trang chủ'
+                }).then(() => {
+                    window.location.href = '/';
+                });
+                return;
+            }
+
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            countdownEl.innerText = 
+                (minutes < 10 ? '0' : '') + minutes + ':' + 
+                (seconds < 10 ? '0' : '') + seconds;
+
+            secondsLeft--;
+            setTimeout(updateTimer, 1000);
+        }
+
+        updateTimer();
+    });
+</script>
 </body>
 </html>

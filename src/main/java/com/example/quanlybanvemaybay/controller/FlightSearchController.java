@@ -38,12 +38,28 @@ public class FlightSearchController {
     @GetMapping("/search")
     public String search(@RequestParam("depId") Long depId,
                          @RequestParam("arrId") Long arrId,
-                         @RequestParam("depDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate depDate,
-                         @RequestParam(value = "retDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate retDate,
+                         @RequestParam("depDate") String depDateStr,
+                         @RequestParam(value = "retDate", required = false) String retDateStr,
                          @RequestParam(value = "tripType", required = false, defaultValue = "ONE_WAY") String tripType,
                          @RequestParam(value = "outboundFlightId", required = false) Long outboundFlightId,
                          @RequestParam(value = "passengers", defaultValue = "1") int passengers,
                          Model model) {
+
+        LocalDate depDate;
+        try {
+            depDate = (depDateStr != null && !depDateStr.trim().isEmpty()) ? LocalDate.parse(depDateStr) : LocalDate.now();
+        } catch (Exception e) {
+            depDate = LocalDate.now();
+        }
+
+        LocalDate retDate = null;
+        if (retDateStr != null && !retDateStr.trim().isEmpty()) {
+            try {
+                retDate = LocalDate.parse(retDateStr);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
 
         Airport depAirport = airportService.findById(depId);
         Airport arrAirport = airportService.findById(arrId);

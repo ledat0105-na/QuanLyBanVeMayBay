@@ -229,4 +229,31 @@ public class BookingServiceImpl implements BookingService {
             bookingRepository.save(booking);
         }
     }
+
+    @Override
+    @Transactional
+    public void cancelBooking(Long id) {
+        Booking booking = findById(id);
+        if (booking != null && !"CANCELLED".equals(booking.getBookingStatus())) {
+            booking.setBookingStatus("CANCELLED");
+            
+            int passengerCount = booking.getPassengers().size();
+            
+            Flight flight = booking.getFlight();
+            if (flight != null && flight.getAvailableSeats() != null) {
+                flight.setAvailableSeats(flight.getAvailableSeats() + passengerCount);
+            }
+            
+            Flight returnFlight = booking.getReturnFlight();
+            if (returnFlight != null && returnFlight.getAvailableSeats() != null) {
+                returnFlight.setAvailableSeats(returnFlight.getAvailableSeats() + passengerCount);
+            }
+            
+            bookingRepository.save(booking);
+            
+            if (booking.getUser() != null) {
+                sendNotif(booking.getUser(), "Đặt vé bị hủy", "Đơn đặt vé " + booking.getBookingCode() + " đã bị hủy do hết hạn thanh toán 10 phút.");
+            }
+        }
+    }
 }

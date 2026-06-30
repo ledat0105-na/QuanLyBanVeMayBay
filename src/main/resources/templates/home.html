@@ -100,6 +100,17 @@
             </div>
             
             
+            <!-- Thông báo hết hạn hoặc cảnh báo -->
+            <div class="row mt-3" th:if="${bookingExpiredMsg != null or flightExpiredMsg != null}">
+                <div class="col-12">
+                    <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm border-0 mb-2" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span th:text="${bookingExpiredMsg != null ? bookingExpiredMsg : flightExpiredMsg}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+            
             <div id="flight-search-section" class="row g-5 pb-5" style="position: relative; z-index: 9999;">
                 <div class="col-12">
                     <div class="card shadow-lg border-0 rounded-4 bg-white bg-opacity-75">

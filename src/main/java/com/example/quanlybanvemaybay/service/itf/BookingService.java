@@ -14,4 +14,5 @@ public interface BookingService {
     Booking updateBookingStatus(Long id, String status);
     void updatePassengerInfo(Long passengerId, String fullName, String gender, java.time.LocalDate doB, String passportNumber);
     void checkInBooking(Long id);
+    void cancelBooking(Long id);
 }
