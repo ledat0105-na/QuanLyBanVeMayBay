@@ -142,16 +142,48 @@ public class BookingServiceImpl implements BookingService {
     public Booking findById(Long id) {
         Booking booking = bookingRepository.findById(id).orElse(null);
         if (booking != null) {
+            // Initialize collections
             org.hibernate.Hibernate.initialize(booking.getPassengers());
             org.hibernate.Hibernate.initialize(booking.getPayments());
             org.hibernate.Hibernate.initialize(booking.getBaggageOptions());
+            org.hibernate.Hibernate.initialize(booking.getTickets());
+
+            // Initialize user
+            if (booking.getUser() != null) {
+                org.hibernate.Hibernate.initialize(booking.getUser());
+            }
+
+            // Initialize flight and all its lazy associations
             if (booking.getFlight() != null) {
-                org.hibernate.Hibernate.initialize(booking.getFlight().getDepartureAirport());
-                org.hibernate.Hibernate.initialize(booking.getFlight().getArrivalAirport());
+                org.hibernate.Hibernate.initialize(booking.getFlight());
+                if (booking.getFlight().getDepartureAirport() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getFlight().getDepartureAirport());
+                }
+                if (booking.getFlight().getArrivalAirport() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getFlight().getArrivalAirport());
+                }
+                if (booking.getFlight().getAirline() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getFlight().getAirline());
+                }
+            }
+
+            // Initialize returnFlight and all its lazy associations
+            if (booking.getReturnFlight() != null) {
+                org.hibernate.Hibernate.initialize(booking.getReturnFlight());
+                if (booking.getReturnFlight().getDepartureAirport() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getReturnFlight().getDepartureAirport());
+                }
+                if (booking.getReturnFlight().getArrivalAirport() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getReturnFlight().getArrivalAirport());
+                }
+                if (booking.getReturnFlight().getAirline() != null) {
+                    org.hibernate.Hibernate.initialize(booking.getReturnFlight().getAirline());
+                }
             }
         }
         return booking;
     }
+
 
     @Override
     @Transactional
