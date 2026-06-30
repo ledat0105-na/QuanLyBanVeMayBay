@@ -84,14 +84,19 @@
                       </div>
                       <div th:unless="${userNotifications == null or #lists.isEmpty(userNotifications)}">
                           <a href="#" th:each="notif : ${userNotifications}"
-                             th:attr="onclick=|markNotificationAsRead(${notif.id}, this)|"
+                             th:data-notif-id="${notif.id}"
+                             th:data-notif-link="${notif.link}"
                              th:data-title="${notif.title}"
-                             class="dropdown-item py-3 border-bottom text-wrap"
-                             th:classappend="${!notif.isRead} ? 'bg-light fw-bold' : ''">
+                             class="dropdown-item py-3 border-bottom text-wrap notif-item"
+                             th:classappend="${!notif.isRead} ? 'bg-light fw-bold' : ''"
+                             onclick="handleNotifClick(this); return false;">
                               <div class="d-flex align-items-start gap-2">
                                   <i class="fas mt-1 text-primary" th:classappend="${notif.isRead} ? 'fa-envelope-open' : 'fa-envelope'"></i>
-                                  <div>
-                                      <div class="small fw-bold" th:text="${notif.title}">Tiêu đề</div>
+                                  <div class="flex-grow-1">
+                                      <div class="small fw-bold d-flex justify-content-between align-items-center gap-2">
+                                          <span th:text="${notif.title}">Tiêu đề</span>
+                                          <i th:if="${notif.link}" class="fas fa-arrow-right text-muted" style="font-size:0.65rem;flex-shrink:0;"></i>
+                                      </div>
                                       <div class="text-muted" style="font-size:0.78rem;" th:text="${#strings.abbreviate(notif.message,60)}">Nội dung</div>
                                       <div class="text-primary" style="font-size:0.7rem;" th:text="${#temporals.format(notif.createdAt, 'dd/MM HH:mm')}">Thời gian</div>
                                   </div>
@@ -124,16 +129,29 @@
     
     <script>
         function markNotificationAsRead(id, element) {
-            const title = element ? element.getAttribute('data-title') : '';
+            handleNotifClick(element);
+        }
+
+        function handleNotifClick(element) {
+            const id = element.getAttribute('data-notif-id');
+            const link = element.getAttribute('data-notif-link');
+
+            // Mark as read via API
             fetch('/api/notifications/read/' + id, { method: 'POST' })
-            .then(res => {
-                if (res.ok) {
-                    const t = title ? title.toLowerCase() : '';
-                    if (t.includes('đặt vé') || t.includes('thanh toán') || t.includes('xử lý vé') || t.includes('trạng thái') || t.includes('hành khách')) {
-                        window.location.href = '/profile/bookings';
-                    } else {
-                        window.location.reload();
-                    }
+            .then(() => {
+                // Navigate to the link if available, else reload
+                if (link && link !== 'null' && link.trim() !== '') {
+                    window.location.href = link;
+                } else {
+                    window.location.reload();
+                }
+            })
+            .catch(() => {
+                // Even if API fails, still navigate
+                if (link && link !== 'null' && link.trim() !== '') {
+                    window.location.href = link;
+                } else {
+                    window.location.reload();
                 }
             });
         }

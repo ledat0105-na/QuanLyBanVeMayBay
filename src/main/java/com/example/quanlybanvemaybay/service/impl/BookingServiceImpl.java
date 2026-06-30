@@ -39,11 +39,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void sendNotif(User user, String title, String message) {
+        sendNotif(user, title, message, null);
+    }
+
+    private void sendNotif(User user, String title, String message, String link) {
         if (user == null) return;
         Notification notif = new Notification();
         notif.setUser(user);
         notif.setTitle(title);
         notif.setMessage(message);
+        notif.setLink(link);
         notif.setIsRead(false);
         notif.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(notif);
@@ -122,15 +127,17 @@ public class BookingServiceImpl implements BookingService {
 
         
         if (user != null) {
-            
-            sendNotif(user, "Đặt vé thành công", "Mã đặt vé của bạn là: " + savedBooking.getBookingCode() + ". Vui lòng thanh toán để hoàn tất.");
-            
-            
+            sendNotif(user, "Đặt vé thành công",
+                "Mã đặt vé của bạn là: " + savedBooking.getBookingCode() + ". Vui lòng thanh toán để hoàn tất.",
+                "/booking/step3?bookingId=" + savedBooking.getId());
+
             List<User> adminsAndStaff = userRepository.findAll().stream()
                 .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
                 .toList();
             for (User admin : adminsAndStaff) {
-                sendNotif(admin, "Có đơn đặt vé mới", "Khách hàng " + user.getFullName() + " vừa đặt vé: " + savedBooking.getBookingCode());
+                sendNotif(admin, "Có đơn đặt vé mới",
+                    "Khách hàng " + user.getFullName() + " vừa đặt vé: " + savedBooking.getBookingCode(),
+                    "/admin/bookings/" + savedBooking.getId());
             }
         }
         
@@ -200,7 +207,9 @@ public class BookingServiceImpl implements BookingService {
                     .filter(u -> u.getRole() != null && (u.getRole().getRoleName().equals("ADMIN") || u.getRole().getRoleName().equals("STAFF")))
                     .toList();
                 for (User admin : adminsAndStaff) {
-                    sendNotif(admin, "Yêu cầu thanh toán", "Khách hàng " + booking.getUser().getFullName() + " vừa thực hiện thanh toán cho đơn: " + booking.getBookingCode());
+                    sendNotif(admin, "Yêu cầu xử lý vé mới",
+                        "Khách hàng " + booking.getUser().getFullName() + " vừa thực hiện thanh toán cho đơn: " + booking.getBookingCode() + ". Vui lòng kiểm tra.",
+                        "/admin/bookings/" + booking.getId());
                 }
             }
         }
@@ -228,7 +237,7 @@ public class BookingServiceImpl implements BookingService {
             
             if (booking.getUser() != null && !status.equals(oldStatus)) {
                 String msg = "Trạng thái đơn đặt vé " + booking.getBookingCode() + " đã thay đổi thành: " + status;
-                sendNotif(booking.getUser(), "Cập nhật trạng thái vé", msg);
+                sendNotif(booking.getUser(), "Cập nhật trạng thái vé", msg, "/profile/bookings");
             }
         }
         return booking;
@@ -279,7 +288,9 @@ public class BookingServiceImpl implements BookingService {
             bookingRepository.save(booking);
             
             if (booking.getUser() != null) {
-                sendNotif(booking.getUser(), "Đặt vé bị hủy", "Đơn đặt vé " + booking.getBookingCode() + " đã bị hủy do hết hạn thanh toán 10 phút.");
+                sendNotif(booking.getUser(), "Đặt vé bị hủy",
+                    "Đơn đặt vé " + booking.getBookingCode() + " đã bị hủy do hết hạn thanh toán 10 phút.",
+                    "/profile/bookings");
             }
         }
     }

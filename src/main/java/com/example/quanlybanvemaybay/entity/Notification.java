@@ -39,6 +39,10 @@ public class Notification {
     @Column(name = "group_id")
     private String groupId;
 
+    // URL to navigate when notification is clicked
+    @Column(name = "link", length = 500)
+    private String link;
+
     // Explicit getter for Thymeleaf compatibility
     // Lombok generates getIsRead() for Boolean fields, but Thymeleaf looks for isRead()
     public boolean isRead() {
