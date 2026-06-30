@@ -41,6 +41,7 @@ public class BookingController {
 
     @GetMapping("/step1")
     public String step1(@RequestParam("flightId") Long flightId,
+                        @RequestParam(value = "returnFlightId", required = false) Long returnFlightId,
                         @RequestParam(value = "passengers", defaultValue = "1") int numPassengers,
                         Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 
@@ -59,8 +60,22 @@ public class BookingController {
             }
         }
 
+        Flight returnFlight = null;
+        if (returnFlightId != null) {
+            returnFlight = flightService.findById(returnFlightId);
+            if (returnFlight != null && returnFlight.getDepartureTime() != null) {
+                LocalDateTime cutoff = returnFlight.getDepartureTime().minusHours(3);
+                if (LocalDateTime.now().isAfter(cutoff)) {
+                    redirectAttributes.addFlashAttribute("flightExpiredMsg",
+                        "Chuyến bay về " + returnFlight.getFlightNumber() + " đã hết hạn đặt vé! Chỉ mở bán đến trước giờ khởi hành 3 tiếng.");
+                    return "redirect:/";
+                }
+            }
+        }
+
         BookingRequestDTO req = new BookingRequestDTO();
         req.setFlight(flight);
+        req.setReturnFlight(returnFlight);
         req.setNumberOfPassengers(numPassengers);
 
         for (int i = 0; i < numPassengers; i++) {

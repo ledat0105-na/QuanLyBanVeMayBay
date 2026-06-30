@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Data
 public class BookingRequestDTO {
     private Flight flight;
+    private Flight returnFlight;
     private int numberOfPassengers;
     private List<Passenger> passengers = new ArrayList<>();
     private Long selectedBaggageId;

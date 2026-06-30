@@ -11,15 +11,30 @@
 <div class="container-fluid bg-primary text-white py-4 mb-4 shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
         <div>
-            <h3 class="text-white mb-0">
-                <i class="fas fa-plane-departure me-2"></i>Kết quả tìm kiếm chuyến bay
+            <h3 class="text-white mb-0" th:if="${isSelectReturnPhase}">
+                <i class="fas fa-plane-arrival me-2"></i>Chọn chuyến bay Lượt Về (Chiều về)
+            </h3>
+            <h3 class="text-white mb-0" th:if="${tripType == 'ROUND_TRIP' and !isSelectReturnPhase}">
+                <i class="fas fa-plane-departure me-2"></i>Chọn chuyến bay Lượt Đi (Chiều đi)
+            </h3>
+            <h3 class="text-white mb-0" th:if="${tripType != 'ROUND_TRIP'}">
+                <i class="fas fa-plane me-2"></i>Kết quả tìm kiếm chuyến bay
             </h3>
             <p class="mb-0 mt-2 fs-5">
-                <span th:each="ap : ${airports}" th:if="${ap.id == depId}" th:text="${ap.name}"></span>
-                <i class="fas fa-arrow-right mx-3"></i>
-                <span th:each="ap : ${airports}" th:if="${ap.id == arrId}" th:text="${ap.name}"></span>
-                <span class="mx-3">|</span> 
-                <i class="far fa-calendar-alt me-2"></i> <span th:text="${#temporals.format(depDate, 'dd/MM/yyyy')}"></span>
+                <th:block th:if="${isSelectReturnPhase}">
+                    <span th:each="ap : ${airports}" th:if="${ap.id == arrId}" th:text="${ap.name}"></span>
+                    <i class="fas fa-arrow-right mx-3"></i>
+                    <span th:each="ap : ${airports}" th:if="${ap.id == depId}" th:text="${ap.name}"></span>
+                    <span class="mx-3">|</span> 
+                    <i class="far fa-calendar-alt me-2"></i> <span th:text="${#temporals.format(retDate, 'dd/MM/yyyy')}"></span>
+                </th:block>
+                <th:block th:if="${!isSelectReturnPhase}">
+                    <span th:each="ap : ${airports}" th:if="${ap.id == depId}" th:text="${ap.name}"></span>
+                    <i class="fas fa-arrow-right mx-3"></i>
+                    <span th:each="ap : ${airports}" th:if="${ap.id == arrId}" th:text="${ap.name}"></span>
+                    <span class="mx-3">|</span> 
+                    <i class="far fa-calendar-alt me-2"></i> <span th:text="${#temporals.format(depDate, 'dd/MM/yyyy')}"></span>
+                </th:block>
                 <span class="mx-3">|</span> 
                 <i class="fas fa-users me-2"></i> <span th:text="${passengers}"></span> Hành khách
             </p>
@@ -52,6 +67,24 @@
 
         
         <div class="col-lg-9">
+            <!-- Chiều đi đã chọn -->
+            <div th:if="${isSelectReturnPhase and outboundFlight != null}" class="card shadow-sm border-0 border-start border-4 border-primary rounded-4 mb-4 bg-white p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill mb-2"><i class="fas fa-check-circle me-1"></i> Chiều đi đã chọn</span>
+                        <h5 class="fw-bold mb-1 text-dark" th:text="${outboundFlight.airline.name} + ' (' + ${outboundFlight.flightNumber} + ')'"></h5>
+                        <p class="text-secondary mb-0" style="font-size: 0.9rem;">
+                            <strong>Khởi hành:</strong> <span th:text="${outboundFlight.departureAirport.city}"></span> (<span th:text="${#temporals.format(outboundFlight.departureTime, 'HH:mm dd/MM/yyyy')}"></span>)
+                            <i class="fas fa-arrow-right mx-2 text-primary"></i> 
+                            <strong>Hạ cánh:</strong> <span th:text="${outboundFlight.arrivalAirport.city}"></span> (<span th:text="${#temporals.format(outboundFlight.arrivalTime, 'HH:mm dd/MM/yyyy')}"></span>)
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block">Giá vé chiều đi</small>
+                        <span class="fw-bold text-success fs-5" th:text="${#numbers.formatDecimal(outboundFlight.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                    </div>
+                </div>
+            </div>
             <div th:if="${#lists.isEmpty(flights)}" class="text-center py-5 bg-white shadow-sm rounded-4 border-0">
                 <i class="fas fa-search-minus fa-4x text-muted mb-4 opacity-50"></i>
                 <h4 class="text-muted fw-bold">Không tìm thấy chuyến bay phù hợp</h4>
@@ -96,14 +129,52 @@
                             </div>
                             <div th:if="${f.availableSeats == null || f.availableSeats > 10}" class="mb-4"></div>
                             
-                            <a sec:authorize="isAuthenticated()" th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
-                                Chọn chuyến
-                            </a>
-                            <button sec:authorize="!isAuthenticated()" type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
-                                    data-bs-toggle="modal" data-bs-target="#loginPromptModal"
-                                    th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&passengers=${passengers}')|">
-                                Chọn chuyến
-                            </button>
+                            <!-- 1. Đã đăng nhập -->
+                            <th:block sec:authorize="isAuthenticated()">
+                                <!-- Chiều đi của khứ hồi -->
+                                <a th:if="${tripType == 'ROUND_TRIP' and !isSelectReturnPhase}" 
+                                   th:href="@{/flights/search(tripType='ROUND_TRIP', depId=${depId}, arrId=${arrId}, depDate=${depDate}, retDate=${retDate}, passengers=${passengers}, outboundFlightId=${f.id})}" 
+                                   class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
+                                    Chọn chiều đi
+                                </a>
+                                <!-- Chiều về của khứ hồi -->
+                                <a th:if="${isSelectReturnPhase}" 
+                                   th:href="@{/booking/step1(flightId=${outboundFlightId}, returnFlightId=${f.id}, passengers=${passengers})}" 
+                                   class="btn btn-success rounded-pill w-100 fw-bold shadow-sm py-2">
+                                    Chọn chiều về
+                                </a>
+                                <!-- Một chiều -->
+                                <a th:if="${tripType != 'ROUND_TRIP'}" 
+                                   th:href="@{/booking/step1(flightId=${f.id}, passengers=${passengers})}" 
+                                   class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2">
+                                    Chọn chuyến
+                                </a>
+                            </th:block>
+
+                            <!-- 2. Chưa đăng nhập -->
+                            <th:block sec:authorize="!isAuthenticated()">
+                                <!-- Chiều đi của khứ hồi -->
+                                <button th:if="${tripType == 'ROUND_TRIP' and !isSelectReturnPhase}" 
+                                        type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
+                                        data-bs-toggle="modal" data-bs-target="#loginPromptModal"
+                                        th:attr="onclick=|setReturnUrl('/flights/search?tripType=ROUND_TRIP&depId=${depId}&arrId=${arrId}&depDate=${depDate}&retDate=${retDate}&passengers=${passengers}&outboundFlightId=${f.id}')|">
+                                    Chọn chiều đi
+                                </button>
+                                <!-- Chiều về của khứ hồi -->
+                                <button th:if="${isSelectReturnPhase}" 
+                                        type="button" class="btn btn-success rounded-pill w-100 fw-bold shadow-sm py-2" 
+                                        data-bs-toggle="modal" data-bs-target="#loginPromptModal"
+                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${outboundFlightId}&returnFlightId=${f.id}&passengers=${passengers}')|">
+                                    Chọn chiều về
+                                </button>
+                                <!-- Một chiều -->
+                                <button th:if="${tripType != 'ROUND_TRIP'}" 
+                                        type="button" class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm py-2" 
+                                        data-bs-toggle="modal" data-bs-target="#loginPromptModal"
+                                        th:attr="onclick=|setReturnUrl('/booking/step1?flightId=${f.id}&passengers=${passengers}')|">
+                                    Chọn chuyến
+                                </button>
+                            </th:block>
                         </div>
                     </div>
                 </div>

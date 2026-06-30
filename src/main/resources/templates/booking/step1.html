@@ -126,9 +126,12 @@
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
                 <div class="card-header bg-primary text-white pt-4 pb-3 rounded-top-4">
-                    <h5 class="fw-bold mb-0">Tóm tắt chuyến bay</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-receipt me-2"></i>Tóm tắt chuyến bay</h5>
                 </div>
-                <div class="card-body">
+                
+                <!-- Chặng đi -->
+                <div class="card-body border-bottom">
+                    <span class="badge bg-primary px-3 py-1 rounded-pill mb-2">Chiều đi</span>
                     <h6 class="fw-bold text-dark mb-1" th:text="${req.flight.airline.name}"></h6>
                     <small class="text-muted d-block mb-3" th:text="'Chuyến ' + ${req.flight.flightNumber}"></small>
                     
@@ -149,11 +152,45 @@
                             <span class="fw-bold" th:text="${req.flight.arrivalAirport.code}"></span>
                         </div>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 bg-light p-2 rounded">
+                        <small class="text-muted">Giá vé:</small>
+                        <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(req.flight.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                    </div>
                 </div>
+
+                <!-- Chặng về (Nếu có) -->
+                <div class="card-body" th:if="${req.returnFlight != null}">
+                    <span class="badge bg-success px-3 py-1 rounded-pill mb-2">Chiều về</span>
+                    <h6 class="fw-bold text-dark mb-1" th:text="${req.returnFlight.airline.name}"></h6>
+                    <small class="text-muted d-block mb-3" th:text="'Chuyến ' + ${req.returnFlight.flightNumber}"></small>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h5 class="fw-bold mb-0" th:text="${#temporals.format(req.returnFlight.departureTime, 'HH:mm')}"></h5>
+                            <span class="text-muted" th:text="${#temporals.format(req.returnFlight.departureTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <span class="fw-bold" th:text="${req.returnFlight.departureAirport.code}"></span>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-plane text-success mx-3 fs-5" style="transform: rotate(180deg);"></i>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="fw-bold mb-0" th:text="${#temporals.format(req.returnFlight.arrivalTime, 'HH:mm')}"></h5>
+                            <span class="text-muted" th:text="${#temporals.format(req.returnFlight.arrivalTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <span class="fw-bold" th:text="${req.returnFlight.arrivalAirport.code}"></span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 bg-light p-2 rounded">
+                        <small class="text-muted">Giá vé:</small>
+                        <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(req.returnFlight.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                    </div>
+                </div>
+
                 <div class="card-footer bg-light border-top-0 rounded-bottom-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-muted">Giá cơ bản:</span>
-                        <h5 class="fw-bold text-success mb-0" th:text="${#numbers.formatDecimal(req.flight.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></h5>
+                        <span class="fw-bold text-muted">Giá vé cơ bản:</span>
+                        <h5 class="fw-bold text-success mb-0" th:text="${#numbers.formatDecimal(req.flight.basePrice + (req.returnFlight != null ? req.returnFlight.basePrice : 0), 0, 'COMMA', 0, 'POINT')} + ' đ'"></h5>
                     </div>
                 </div>
             </div>
@@ -170,7 +207,8 @@
         box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
         border: 1px solid rgba(0,0,0,0.05) !important;
         border-radius: 16px !important;
-        padding: 10px;
+        padding: 10px !important;
+        width: 327.875px !important;
         font-family: 'Inter', 'Segoe UI', sans-serif;
     }
     .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {

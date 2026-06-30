@@ -39,19 +39,38 @@ public class FlightSearchController {
     public String search(@RequestParam("depId") Long depId,
                          @RequestParam("arrId") Long arrId,
                          @RequestParam("depDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate depDate,
+                         @RequestParam(value = "retDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate retDate,
+                         @RequestParam(value = "tripType", required = false, defaultValue = "ONE_WAY") String tripType,
+                         @RequestParam(value = "outboundFlightId", required = false) Long outboundFlightId,
                          @RequestParam(value = "passengers", defaultValue = "1") int passengers,
                          Model model) {
 
         Airport depAirport = airportService.findById(depId);
         Airport arrAirport = airportService.findById(arrId);
         
-        if (depAirport != null && arrAirport != null) {
-            externalFlightService.generateAndSaveFlightsForRoute(depAirport, arrAirport, depDate);
+        List<Flight> flights;
+        boolean isRoundTrip = "ROUND_TRIP".equals(tripType);
+        boolean isSelectReturnPhase = isRoundTrip && outboundFlightId != null;
+
+        if (isSelectReturnPhase) {
+            // Phase 2: Return flight search (swapping departure and arrival, using return date)
+            if (arrAirport != null && depAirport != null && retDate != null) {
+                externalFlightService.generateAndSaveFlightsForRoute(arrAirport, depAirport, retDate);
+            }
+            flights = flightRepository.searchFlights(arrId, depId, retDate, passengers);
+            
+            if (outboundFlightId != null) {
+                model.addAttribute("outboundFlight", flightRepository.findById(outboundFlightId).orElse(null));
+            }
+        } else {
+            // Phase 1 (or One-way): Outbound flight search
+            if (depAirport != null && arrAirport != null) {
+                externalFlightService.generateAndSaveFlightsForRoute(depAirport, arrAirport, depDate);
+            }
+            flights = flightRepository.searchFlights(depId, arrId, depDate, passengers);
         }
 
-        List<Flight> flights = flightRepository.searchFlights(depId, arrId, depDate, passengers);
-
-        
+        // Filter flights departing in more than 3 hours
         java.time.LocalDateTime cutoff3h = java.time.LocalDateTime.now().plusHours(3);
         flights = flights.stream()
                 .filter(f -> f.getDepartureTime() != null && f.getDepartureTime().isAfter(cutoff3h))
@@ -63,7 +82,11 @@ public class FlightSearchController {
         model.addAttribute("depId", depId);
         model.addAttribute("arrId", arrId);
         model.addAttribute("depDate", depDate);
+        model.addAttribute("retDate", retDate);
+        model.addAttribute("tripType", tripType);
+        model.addAttribute("outboundFlightId", outboundFlightId);
         model.addAttribute("passengers", passengers);
+        model.addAttribute("isSelectReturnPhase", isSelectReturnPhase);
 
         return "flight/search-results";
     }

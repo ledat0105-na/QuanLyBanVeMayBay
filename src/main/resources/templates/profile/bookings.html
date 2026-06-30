@@ -63,8 +63,24 @@
                                         <span class="fw-bold" th:text="${booking.flight.arrivalAirport.code}"></span>
                                         <br>
                                         <small class="text-muted" th:text="${booking.flight.airline.name} + ' - ' + ${booking.flight.flightNumber}"></small>
+                                        
+                                        <div th:if="${booking.returnFlight != null}">
+                                            <div class="border-top my-1 border-light"></div>
+                                            <span class="badge bg-success text-white py-1 px-2 rounded mb-1" style="font-size: 0.7rem;">Lượt về</span><br>
+                                            <span class="fw-bold" th:text="${booking.returnFlight.departureAirport.code}"></span>
+                                            <i class="fas fa-arrow-right mx-1 text-muted"></i>
+                                            <span class="fw-bold" th:text="${booking.returnFlight.arrivalAirport.code}"></span>
+                                            <br>
+                                            <small class="text-muted" th:text="${booking.returnFlight.airline.name} + ' - ' + ${booking.returnFlight.flightNumber}"></small>
+                                        </div>
                                     </td>
-                                    <td th:text="${#temporals.format(booking.flight.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td>
+                                        <span th:text="${#temporals.format(booking.flight.departureTime, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <div th:if="${booking.returnFlight != null}">
+                                            <div class="border-top my-1 border-light"></div>
+                                            <span th:text="${#temporals.format(booking.returnFlight.departureTime, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <span th:if="${booking.bookingStatus == 'WAITING_PAYMENT'}" class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chờ thanh toán</span>
                                         <span th:if="${booking.bookingStatus == 'CONFIRMED'}" class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đã xác nhận</span>

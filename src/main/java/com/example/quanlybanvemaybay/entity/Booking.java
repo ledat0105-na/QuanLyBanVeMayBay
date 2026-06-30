@@ -32,6 +32,10 @@ public class Booking {
     @JoinColumn(name = "flight_id")
     private Flight flight;
 
+    @ManyToOne
+    @JoinColumn(name = "return_flight_id")
+    private Flight returnFlight;
+
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 

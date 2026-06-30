@@ -57,12 +57,17 @@ public class BookingServiceImpl implements BookingService {
             user = userRepository.findByUsername(username).orElse(null);
         }
         
-        BigDecimal totalAmount = req.getFlight().getBasePrice().multiply(BigDecimal.valueOf(req.getNumberOfPassengers()));
+        BigDecimal singleTicketPrice = req.getFlight().getBasePrice();
+        if (req.getReturnFlight() != null) {
+            singleTicketPrice = singleTicketPrice.add(req.getReturnFlight().getBasePrice());
+        }
+        BigDecimal totalAmount = singleTicketPrice.multiply(BigDecimal.valueOf(req.getNumberOfPassengers()));
         
         Booking booking = new Booking();
         booking.setBookingCode("BKG" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         booking.setUser(user);
         booking.setFlight(req.getFlight());
+        booking.setReturnFlight(req.getReturnFlight());
         booking.setBookingDate(LocalDateTime.now());
         booking.setBookingStatus("WAITING_PAYMENT");
         
@@ -100,8 +105,12 @@ public class BookingServiceImpl implements BookingService {
         if (flight.getAvailableSeats() != null) {
             int newAvailable = flight.getAvailableSeats() - req.getNumberOfPassengers();
             flight.setAvailableSeats(Math.max(0, newAvailable));
-            
-            
+        }
+
+        Flight returnFlight = req.getReturnFlight();
+        if (returnFlight != null && returnFlight.getAvailableSeats() != null) {
+            int newAvailable = returnFlight.getAvailableSeats() - req.getNumberOfPassengers();
+            returnFlight.setAvailableSeats(Math.max(0, newAvailable));
         }
         
         if (req.getPassengers() != null) {
