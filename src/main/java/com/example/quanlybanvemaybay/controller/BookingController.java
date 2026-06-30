@@ -167,7 +167,7 @@ public class BookingController {
             booking = bookingService.findById(bookingId);
         }
 
-        if ("CANCELLED".equals(booking.getBookingStatus())) {
+        if (booking == null || "CANCELLED".equals(booking.getBookingStatus())) {
             redirectAttributes.addFlashAttribute("bookingExpiredMsg", "Mã đặt chỗ này đã bị hủy do quá hạn thanh toán 10 phút.");
             return "redirect:/";
         }

@@ -71,7 +71,11 @@ public class ExternalFlightServiceImpl implements ExternalFlightService {
         templates.add(new FlightTemplate(vu, "VU-137", LocalTime.of(13, 45), 135, BigDecimal.valueOf(890000)));
 
         for (FlightTemplate temp : templates) {
-            String routeFlightNum = temp.flightNumberPrefix + "-" + departureAirport.getCode() + "-" + arrivalAirport.getCode();
+            String cleanPrefix = temp.flightNumberPrefix.replace("-", "");
+            String depLetter = departureAirport.getCode().substring(0, 1);
+            String arrLetter = arrivalAirport.getCode().substring(0, 1);
+            String dateSuffix = date.toString().substring(5).replace("-", "");
+            String routeFlightNum = cleanPrefix + depLetter + arrLetter + dateSuffix;
             LocalDateTime departureTime = LocalDateTime.of(date, temp.departureTime);
             LocalDateTime arrivalTime = departureTime.plusMinutes(temp.durationMinutes);
 
